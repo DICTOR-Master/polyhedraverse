@@ -18,8 +18,8 @@ const midpoint: Vec3 = [(v1.pos[0] + v2.pos[0]) / 2, (v1.pos[1] + v2.pos[1]) / 2
 const s5 = coalesce(s6, 'v1', 'v2', midpoint);
 check('coalescing an adjacent pair yields a 5-vertex state', s5.vertices.length === 5);
 check('coalescing an adjacent pair yields 5 boundary edges (still a closed loop)', s5.boundaryEdges.length === 5);
-check('the merged vertex sits at the exact target position (V3)', dist(s5.vertices.find((v) => v.id === 'v1+v2')!.pos, midpoint) < 1e-12);
-check('the merged vertex tracks both original ids (sourceIds)', new Set(s5.vertices.find((v) => v.id === 'v1+v2')!.sourceIds).size === 2 && s5.vertices.find((v) => v.id === 'v1+v2')!.sourceIds.includes('v1') && s5.vertices.find((v) => v.id === 'v1+v2')!.sourceIds.includes('v2'));
+check('the merged vertex sits at the exact target position (V3)', dist(s5.vertices.find((v) => v.id === '(v1+v2)')!.pos, midpoint) < 1e-12);
+check('the merged vertex tracks both original ids (sourceIds)', new Set(s5.vertices.find((v) => v.id === '(v1+v2)')!.sourceIds).size === 2 && s5.vertices.find((v) => v.id === '(v1+v2)')!.sourceIds.includes('v1') && s5.vertices.find((v) => v.id === '(v1+v2)')!.sourceIds.includes('v2'));
 
 // --- Coalescing a non-adjacent pair throws ---
 let threw = false;
@@ -52,7 +52,7 @@ check(
 
 // --- V9: coalesce must not hardcode a specific pair or ladder — exercise a different adjacent pair on the SAME 6-vertex state ---
 const s5other = coalesce(initialState(), 'v4', 'v5', [0, 0, 0]);
-check('coalesce works on a different adjacent pair on the same state (no hardcoded pair, V9)', s5other.vertices.length === 5 && s5other.vertices.some((v) => v.id === 'v4+v5'));
+check('coalesce works on a different adjacent pair on the same state (no hardcoded pair, V9)', s5other.vertices.length === 5 && s5other.vertices.some((v) => v.id === '(v4+v5)'));
 
 // --- Works on a non-6-vertex state too (no hardcoded vertex count, V9) ---
 const s4 = coalesce(coalesce(initialState(), 'v1', 'v2', midpoint), 'v3', 'v4', [0, 0, 0]);

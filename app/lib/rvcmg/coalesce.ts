@@ -29,23 +29,42 @@ export function coalesce(
   // transformation this function doesn't perform. Checked against the
   // state's own boundaryEdges, never assumed from array position (a
   // state's vertices are ordered, but boundaryEdges is the actual source
-  // of truth for adjacency per spec §6).
-  const isTargetEdge = ([i, j]: [number, number]) => (i === idxA && j === idxB) || (i === idxB && j === idxA);
-  if (!state.boundaryEdges.some(isTargetEdge)) {
+  // of truth for adjacency per spec §6). The matched edge's OWN stored
+  // order — not the caller's vertexIdA/vertexIdB argument order — is
+  // used below as the canonical "left/right" pairing: boundaryEdges is
+  // maintained (by this function and by the initial state) in a
+  // consistent traversal direction, so `[left, right]` here always means
+  // "left immediately precedes right along the boundary." separate()
+  // (Stage 4) depends on this to know which original neighbor
+  // reconnects to which half of a split vertex — without it, undoing a
+  // coalesce would have no principled way to tell which side is which.
+  const matchedEdge = state.boundaryEdges.find(([i, j]) => (i === idxA && j === idxB) || (i === idxB && j === idxA));
+  if (!matchedEdge) {
     throw new Error(
       `coalesce: "${vertexIdA}" and "${vertexIdB}" are not adjacent on state "${state.id}" — coalescence requires adjacency (spec V2)`,
     );
   }
+  const [leftIdx, rightIdx] = matchedEdge;
 
-  // sourceIds flattens nested merges down to the original v1..v6 ids
-  // (spec's own vocabulary): a vertex that hasn't merged before has
-  // sourceIds: [] (it IS an original), so it contributes its own id;
-  // a previously-coalesced vertex already lists its own originals.
-  const originsOf = (v: RvcmgVertex): string[] => (v.sourceIds.length ? v.sourceIds : [v.id]);
+  // sourceIds records the IMMEDIATE two parents that merged into this
+  // vertex — "which original v1..v6 (OR PRIOR COALESCED IDS) merged
+  // into this one" (types.ts's own doc comment, taken literally): always
+  // exactly 2 entries, never flattened down to original leaves. This is
+  // what makes separate() able to undo a merge at ANY depth, not just a
+  // merge of two still-primitive vertices — flattening to leaves (an
+  // earlier version of this function did that) loses the intermediate
+  // grouping and makes a merge-of-a-merge irreversible. Stored in
+  // canonical left-to-right order (see above), regardless of which
+  // order the caller passed vertexIdA/vertexIdB in.
+  const leftId = state.vertices[leftIdx].id;
+  const rightId = state.vertices[rightIdx].id;
   const mergedVertex: RvcmgVertex = {
-    id: `${vertexIdA}+${vertexIdB}`,
+    // Parenthesized, not a bare concatenation — see types.ts's own
+    // `parseCompoundId` comment for why this is unambiguous at any
+    // nesting depth and a bare `${leftId}+${rightId}` is not.
+    id: `(${leftId}+${rightId})`,
     pos: targetPos, // V3: both merged vertices set to targetPos
-    sourceIds: [...originsOf(state.vertices[idxA]), ...originsOf(state.vertices[idxB])],
+    sourceIds: [leftId, rightId],
   };
 
   // Build the new vertex list in one pass over the ORIGINAL order, so the
