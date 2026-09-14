@@ -2,11 +2,11 @@
 
 **Status (2026-09-15): the core math library (Stages 0-7) is done and
 fully verified. The physical product it exists to build — a family of 7
-standalone 3D-printable connector pieces — has two pieces derived and
-verified (Triangle-to-RD-H, Square-to-RD-H) and 4 more scoped but not
-yet built. This doc is both the scoping record and the running
-status/postmortem, mirroring `catalan-solids-spec.md`'s own role for
-that family.**
+standalone 3D-printable connector pieces — has three pieces derived and
+verified (Triangle-to-RD-H, Square-to-RD-H, Pentagon-to-RD-H) and 3 more
+scoped but not yet built. This doc is both the scoping record and the
+running status/postmortem, mirroring `catalan-solids-spec.md`'s own
+role for that family.**
 
 ## The actual goal: a modular polyhedron connector system
 
@@ -38,7 +38,7 @@ The system, direct from the user (2026-09-15):
   |---|---|---|---|---|
   | Triangle-to-RD-H | equilateral triangle, edge 1 | tetrahedron (D4) / octahedron (D8) | 3 | **done, verified** |
   | Square-to-RD-H | unit square | cube | 4 | **done, verified** |
-  | Pentagon-to-RD-H | regular pentagon, edge 1 | dodecahedron | 5 | scoped, not derived |
+  | Pentagon-to-RD-H | regular pentagon, edge 1 | dodecahedron | 5 | **done, verified** |
   | Golden-rhombus-to-RD-H | rhombus, diagonal ratio φ:1 | rhombic triacontahedron | 4 | scoped, not derived |
   | DI-kite-to-RD-H | deltoidal icositetrahedron's own kite | deltoidal icositetrahedron | 4 | scoped, not derived |
   | DH-kite-to-RD-H | deltoidal hexecontahedron's own kite | deltoidal hexecontahedron | 4 | scoped, not derived |
@@ -220,10 +220,31 @@ lesson — equal edges alone don't rule out a rhombus), plus full
 reversibility confirmed through the real non-identity inverse
 deformation, not just the identity case.
 
+### Pentagon-to-RD-H — done, verified (`pentagonToRdH.ts`)
+
+The simplest of the three so far: a hexagon already has exactly one
+more vertex than a pentagon, so only ONE merge is needed (6 -> 5) —
+merging `(v3,v4)`, one of the hexagon's two "long" (cube-corner-to-
+cube-corner) edges. The other long edge, `(v6,v1)`, is its exact
+inversion-symmetric image (confirmed computationally: the RD's own
+central symmetry guarantees the hex interface has it too), so either
+choice is equally valid, not arbitrary.
+
+With only one step and no later step to split work across, all FOUR
+untouched vertices (`v1`, `v2`, `v5`, `v6`) have their final
+repositioning carried by this SAME step's deformation — the most
+concentrated use yet of spec §16's Φ. Verified: all 5 edges exactly
+unit length AND all 5 vertices equidistant from the centroid (a real
+*regular* pentagon, not merely an equilateral one — matching the same
+"edge length alone doesn't prove the shape" discipline as the square
+piece's right-angle check), with the correct 108° interior angle at
+every corner; full reversibility through the real inverse deformation.
+
 ### Outstanding
 
-- The other 4 pieces (Pentagon, Golden-rhombus, DI-kite, DH-kite) —
-  same pipeline, different target polygon per piece. Not yet derived.
+- The other 3 pieces (Golden-rhombus, DI-kite, DH-kite) — same
+  pipeline, different (and for the first time, non-regular) target
+  polygon per piece. Not yet derived.
 - **3D solid extrusion**: RVCMG's own states are flat 2D cross-sections
   (the hex face and the target face), not yet a real printable solid.
   The next real step for each piece is a tapered wall connecting the
