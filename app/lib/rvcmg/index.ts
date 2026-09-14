@@ -4,4 +4,5 @@
  * implementation plan — do not export anything here before its owning
  * stage has landed and passed its own acceptance checks.
  */
-export {};
+export { HEMI_RD_INTERFACE, validateHemiRdInterface } from './hemiRdInterface';
+export type { HemiRdInterfaceReport } from './hemiRdInterface';
