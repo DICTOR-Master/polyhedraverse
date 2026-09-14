@@ -12,3 +12,4 @@ export { coalesce } from './coalesce';
 export { separate } from './separate';
 export type { StateGraph } from './stateGraph';
 export { createStateGraph, addState, addTransition, findPath, isComposite } from './stateGraph';
+export { interpolate, classifyState } from './morph';

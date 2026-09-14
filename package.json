@@ -31,6 +31,7 @@
     "verify:rvcmg-coalesce": "tsx app/lib/rvcmg/coalesce.test.ts",
     "verify:rvcmg-separate": "tsx app/lib/rvcmg/separate.test.ts",
     "verify:rvcmg-state-graph": "tsx app/lib/rvcmg/stateGraph.test.ts",
+    "verify:rvcmg-morph": "tsx app/lib/rvcmg/morph.test.ts",
     "test:rvcmg": "tsx app/lib/rvcmg/rvcmg.test.ts",
     "test:e2e": "playwright test"
   },
