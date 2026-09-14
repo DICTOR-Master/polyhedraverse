@@ -26,6 +26,8 @@
     "verify:fold4": "tsx scripts/verify-fold4.ts",
     "verify:duoprism": "tsx scripts/verify-duoprism.ts",
     "verify:radial-projection": "tsx scripts/verify-radial-projection.ts",
+    "verify:rvcmg-hemi-rd": "tsx app/lib/rvcmg/hemiRdInterface.test.ts",
+    "test:rvcmg": "tsx app/lib/rvcmg/rvcmg.test.ts",
     "test:e2e": "playwright test"
   },
   "dependencies": {
