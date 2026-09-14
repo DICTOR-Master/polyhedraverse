@@ -2,10 +2,11 @@
 
 **Status (2026-09-15): the core math library (Stages 0-7) is done and
 fully verified. The physical product it exists to build — a family of 7
-standalone 3D-printable connector pieces — has one piece prototyped
-(Triangle-to-RD-H) and 5 more scoped but not yet derived. This doc is
-both the scoping record and the running status/postmortem, mirroring
-`catalan-solids-spec.md`'s own role for that family.**
+standalone 3D-printable connector pieces — has two pieces derived and
+verified (Triangle-to-RD-H, Square-to-RD-H) and 4 more scoped but not
+yet built. This doc is both the scoping record and the running
+status/postmortem, mirroring `catalan-solids-spec.md`'s own role for
+that family.**
 
 ## The actual goal: a modular polyhedron connector system
 
@@ -36,7 +37,7 @@ The system, direct from the user (2026-09-15):
   | Piece | Target face | Target polyhedron | Vertices | Status |
   |---|---|---|---|---|
   | Triangle-to-RD-H | equilateral triangle, edge 1 | tetrahedron (D4) / octahedron (D8) | 3 | **done, verified** |
-  | Square-to-RD-H | unit square | cube | 4 | scoped, not derived |
+  | Square-to-RD-H | unit square | cube | 4 | **done, verified** |
   | Pentagon-to-RD-H | regular pentagon, edge 1 | dodecahedron | 5 | scoped, not derived |
   | Golden-rhombus-to-RD-H | rhombus, diagonal ratio φ:1 | rhombic triacontahedron | 4 | scoped, not derived |
   | DI-kite-to-RD-H | deltoidal icositetrahedron's own kite | deltoidal icositetrahedron | 4 | scoped, not derived |
@@ -172,21 +173,57 @@ generalizing to the other 5 pieces:
    placed in the SAME plane as the hex interface (both are flat
    cross-sections; the tapered 3D wall connecting them is a later,
    separate extrusion step) at circumradius `1/sqrt(3)` around the
-   hex's own centroid, with each pair's own averaged angular position
-   deciding which of the 3 target angles it gets — preserves the
-   hexagon's real winding sense instead of risking an inverted
-   (mirrored) result from an arbitrary fixed assignment.
+   hex's own centroid. Each pair's own angular position (in the hex
+   interface's own planar frame) decides which of the 3 target angles
+   it gets — preserving the hexagon's real winding sense instead of
+   risking an inverted (mirrored) result — AND the whole assignment's
+   rotational phase is chosen to minimize total twist relative to each
+   pair's own real position (`assignTargetAngles`, `adapters/shared.ts`
+   — factored out once the square piece needed the identical logic;
+   direct user instruction: "always use closest corresponding corners
+   of RD hex group to match square or other shape for least
+   distortion").
 4. **Verification**: every one of the 3 steps passes `verifyTransition`
    with zero problems; the final state is confirmed to be a genuine
    equilateral triangle of edge exactly 1 (not just "3 vertices");
    separating all 3 steps in reverse reproduces the original hex
    interface exactly (`statesApproximatelyEqual`).
 
+### Square-to-RD-H — done, verified (`squareToRdH.ts`)
+
+A square only needs 2 merges (6 -> 5 -> 4), unlike the triangle's 3 —
+two of the six hex vertices (`v1`, `v4`, an exact central-symmetry pair,
+`v4 == -v1` in the interface's own plane, confirmed computationally
+rather than assumed from the RD's known inversion symmetry) are never
+coalesced at all, yet must still land on specific final corners. This
+surfaced the real intended use of a coalescence step's own
+`deformation` parameter (spec §16's Φ, "applied to all other
+vertices"): RVCMG has no separate "reposition without changing vertex
+count" primitive, so the untouched pair's final repositioning is
+carried by the SECOND merge's deformation, matched by exact position
+(the deformation signature is position-only, not id-aware) rather than
+left as a pass-through.
+
+**A real gap in `verifyTransition` itself was caught by this piece, not
+by inspection**: 25.6's reversibility check always called `separate()`
+with the DEFAULT identity inverse deformation, which is correct for
+every Stage 0-7 test case (all used identity) but silently wrong once a
+step's real deformation is non-identity — it would leave the untouched
+vertices at their post-deformation positions and report a false
+failure. Fixed by adding `VerifyTransitionOptions.inverseDeformation`
+(defaults to identity, so every existing test stays unaffected) rather
+than special-casing this one piece.
+
+Same final-shape discipline as the triangle: edge length checked (all 4
+exactly 1) AND a real right-angle check (core.ts's own documented
+lesson — equal edges alone don't rule out a rhombus), plus full
+reversibility confirmed through the real non-identity inverse
+deformation, not just the identity case.
+
 ### Outstanding
 
-- The other 5 pieces (Square, Pentagon, Golden-rhombus, DI-kite,
-  DH-kite) — same pipeline, different target polygon per piece. Not
-  yet derived.
+- The other 4 pieces (Pentagon, Golden-rhombus, DI-kite, DH-kite) —
+  same pipeline, different target polygon per piece. Not yet derived.
 - **3D solid extrusion**: RVCMG's own states are flat 2D cross-sections
   (the hex face and the target face), not yet a real printable solid.
   The next real step for each piece is a tapered wall connecting the

@@ -17,6 +17,7 @@ import { POLYHEDRA } from '../../polyhedra/index';
 import { HEMI_RD_INTERFACE, hemiRdInterfaceFrame } from '../hemiRdInterface';
 import { coalesce } from '../coalesce';
 import { verifyTransition } from '../verify';
+import { assignTargetAngles } from './shared';
 import type { RvcmgState, CoalescenceOp } from '../types';
 
 const sub = (a: Vec3, b: Vec3): Vec3 => [a[0] - b[0], a[1] - b[1], a[2] - b[2]];
@@ -112,19 +113,18 @@ export function deriveTriangleToRdH(): AdapterPieceResult {
     // raw atan2 values is safe, no wraparound risk here).
     return (angleOf(a) + angleOf(b)) / 2;
   });
-  // Sort by angle to read off the hex boundary's own real winding order,
-  // then assign exactly 120°-spaced target angles in THAT SAME order —
-  // guarantees the destination triangle winds the same way the source
-  // hexagon does, rather than risking a flip from an arbitrary
-  // fixed-index assignment.
-  const order = [0, 1, 2].sort((i, j) => pairAngles[i] - pairAngles[j]);
-  const targetAngleForPairIndex = new Map<number, number>();
-  order.forEach((pairIndex, rank) => targetAngleForPairIndex.set(pairIndex, (rank * 2 * Math.PI) / 3));
+  // assignTargetAngles both reads off the hex boundary's own real
+  // winding order (preventing an inverted/mirrored result) AND picks
+  // the assignment's rotational phase to minimize twist relative to
+  // each pair's own real position (direct user instruction: "always use
+  // closest corresponding corners of group to match square or other
+  // shape") — see shared.ts's own comment for the full reasoning.
+  const targetAngles = assignTargetAngles(pairAngles);
 
   const EDGE = 1; // unit edge, matching the unit-edge tetrahedron/octahedron
   const circumradius = EDGE / Math.sqrt(3);
   const targetFor = (pairIndex: number): Vec3 => {
-    const theta = targetAngleForPairIndex.get(pairIndex)!;
+    const theta = targetAngles[pairIndex];
     return add(centroid, add(scale(u, circumradius * Math.cos(theta)), scale(w, circumradius * Math.sin(theta))));
   };
 

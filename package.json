@@ -34,6 +34,7 @@
     "verify:rvcmg-morph": "tsx app/lib/rvcmg/morph.test.ts",
     "verify:rvcmg-verify": "tsx app/lib/rvcmg/verify.test.ts",
     "verify:rvcmg-triangle-to-rd-h": "tsx app/lib/rvcmg/adapters/triangleToRdH.test.ts",
+    "verify:rvcmg-square-to-rd-h": "tsx app/lib/rvcmg/adapters/squareToRdH.test.ts",
     "test:rvcmg": "tsx app/lib/rvcmg/rvcmg.test.ts",
     "test:e2e": "playwright test"
   },

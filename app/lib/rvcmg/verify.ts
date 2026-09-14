@@ -33,6 +33,17 @@ export interface VerifyTransitionOptions {
   expectedAfter?: RvcmgState;
   /** 25.7: a claimed-equivalent alternate route (states + the ops connecting them) from `before` to the same endpoint as `after`. */
   equivalentPath?: { states: RvcmgState[]; ops: CoalescenceOp[] };
+  /**
+   * 25.6: the real inverse of `op.deformation`, when it isn't its own
+   * inverse (identity always is, so this defaults to it) — e.g. a
+   * deformation that moved OTHER vertices to specific final positions
+   * (spec §16's Φ used for real, not as an identity pass-through) needs
+   * an explicit inverse to check reversibility correctly; without one,
+   * `separate()`'s own default identity would incorrectly leave those
+   * vertices at their post-deformation positions and this check would
+   * report a false failure.
+   */
+  inverseDeformation?: (v: Vec3) => Vec3;
   tol?: number;
 }
 
@@ -83,7 +94,12 @@ export function verifyTransition(op: CoalescenceOp, before: RvcmgState, after: R
   // 25.6 reversibility — separate(coalesce(before)) == before, via the REAL separate() primitive, not re-derived by hand.
   if (mergedVertex) {
     try {
-      const back = separate(after, mergedVertex.id, [before.vertices[beforeIdxA].pos, before.vertices[beforeIdxB].pos]);
+      const back = separate(
+        after,
+        mergedVertex.id,
+        [before.vertices[beforeIdxA].pos, before.vertices[beforeIdxB].pos],
+        options.inverseDeformation ?? ((v) => v),
+      );
       if (!statesApproximatelyEqual(back, before, tol)) {
         problems.push(`25.6: separate(coalesce("${before.id}")) does not reproduce "${before.id}"`);
       }
