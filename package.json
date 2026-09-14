@@ -27,6 +27,7 @@
     "verify:duoprism": "tsx scripts/verify-duoprism.ts",
     "verify:radial-projection": "tsx scripts/verify-radial-projection.ts",
     "verify:rvcmg-hemi-rd": "tsx app/lib/rvcmg/hemiRdInterface.test.ts",
+    "verify:rvcmg-types": "tsx app/lib/rvcmg/types.test.ts",
     "test:rvcmg": "tsx app/lib/rvcmg/rvcmg.test.ts",
     "test:e2e": "playwright test"
   },
