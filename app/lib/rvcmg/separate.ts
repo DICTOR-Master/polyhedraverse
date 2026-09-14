@@ -5,17 +5,17 @@
  * restoring the exact pre-merge boundary topology.
  *
  * Scope note (2026-09-15, worth remembering): the full mathematical
- * duality this implements is `coalesce` (division: two adjacent
- * vertices -> one) and `separate` (multiplication: one vertex -> two,
- * at any two positions) as general inverse operations — nothing in the
- * math caps vertex count or requires a vertex to have been a coalesce
- * product before it can be split (6 -> 12 by repeated splitting is as
- * valid as 6 -> 3 by repeated merging). THIS function only implements
- * the narrower "undo a specific `coalesce()` call" case — it requires
- * `sourceIds.length === 2` and refuses anything else. Splitting an
- * ORIGINAL (never-merged) vertex into two new ones — the fully general
- * case — is not yet implemented; see docs/rvcmg-adapter-pieces-spec.md
- * for the full record of this distinction.
+ * duality is `coalesce` (division: two adjacent vertices -> one) and
+ * `splitVertex` (multiplication: one vertex -> two, at any two
+ * positions, whether or not it was ever a coalesce product) as general
+ * inverse operations, uncapped in either direction (6 -> 12 by repeated
+ * splitting is as valid as 6 -> 3 by repeated merging) — this is the
+ * pure meaning of "Reversible" in RVCMG's own name. THIS function only
+ * implements the narrower "undo a specific `coalesce()` call" case — it
+ * requires `sourceIds.length === 2` and refuses anything else. The
+ * fully general split (any vertex, merged-before or not) lives in
+ * `splitVertex.ts` instead, as a separate, more primitive operation —
+ * see docs/rvcmg-adapter-pieces-spec.md for the full record.
  */
 
 import type { Vec3 } from '../polyhedra/core';

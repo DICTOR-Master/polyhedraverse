@@ -1,10 +1,12 @@
 # RVCMG Adapter Pieces — Scoping and Status
 
 **Status (2026-09-15): the core math library (Stages 0-7) is done and
-fully verified. The physical product it exists to build — a family of 7
-standalone 3D-printable connector pieces — has four pieces derived and
-verified (Triangle-to-RD-H, Square-to-RD-H, Pentagon-to-RD-H,
-Golden-rhombus-to-RD-H) and 2 more scoped but not yet built. This doc is
+fully verified, including the general "multiply" primitive
+(`splitVertex()`) the divide-only original library was missing. All 6
+of the 6 planned adapter pieces are derived and verified (Triangle,
+Square, Pentagon, Golden-rhombus, DI-kite, DH-kite) — the family's
+math is complete; what remains is the physical layer (3D solid
+extrusion, face-attach/UI integration, both still unbuilt). This doc is
 both the scoping record and the running status/postmortem, mirroring
 `catalan-solids-spec.md`'s own role for that family.**
 
@@ -40,8 +42,8 @@ The system, direct from the user (2026-09-15):
   | Square-to-RD-H | unit square | cube | 4 | **done, verified** |
   | Pentagon-to-RD-H | regular pentagon, edge 1 | dodecahedron | 5 | **done, verified** |
   | Golden-rhombus-to-RD-H | rhombus, diagonal ratio φ:1 | rhombic triacontahedron | 4 | **done, verified** |
-  | DI-kite-to-RD-H | deltoidal icositetrahedron's own kite | deltoidal icositetrahedron | 4 | scoped, not derived |
-  | DH-kite-to-RD-H | deltoidal hexecontahedron's own kite | deltoidal hexecontahedron | 4 | scoped, not derived |
+  | DI-kite-to-RD-H | deltoidal icositetrahedron's own kite | deltoidal icositetrahedron | 4 | **done, verified** |
+  | DH-kite-to-RD-H | deltoidal hexecontahedron's own kite | deltoidal hexecontahedron | 4 | **done, verified** |
 
   Note the real payoff of the "state identity ≠ vertex count" rule
   (spec V7, enforced since Stage 2): Square/Golden-rhombus/DI-kite/
@@ -59,27 +61,30 @@ shared hex starting point. Two distinct things are both called
 "reversible" in this project, and conflating them caused real confusion
 mid-session — kept separate here on purpose:
 
-- **The mathematical mechanism (spec V6/§9/§25.6, `coalesce()`/
-  `separate()`)**: `coalesce` is a division/merge (two adjacent vertices
-  -> one), `separate` is its dual, a multiplication/split (one vertex
-  -> two, at any two chosen positions) — and the two are exact inverses
-  of each other. This duality is general, not limited to "undo a
-  specific past merge": nothing about it caps vertex count at 6 or
-  requires a vertex to have been a coalesce product before it can be
-  split — the framework can equally go 6 -> 3 (repeated division) or
-  6 -> 12 (repeated multiplication) or anywhere between. **Current
-  implementation status**: `separate()` today only accepts a vertex
-  with recorded `sourceIds` (i.e., undoing a specific prior `coalesce`
-  call) — it does not yet implement the fully general "split any single
-  vertex, merged-before or not, into two new ones," which is what the
-  full duality described above actually calls for. Not yet built; flag
-  before assuming full generality is already implemented.
+- **The mathematical mechanism — the pure meaning of "Reversible" in
+  RVCMG's own name, settled by the user (2026-09-15): "from here on in,
+  that is the pure meaning of reversible."** `coalesce()` is division
+  (two adjacent vertices -> one); `splitVertex()` (added this session)
+  is its full dual, multiplication (one vertex -> two, at any two
+  chosen positions, whether or not that vertex was ever a coalesce
+  product) — the two are exact inverses of each other, uncapped in
+  either direction: the framework can equally go 6 -> 3 (repeated
+  division) or 6 -> 12 (repeated multiplication) or anywhere between.
+  Proven directly, not just asserted: `splitVertex.test.ts` verifies
+  `coalesce(splitVertex(s))` reproduces `s` for every vertex on every
+  principal state, and `split-demos/{heptagon,octagon}.ts` build real
+  regular 7- and 8-gons FROM the hex interface by splitting rather than
+  merging — direct user request, "we can do an octagon to prove the
+  splitting via writing the splitting math, and heptagon." (`separate()`
+  remains in the library too, as the narrower "undo a specific known
+  `coalesce()` call" convenience — it's what the 6 adapter pieces' own
+  tests use, since each is undoing its own known construction.)
 - **Derivation-reversibility (this doc's own term, adopted 2026-09-15
   to stop overloading "reversible")**: the specific, narrower check
   every adapter piece's own test file runs — that undoing the piece's
-  own derivation steps (via the current, narrower `separate()`)
-  reproduces the source hex interface exactly. This is a correctness
-  check on the derivation CODE, not a claim about the finished piece.
+  own derivation steps (via `separate()`) reproduces the source hex
+  interface exactly. This is a correctness check on the derivation
+  CODE, not a claim about the finished physical piece.
 - **The physical meaning (direct from the user, refined
   2026-09-15)**: "a connection goes both ways, even back to source if
   required via another adapter" — a real piece, once attached to
@@ -241,9 +246,9 @@ than special-casing this one piece.
 
 Same final-shape discipline as the triangle: edge length checked (all 4
 exactly 1) AND a real right-angle check (core.ts's own documented
-lesson — equal edges alone don't rule out a rhombus), plus full
-reversibility confirmed through the real non-identity inverse
-deformation, not just the identity case.
+lesson — equal edges alone don't rule out a rhombus), plus
+derivation-reversibility confirmed through the real non-identity
+inverse deformation, not just the identity case.
 
 ### Pentagon-to-RD-H — done, verified (`pentagonToRdH.ts`)
 
@@ -263,7 +268,7 @@ unit length AND all 5 vertices equidistant from the centroid (a real
 *regular* pentagon, not merely an equilateral one — matching the same
 "edge length alone doesn't prove the shape" discipline as the square
 piece's right-angle check), with the correct 108° interior angle at
-every corner; full reversibility through the real inverse deformation.
+every corner; derivation-reversibility through the real inverse deformation.
 
 ### Golden-rhombus-to-RD-H — done, verified (`goldenRhombusToRdH.ts`)
 
@@ -295,16 +300,62 @@ Verified: all 4 edges exactly unit length (a rhombus is always
 equilateral — that alone doesn't distinguish it from a square, so also
 checked): the two diagonals are genuinely unequal (not accidentally a
 square), their ratio matches the measured φ exactly, and they're
-perpendicular (a rhombus's defining property); full reversibility
+perpendicular (a rhombus's defining property); derivation-reversibility
 through the real non-identity inverse deformation.
+
+### DI-kite-to-RD-H and DH-kite-to-RD-H — done, verified (`kiteToRdH.ts`, `diKiteToRdH.ts`, `dhKiteToRdH.ts`)
+
+The two hardest pieces, sharing one function (`deriveKiteToRdH`)
+parametrized by which Catalan solid's face to target — identical
+structure, genuinely different measured geometry. The first pieces with
+NO central symmetry to exploit (a kite has only a single mirror axis,
+not `v4 == -v1` point symmetry) and the first whose 4 target corners are
+genuinely non-interchangeable (different radii AND non-uniform angular
+spacing, unlike every prior target).
+
+This forced a real generalization of `assignTargetAngles`:
+`fitTargetPolygon` (shared.ts) tries all 4 cyclic role assignments
+(which hex group plays which kite corner), scoring each by actual 2D
+squared position error after its own best-fit rotation (a *weighted*
+circular mean — weight = `sourceRadius * targetRadius`, which is what
+correctly minimizes true Euclidean error rather than just angular
+error). **A real indexing bug was caught only by running it, not by
+inspection**: the first version of the piece's own final-shape
+verification assumed a fixed corner-role-to-output-position mapping,
+but `fitTargetPolygon` is free to pick ANY of the 4 assignments (all
+equally valid geometrically) — both kites came back correctly shaped
+but with edges "off by a rotation" against that wrong assumption. Fixed
+by having `fitTargetPolygon` also return `cornerIndexForGroup` (which
+measured corner each output vertex actually got), so verification
+checks the ACTUAL assigned role rather than a hardcoded position.
+
+Scale: since a kite has no single edge length (unlike every prior
+target), the SHORT edge was picked as the shared "= 1" reference — a
+documented judgment call, not a forced convention.
+
+Verified: exactly 2 short + 2 long edges (not a rhombus), both
+proportions matching the measured Catalan face exactly (cross-checked
+independently of the derivation's own internal edge-length logic), and
+the mirror-symmetry defining property itself (the two "side" corners
+equidistant from centroid with equal interior angles, located by their
+actual assigned role — not a hardcoded index); derivation-reversibility
+through the real non-identity inverse deformation; DI and DH confirmed
+to have genuinely different proportions (not interchangeable).
+
+## Splitting the OTHER way: proving the multiply direction
+
+Separate from the 6 adapter pieces (all of which divide the hex
+interface down): `app/lib/rvcmg/splitVertex.ts` adds the general
+"multiply" primitive the library was missing (see this doc's own
+"reversibility" section above), and `app/lib/rvcmg/split-demos/` proves
+it works by building real regular 7- and 8-gons FROM the hex interface
+by splitting rather than merging (direct user request). Not adapter
+pieces — no physical target shape names a 7- or 8-vertex Catalan/
+Platonic/Archimedean face — purely a demonstration that the duality is
+real and general, not a divide-only illusion.
 
 ### Outstanding
 
-- The 2 kite pieces (DI-kite, DH-kite) — same pipeline; the first
-  4-vertex targets with NO 2-fold central symmetry to exploit (a kite
-  has only a single mirror axis, not point symmetry), so the
-  "role-by-least-distortion" reasoning above will need re-deriving, not
-  just reusing.
 - **3D solid extrusion**: RVCMG's own states are flat 2D cross-sections
   (the hex face and the target face), not yet a real printable solid.
   The next real step for each piece is a tapered wall connecting the

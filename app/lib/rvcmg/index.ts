@@ -24,4 +24,10 @@ export { deriveTriangleToRdH, hemiRdStartState, RD_EDGE_LENGTH, HEMI_RD_INTERFAC
 export { deriveSquareToRdH } from './adapters/squareToRdH';
 export { derivePentagonToRdH } from './adapters/pentagonToRdH';
 export { deriveGoldenRhombusToRdH, GOLDEN_RATIO_MEASURED } from './adapters/goldenRhombusToRdH';
+export { deriveDIKiteToRdH } from './adapters/diKiteToRdH';
+export { deriveDHKiteToRdH } from './adapters/dhKiteToRdH';
+export { measureKiteFace } from './adapters/kiteToRdH';
+export type { KiteFaceMeasured, KitePieceOptions } from './adapters/kiteToRdH';
+export { fitTargetPolygon } from './adapters/shared';
+export type { AngleFitGroup, TargetCorner } from './adapters/shared';
 export { assignTargetAngles } from './adapters/shared';

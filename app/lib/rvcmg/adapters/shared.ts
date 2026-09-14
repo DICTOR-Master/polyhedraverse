@@ -47,3 +47,79 @@ export function assignTargetAngles(groupAngles: number[]): number[] {
 
   return groupAngles.map((_, i) => rankOf.get(i)! * step + bestFitPhase);
 }
+
+export interface AngleFitGroup {
+  angle: number;
+  /** Actual current distance from centroid — used for cost weighting, not display. */
+  radius: number;
+}
+
+export interface TargetCorner {
+  /** This corner's own angle relative to the target shape's own fixed reference orientation (NOT assumed uniform — a kite's 4 corners are not evenly spaced). */
+  relativeAngle: number;
+  radius: number;
+}
+
+/**
+ * Generalizes `assignTargetAngles` for a target polygon whose corners
+ * are NOT interchangeable (different radii and/or non-uniform angular
+ * spacing — a kite's own shape, first needed once the family's first
+ * asymmetric-beyond-a-rhombus piece came up). `assignTargetAngles`
+ * alone can't handle this: it assumes every rank's target sits at a
+ * shared, uniform radius, so rotating which hex group is "rank 0"
+ * never changes the result. Once target corners genuinely differ from
+ * each other, WHICH hex group plays which corner role is a real,
+ * separate choice (`n` possible cyclic assignments, all winding-
+ * preserving) on top of the continuous rotational phase — tries all
+ * `n`, scores each by real 2D squared position error after its own
+ * best-fit phase (a weighted circular mean — weighting by
+ * `sourceRadius * targetRadius` is exactly what minimizes true squared
+ * Euclidean error, not just angular error, for a fixed correspondence),
+ * and returns the lowest-cost assignment. Reduces to the same
+ * uniform-radius, uniform-spacing case `assignTargetAngles` handles
+ * when given a regular target (every shift then scores identically).
+ */
+export function fitTargetPolygon(groups: AngleFitGroup[], targetCorners: TargetCorner[]): { targetAngles: number[]; targetRadii: number[]; cornerIndexForGroup: number[] } {
+  const n = groups.length;
+  if (targetCorners.length !== n) throw new Error(`fitTargetPolygon: ${n} groups but ${targetCorners.length} target corners`);
+  const order = groups.map((_, i) => i).sort((a, b) => groups[a].angle - groups[b].angle);
+
+  let best: { shift: number; phase: number; cost: number } | null = null;
+  for (let shift = 0; shift < n; shift++) {
+    let sumSin = 0;
+    let sumCos = 0;
+    order.forEach((groupIndex, rank) => {
+      const corner = targetCorners[(rank + shift) % n];
+      const diff = groups[groupIndex].angle - corner.relativeAngle;
+      const weight = groups[groupIndex].radius * corner.radius;
+      sumSin += weight * Math.sin(diff);
+      sumCos += weight * Math.cos(diff);
+    });
+    const phase = Math.atan2(sumSin, sumCos);
+
+    let cost = 0;
+    order.forEach((groupIndex, rank) => {
+      const corner = targetCorners[(rank + shift) % n];
+      const g = groups[groupIndex];
+      const targetAngle = corner.relativeAngle + phase;
+      const dx = g.radius * Math.cos(g.angle) - corner.radius * Math.cos(targetAngle);
+      const dy = g.radius * Math.sin(g.angle) - corner.radius * Math.sin(targetAngle);
+      cost += dx * dx + dy * dy;
+    });
+
+    if (!best || cost < best.cost) best = { shift, phase, cost };
+  }
+
+  const { shift, phase } = best!;
+  const targetAngles = new Array(n) as number[];
+  const targetRadii = new Array(n) as number[];
+  const cornerIndexForGroup = new Array(n) as number[];
+  order.forEach((groupIndex, rank) => {
+    const cornerIndex = (rank + shift) % n;
+    const corner = targetCorners[cornerIndex];
+    targetAngles[groupIndex] = corner.relativeAngle + phase;
+    targetRadii[groupIndex] = corner.radius;
+    cornerIndexForGroup[groupIndex] = cornerIndex;
+  });
+  return { targetAngles, targetRadii, cornerIndexForGroup };
+}
