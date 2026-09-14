@@ -4,8 +4,8 @@
  * implementation plan — do not export anything here before its owning
  * stage has landed and passed its own acceptance checks.
  */
-export { HEMI_RD_INTERFACE, validateHemiRdInterface } from './hemiRdInterface';
-export type { HemiRdInterfaceReport } from './hemiRdInterface';
+export { HEMI_RD_INTERFACE, validateHemiRdInterface, hemiRdInterfaceFrame } from './hemiRdInterface';
+export type { HemiRdInterfaceReport, PlanarFrame } from './hemiRdInterface';
 export type { RvcmgVertex, RvcmgState, CoalescenceOp } from './types';
 export { statesApproximatelyEqual, parseCompoundId } from './types';
 export { coalesce } from './coalesce';
@@ -15,3 +15,5 @@ export { createStateGraph, addState, addTransition, findPath, isComposite } from
 export { interpolate, classifyState } from './morph';
 export type { VerifyTransitionOptions } from './verify';
 export { verifyTransition } from './verify';
+export type { AdapterPieceResult } from './adapters/triangleToRdH';
+export { deriveTriangleToRdH, hemiRdStartState, RD_EDGE_LENGTH, HEMI_RD_INTERFACE_UNIT } from './adapters/triangleToRdH';

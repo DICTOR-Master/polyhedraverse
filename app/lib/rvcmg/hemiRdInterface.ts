@@ -21,10 +21,14 @@
  * global convention exactly — `POLYHEDRA.RHOMBIC_DODECAHEDRON`'s own
  * circumradius-1 vertices (see `makeSpecByCircumradius` in core.ts), no
  * separate rescaling. In this frame the RD's own edge length is
- * `2 - sqrt(2)` (~0.5858), not 1 — Catalan solids are normalized by
- * circumradius, never by edge length (11 of the 13 have non-uniform edge
- * lengths; the RD is one of only 2 that happens not to, but the shared
- * convention is applied uniformly regardless).
+ * `sqrt(3)/2` (~0.8660), not 1 — measured directly from the registry
+ * (`dist(vertices[edges[0][0]], vertices[edges[0][1]])`), not assumed:
+ * Catalan solids are normalized by circumradius, never by edge length
+ * (11 of the 13 have non-uniform edge lengths; the RD is one of only 2
+ * that happens not to, but the shared convention is applied uniformly
+ * regardless). Adapter-piece derivations needing a shared physical unit
+ * across families (RD meeting a unit-edge tetrahedron/cube/etc.) must
+ * rescale by this factor first — see adapters/triangleToRdH.ts.
  *
  * The resulting hexagon is genuinely NOT regular — confirmed
  * computationally below, not assumed either way: it has D2h symmetry,
@@ -116,6 +120,36 @@ const { onPlane } = classifyVertices();
 
 /** v1..v6, ordered, boundary-adjacent — the real hemi-RD interface (spec §2.1). */
 export const HEMI_RD_INTERFACE: Vec3[] = orderPlanarLoop(onPlane);
+
+export interface PlanarFrame {
+  centroid: Vec3;
+  /** Unit vector in-plane, toward HEMI_RD_INTERFACE[0] — the same reference `orderPlanarLoop` itself sorted angles against. */
+  u: Vec3;
+  /** Unit vector in-plane, perpendicular to `u` (`normal x u`). */
+  w: Vec3;
+  normal: Vec3;
+}
+
+/**
+ * The hex interface's own local 2D frame (centroid + in-plane basis),
+ * recomputed from `HEMI_RD_INTERFACE` itself rather than exposing
+ * `orderPlanarLoop`'s internal variables directly — so any consumer
+ * (e.g. an adapter-piece derivation needing to place a NEW target
+ * polygon in this same plane, at this same centroid) shares exactly the
+ * same reference frame `HEMI_RD_INTERFACE`'s own vertices are expressed
+ * in, derived, not independently reconstructed.
+ */
+export function hemiRdInterfaceFrame(): PlanarFrame {
+  const centroid: Vec3 = [0, 0, 0];
+  for (const p of HEMI_RD_INTERFACE) {
+    centroid[0] += p[0] / HEMI_RD_INTERFACE.length;
+    centroid[1] += p[1] / HEMI_RD_INTERFACE.length;
+    centroid[2] += p[2] / HEMI_RD_INTERFACE.length;
+  }
+  const u = norm(sub(HEMI_RD_INTERFACE[0], centroid));
+  const w = cross(BISECTION_AXIS, u);
+  return { centroid, u, w, normal: BISECTION_AXIS };
+}
 
 export interface HemiRdInterfaceReport {
   problems: string[];
