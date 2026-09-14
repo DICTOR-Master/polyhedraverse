@@ -1657,9 +1657,9 @@ file's own Johnson-solids batches above).
 
 Core math library (`app/lib/rvcmg/`, Stages 0-7 of
 `docs/RVCMG-implementation-plan.md`): done, fully verified (`npm run
-verify:rvcmg-*` + `test:rvcmg`). Three physical pieces derived and
-verified: Triangle-to-RD-H, Square-to-RD-H, Pentagon-to-RD-H
-(`app/lib/rvcmg/adapters/`). 3 more pieces plus the real 3D solid
-extrusion (turning two flat cross-sections into a printable tapered
-piece) are scoped but not yet built — see the spec doc's own
-"Outstanding" section.
+verify:rvcmg-*` + `test:rvcmg`). Four physical pieces derived and
+verified: Triangle-to-RD-H, Square-to-RD-H, Pentagon-to-RD-H,
+Golden-rhombus-to-RD-H (`app/lib/rvcmg/adapters/`). 2 more pieces (the
+two kite variants) plus the real 3D solid extrusion (turning two flat
+cross-sections into a printable tapered piece) are scoped but not yet
+built — see the spec doc's own "Outstanding" section.

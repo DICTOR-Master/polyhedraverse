@@ -36,6 +36,7 @@
     "verify:rvcmg-triangle-to-rd-h": "tsx app/lib/rvcmg/adapters/triangleToRdH.test.ts",
     "verify:rvcmg-square-to-rd-h": "tsx app/lib/rvcmg/adapters/squareToRdH.test.ts",
     "verify:rvcmg-pentagon-to-rd-h": "tsx app/lib/rvcmg/adapters/pentagonToRdH.test.ts",
+    "verify:rvcmg-golden-rhombus-to-rd-h": "tsx app/lib/rvcmg/adapters/goldenRhombusToRdH.test.ts",
     "test:rvcmg": "tsx app/lib/rvcmg/rvcmg.test.ts",
     "test:e2e": "playwright test"
   },

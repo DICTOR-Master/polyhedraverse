@@ -2,11 +2,11 @@
 
 **Status (2026-09-15): the core math library (Stages 0-7) is done and
 fully verified. The physical product it exists to build — a family of 7
-standalone 3D-printable connector pieces — has three pieces derived and
-verified (Triangle-to-RD-H, Square-to-RD-H, Pentagon-to-RD-H) and 3 more
-scoped but not yet built. This doc is both the scoping record and the
-running status/postmortem, mirroring `catalan-solids-spec.md`'s own
-role for that family.**
+standalone 3D-printable connector pieces — has four pieces derived and
+verified (Triangle-to-RD-H, Square-to-RD-H, Pentagon-to-RD-H,
+Golden-rhombus-to-RD-H) and 2 more scoped but not yet built. This doc is
+both the scoping record and the running status/postmortem, mirroring
+`catalan-solids-spec.md`'s own role for that family.**
 
 ## The actual goal: a modular polyhedron connector system
 
@@ -39,7 +39,7 @@ The system, direct from the user (2026-09-15):
   | Triangle-to-RD-H | equilateral triangle, edge 1 | tetrahedron (D4) / octahedron (D8) | 3 | **done, verified** |
   | Square-to-RD-H | unit square | cube | 4 | **done, verified** |
   | Pentagon-to-RD-H | regular pentagon, edge 1 | dodecahedron | 5 | **done, verified** |
-  | Golden-rhombus-to-RD-H | rhombus, diagonal ratio φ:1 | rhombic triacontahedron | 4 | scoped, not derived |
+  | Golden-rhombus-to-RD-H | rhombus, diagonal ratio φ:1 | rhombic triacontahedron | 4 | **done, verified** |
   | DI-kite-to-RD-H | deltoidal icositetrahedron's own kite | deltoidal icositetrahedron | 4 | scoped, not derived |
   | DH-kite-to-RD-H | deltoidal hexecontahedron's own kite | deltoidal hexecontahedron | 4 | scoped, not derived |
 
@@ -240,11 +240,46 @@ unit length AND all 5 vertices equidistant from the centroid (a real
 piece's right-angle check), with the correct 108° interior angle at
 every corner; full reversibility through the real inverse deformation.
 
+### Golden-rhombus-to-RD-H — done, verified (`goldenRhombusToRdH.ts`)
+
+The first NON-regular target polygon in the family, and the first
+piece where the two structural "roles" (the untouched-vertex pair
+`v1`/`v4` vs. the two merged pairs) aren't interchangeable the way a
+square's 4 equal corners are — one role sits on the rhombus's LONG
+diagonal, the other on the SHORT one, and swapping them would produce
+the same abstract shape but a physically different (more distorted)
+piece.
+
+Structurally identical to Square-to-RD-H otherwise (same 2 merges, same
+untouched pair, same `assignTargetAngles` phase-fitting — a rhombus's
+diagonals are still exactly 90° apart in angular position around the
+centroid regardless of their unequal lengths, so the angle assignment
+carries over unchanged; only the per-corner RADIUS differs by role).
+
+Real values, measured directly from the registry rather than assumed
+from "it's supposed to be phi": `POLYHEDRA.RHOMBIC_TRIACONTAHEDRON`'s
+own face has edge length `1/phi` and diagonal ratio exactly `phi` in
+its own circumradius-1 frame — rescaled to unit edge (multiply by phi)
+for the shared adapter-piece scale. Which role gets the long vs. short
+diagonal was decided by least distortion, not arbitrarily: `v1`/`v4`
+already sit at radius 1 in this scale, closer to the long half-diagonal
+(~0.851) than the short one (~0.526), so they keep the long diagonal
+role — the smaller move of the two possible assignments.
+
+Verified: all 4 edges exactly unit length (a rhombus is always
+equilateral — that alone doesn't distinguish it from a square, so also
+checked): the two diagonals are genuinely unequal (not accidentally a
+square), their ratio matches the measured φ exactly, and they're
+perpendicular (a rhombus's defining property); full reversibility
+through the real non-identity inverse deformation.
+
 ### Outstanding
 
-- The other 3 pieces (Golden-rhombus, DI-kite, DH-kite) — same
-  pipeline, different (and for the first time, non-regular) target
-  polygon per piece. Not yet derived.
+- The 2 kite pieces (DI-kite, DH-kite) — same pipeline; the first
+  4-vertex targets with NO 2-fold central symmetry to exploit (a kite
+  has only a single mirror axis, not point symmetry), so the
+  "role-by-least-distortion" reasoning above will need re-deriving, not
+  just reusing.
 - **3D solid extrusion**: RVCMG's own states are flat 2D cross-sections
   (the hex face and the target face), not yet a real printable solid.
   The next real step for each piece is a tapered wall connecting the
