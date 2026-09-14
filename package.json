@@ -34,6 +34,8 @@
     "verify:rvcmg-morph": "tsx app/lib/rvcmg/morph.test.ts",
     "verify:rvcmg-verify": "tsx app/lib/rvcmg/verify.test.ts",
     "verify:rvcmg-split-vertex": "tsx app/lib/rvcmg/splitVertex.test.ts",
+    "verify:rvcmg-heptagon-split": "tsx app/lib/rvcmg/split-demos/heptagon.test.ts",
+    "verify:rvcmg-octagon-split": "tsx app/lib/rvcmg/split-demos/octagon.test.ts",
     "verify:rvcmg-triangle-to-rd-h": "tsx app/lib/rvcmg/adapters/triangleToRdH.test.ts",
     "verify:rvcmg-square-to-rd-h": "tsx app/lib/rvcmg/adapters/squareToRdH.test.ts",
     "verify:rvcmg-pentagon-to-rd-h": "tsx app/lib/rvcmg/adapters/pentagonToRdH.test.ts",
