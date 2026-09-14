@@ -7,3 +7,4 @@
 export { HEMI_RD_INTERFACE, validateHemiRdInterface } from './hemiRdInterface';
 export type { HemiRdInterfaceReport } from './hemiRdInterface';
 export type { RvcmgVertex, RvcmgState, CoalescenceOp } from './types';
+export { coalesce } from './coalesce';
