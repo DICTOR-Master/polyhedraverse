@@ -13,3 +13,5 @@ export { separate } from './separate';
 export type { StateGraph } from './stateGraph';
 export { createStateGraph, addState, addTransition, findPath, isComposite } from './stateGraph';
 export { interpolate, classifyState } from './morph';
+export type { VerifyTransitionOptions } from './verify';
+export { verifyTransition } from './verify';
