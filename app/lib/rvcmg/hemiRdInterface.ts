@@ -30,14 +30,12 @@
  * across families (RD meeting a unit-edge tetrahedron/cube/etc.) must
  * rescale by this factor first — see adapters/triangleToRdH.ts.
  *
- * The resulting hexagon is genuinely NOT regular — confirmed
- * computationally below, not assumed either way: it has D2h symmetry,
- * 4 short edges and 2 long opposite edges (the long edges connect the
- * RD's own degree-3 "cube-corner" vertices to each other; the short
- * edges connect a degree-3 vertex to a degree-4 "octahedron-direction"
- * vertex). A regular-hexagon approximation is explicitly disallowed past
- * this stage by the RVCMG implementation plan (spec §24) — this file is
- * the real geometry that replaces any such placeholder.
+ * The resulting hexagon's real shape — confirmed computationally
+ * below, not assumed — has D2h symmetry: 4 short edges and 2 long
+ * opposite edges (the long edges connect the RD's own degree-3
+ * "cube-corner" vertices to each other; the short edges connect a
+ * degree-3 vertex to a degree-4 "octahedron-direction" vertex). This is
+ * the real geometry every adapter-piece derivation is built on.
  */
 
 import { type Vec3, buildFaceConnectors, dist } from '../polyhedra/core';

@@ -3,6 +3,19 @@
  * have a geometrically defined inverse. Splits a previously-coalesced
  * vertex back into its two source vertices at caller-supplied positions,
  * restoring the exact pre-merge boundary topology.
+ *
+ * Scope note (2026-09-15, worth remembering): the full mathematical
+ * duality this implements is `coalesce` (division: two adjacent
+ * vertices -> one) and `separate` (multiplication: one vertex -> two,
+ * at any two positions) as general inverse operations — nothing in the
+ * math caps vertex count or requires a vertex to have been a coalesce
+ * product before it can be split (6 -> 12 by repeated splitting is as
+ * valid as 6 -> 3 by repeated merging). THIS function only implements
+ * the narrower "undo a specific `coalesce()` call" case — it requires
+ * `sourceIds.length === 2` and refuses anything else. Splitting an
+ * ORIGINAL (never-merged) vertex into two new ones — the fully general
+ * case — is not yet implemented; see docs/rvcmg-adapter-pieces-spec.md
+ * for the full record of this distinction.
  */
 
 import type { Vec3 } from '../polyhedra/core';

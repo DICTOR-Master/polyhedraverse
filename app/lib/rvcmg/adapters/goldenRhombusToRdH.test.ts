@@ -33,7 +33,7 @@ const d2v = sub(final.vertices[3].pos, final.vertices[1].pos);
 const cosBetween = dot(d1v, d2v) / (Math.hypot(...d1v) * Math.hypot(...d2v));
 check('the two diagonals are perpendicular (a defining property of any rhombus)', Math.abs(cosBetween) < 1e-9);
 
-// --- Full reversibility through the real (non-identity) deformation ---
+// --- Derivation-reversibility through the real (non-identity) deformation (a math check on the derivation itself, not a claim about the physical piece attaching/detaching) ---
 let back = final;
 for (let i = result.ops.length - 1; i >= 0; i--) {
   const op = result.ops[i];

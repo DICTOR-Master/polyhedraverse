@@ -29,7 +29,7 @@ const finalTriangle = result.states[3];
 const edgeLens = finalTriangle.vertices.map((v, i) => dist(v.pos, finalTriangle.vertices[(i + 1) % 3].pos));
 check('final triangle is equilateral with edge length exactly 1 (matches a unit-edge tetrahedron/octahedron face)', edgeLens.every((l) => Math.abs(l - 1) < 1e-9));
 
-// --- Full reversibility: undoing all 3 steps in reverse returns to the real hemi-RD hex interface ---
+// --- Derivation-reversibility: undoing all 3 steps in reverse returns to the real hemi-RD hex interface (a math check on the derivation itself, not a claim about the physical piece attaching/detaching) ---
 let back = finalTriangle;
 for (let i = result.ops.length - 1; i >= 0; i--) {
   const op = result.ops[i];

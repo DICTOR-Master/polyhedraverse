@@ -29,7 +29,7 @@ for (const v of final.vertices) {
 const radii = final.vertices.map((v) => dist(v.pos, centroid));
 check('all 5 vertices are equidistant from the centroid (a real regular pentagon, not just equilateral)', Math.max(...radii) - Math.min(...radii) < 1e-9);
 
-// --- Full reversibility through the real (non-identity) deformation ---
+// --- Derivation-reversibility through the real (non-identity) deformation (a math check on the derivation itself, not a claim about the physical piece attaching/detaching) ---
 const op = result.ops[0];
 const before = result.states[0];
 const mergedId = final.vertices.find((v) => v.sourceIds.length === 2)!.id;

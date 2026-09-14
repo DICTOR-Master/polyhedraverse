@@ -55,13 +55,40 @@ The system, direct from the user (2026-09-15):
 
 RVCMG's own coalescence/separation math (spec-numbered sections below)
 is the tool that derives each target polygon's exact geometry from the
-shared hex starting point, and — the point of Stage 4's reversibility
-work — models the physical fact that two connected pieces can also be
-taken apart again (`separate()` undoes `coalesce()` exactly). Per
-direct user correction during this work: "reversibility just means
-pieces can connect to each other" — the abstract math property
-(`separate(coalesce(s)) == s`) is in service of that physical fact, not
-an end in itself.
+shared hex starting point. Two distinct things are both called
+"reversible" in this project, and conflating them caused real confusion
+mid-session — kept separate here on purpose:
+
+- **The mathematical mechanism (spec V6/§9/§25.6, `coalesce()`/
+  `separate()`)**: `coalesce` is a division/merge (two adjacent vertices
+  -> one), `separate` is its dual, a multiplication/split (one vertex
+  -> two, at any two chosen positions) — and the two are exact inverses
+  of each other. This duality is general, not limited to "undo a
+  specific past merge": nothing about it caps vertex count at 6 or
+  requires a vertex to have been a coalesce product before it can be
+  split — the framework can equally go 6 -> 3 (repeated division) or
+  6 -> 12 (repeated multiplication) or anywhere between. **Current
+  implementation status**: `separate()` today only accepts a vertex
+  with recorded `sourceIds` (i.e., undoing a specific prior `coalesce`
+  call) — it does not yet implement the fully general "split any single
+  vertex, merged-before or not, into two new ones," which is what the
+  full duality described above actually calls for. Not yet built; flag
+  before assuming full generality is already implemented.
+- **Derivation-reversibility (this doc's own term, adopted 2026-09-15
+  to stop overloading "reversible")**: the specific, narrower check
+  every adapter piece's own test file runs — that undoing the piece's
+  own derivation steps (via the current, narrower `separate()`)
+  reproduces the source hex interface exactly. This is a correctness
+  check on the derivation CODE, not a claim about the finished piece.
+- **The physical meaning (direct from the user, refined
+  2026-09-15)**: "a connection goes both ways, even back to source if
+  required via another adapter" — a real piece, once attached to
+  something, can be detached again, and a chain of pieces can be
+  traversed/undone back the way it came. This is a property of the
+  app's face-attach/assembly system (already generic to any placed
+  shape), not something RVCMG's own math provides or has been tested
+  against — because these pieces have no real 3D solid geometry or
+  face-attach integration yet (see "Outstanding" below).
 
 ## The core library (Stages 0-7, `app/lib/rvcmg/`)
 
@@ -78,10 +105,8 @@ own `docs/build-plan.md` discipline). Full test suite:
   `hemisphereSplit()` classification rule (dot-product sign against a
   chosen face-normal axis) — re-verified against Polyhedraverse's own
   coordinates, not assumed to carry over. Confirmed computationally
-  (not assumed) to be a genuinely NON-regular hexagon: 4 edges of one
-  length, 2 opposite edges of a longer length (D2h symmetry) — the
-  implementation plan explicitly bans a regular-hexagon placeholder
-  past this stage, and this confirms why one would have been wrong.
+  (not assumed) to have D2h symmetry: 4 edges of one length, 2 opposite
+  edges of a longer length.
   **Correction (2026-09-15):** an early doc comment claimed RD's own
   edge length in this registry's circumradius-1 frame is `2-sqrt(2)`;
   never actually checked, and wrong — the real, measured value is

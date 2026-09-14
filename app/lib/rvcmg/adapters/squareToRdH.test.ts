@@ -27,7 +27,7 @@ const e2 = sub(final.vertices[3].pos, final.vertices[0].pos);
 const cosAngle = dot(e1, e2) / (Math.hypot(...e1) * Math.hypot(...e2));
 check('corners are real 90° angles (a genuine square, not a rhombus)', Math.abs(cosAngle) < 1e-9);
 
-// --- Full reversibility, including the non-identity deformation step ---
+// --- Derivation-reversibility, including the non-identity deformation step (a math check on the derivation itself, not a claim about the physical piece attaching/detaching) ---
 let back = final;
 for (let i = result.ops.length - 1; i >= 0; i--) {
   const op = result.ops[i];

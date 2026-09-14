@@ -4,11 +4,18 @@
 **Source spec:** `Reversible Vertex-Coalescence Morphing Geometry (RVCMG)` (Polyhedraverse project doc)
 **Target codebase conventions:** matches the existing `deltahedra.ts` Stage 1 geometry core (TypeScript, `Vec3` tuples, spec objects, `validateShape`-style verification functions, unit-edge normalization pattern)
 
+**Editorial note (2026-09-15, user correction):** the plan as originally
+written below included a caution about not substituting a "regular
+hexagon approximation" for the real hemi-RD interface. That caution
+came from the plan writer not having access to the real hemi-RD data
+at the time, not from the user (who never referred to a regular
+hexagon) — removed here since it doesn't belong in this project's own
+record. The real interface, once derived (Stage 1), was confirmed
+non-regular on its own merits, not in reference to that caution.
+
 ## How to use this plan
 
 Work one stage at a time. Each stage has its own deliverable file(s), its own acceptance tests, and must pass its own verification before the next stage starts — do not let stages bleed into each other (this mirrors the "don't make the interface mirror discovery order" principle from the Polyhedraverse to-do list). Commit at the end of each stage. Every operation implemented must be checked against the ten validity rules (V1–V10) and the eight verification requirements (25.1–25.8) from the RVCMG spec — cite the rule number in code comments where it's enforced, the way `deltahedra.ts` cites the geometric reasoning behind each shape's construction.
-
-Do not substitute a regular-hexagon approximation for the real hemi-rhombic-dodecahedron interface once Stage 1 numerical data is available (spec §24) — the regular hexagon is allowed only as a placeholder during early scaffolding, and must be swapped out before Stage 3 lands.
 
 ---
 
@@ -236,7 +243,7 @@ Checks, each corresponding to a spec subsection:
 ## Summary checklist for Claude Code
 
 - [ ] Stage 0 — scaffold
-- [ ] Stage 1 — real hemi-RD interface data (no regular-hexagon substitute past this point)
+- [ ] Stage 1 — real hemi-RD interface data
 - [ ] Stage 2 — types (`RvcmgVertex`, `RvcmgState`, `CoalescenceOp`)
 - [ ] Stage 3 — `coalesce()` with adjacency enforcement
 - [ ] Stage 4 — `separate()` + reversibility tests
