@@ -33,6 +33,7 @@
     "verify:rvcmg-state-graph": "tsx app/lib/rvcmg/stateGraph.test.ts",
     "verify:rvcmg-morph": "tsx app/lib/rvcmg/morph.test.ts",
     "verify:rvcmg-verify": "tsx app/lib/rvcmg/verify.test.ts",
+    "verify:rvcmg-split-vertex": "tsx app/lib/rvcmg/splitVertex.test.ts",
     "verify:rvcmg-triangle-to-rd-h": "tsx app/lib/rvcmg/adapters/triangleToRdH.test.ts",
     "verify:rvcmg-square-to-rd-h": "tsx app/lib/rvcmg/adapters/squareToRdH.test.ts",
     "verify:rvcmg-pentagon-to-rd-h": "tsx app/lib/rvcmg/adapters/pentagonToRdH.test.ts",
