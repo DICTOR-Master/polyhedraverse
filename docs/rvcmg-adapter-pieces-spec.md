@@ -3,12 +3,15 @@
 **Status (2026-09-15): the core math library (Stages 0-7) is done and
 fully verified, including the general "multiply" primitive
 (`splitVertex()`) the divide-only original library was missing. All 6
-of the 6 planned adapter pieces are derived and verified (Triangle,
-Square, Pentagon, Golden-rhombus, DI-kite, DH-kite) — the family's
-math is complete; what remains is the physical layer (3D solid
-extrusion, face-attach/UI integration, both still unbuilt). This doc is
-both the scoping record and the running status/postmortem, mirroring
-`catalan-solids-spec.md`'s own role for that family.**
+originally-planned adapter pieces are derived and verified (Triangle,
+Square, Pentagon, Golden-rhombus, DI-kite, DH-kite), plus a 7th
+(Regular-Hexagon) added afterward — the family's math is complete; what
+remains is the physical layer (3D solid extrusion, face-attach/UI
+integration, both still unbuilt). This doc is both the scoping record
+and the running status/postmortem, mirroring `catalan-solids-spec.md`'s
+own role for that family. The normative geometric specification this
+implements is `docs/RVCMG.md` (James Baker's own formal writeup,
+uploaded 2026-09-15).**
 
 ## The actual goal: a modular polyhedron connector system
 
@@ -34,7 +37,8 @@ The system, direct from the user (2026-09-15):
   adapter for each side and glue the two pieces together at their
   shared hex faces. RD-hemi's hex interface is the universal
   translation layer; RVCMG is the tool that shrinks it down to each
-  target polygon correctly. Six such adapters, one per target face:
+  target polygon correctly. Six such adapters, one per target face,
+  plus a 7th added later for a real hexagon-faced target (see below):
 
   | Piece | Target face | Target polyhedron | Vertices | Status |
   |---|---|---|---|---|
@@ -44,6 +48,7 @@ The system, direct from the user (2026-09-15):
   | Golden-rhombus-to-RD-H | rhombus, diagonal ratio φ:1 | rhombic triacontahedron | 4 | **done, verified** |
   | DI-kite-to-RD-H | deltoidal icositetrahedron's own kite | deltoidal icositetrahedron | 4 | **done, verified** |
   | DH-kite-to-RD-H | deltoidal hexecontahedron's own kite | deltoidal hexecontahedron | 4 | **done, verified** |
+  | Regular-Hexagon-to-RD-H | regular hexagon, edge 1 | any unit-edge hexagon-faced Archimedean solid (truncated tetrahedron/octahedron/cuboctahedron, ...) | 6 | **done, verified** (added later, "for the moment at least" — target polyhedron name left open) |
 
   Note the real payoff of the "state identity ≠ vertex count" rule
   (spec V7, enforced since Stage 2): Square/Golden-rhombus/DI-kite/
@@ -341,6 +346,56 @@ equidistant from centroid with equal interior angles, located by their
 actual assigned role — not a hardcoded index); derivation-reversibility
 through the real non-identity inverse deformation; DI and DH confirmed
 to have genuinely different proportions (not interchangeable).
+
+### Regular-Hexagon-to-RD-H — done, verified (`regularHexToRdH.ts`)
+
+Added later, direct user request ("one more adapter piece regular hex
+to RD please for the moment at least") — a real, legitimate 7th piece,
+**not** a reversion to the earlier "regular hexagon" misunderstanding
+this doc's own opening section describes and expunges. That correction
+was about the ACTUAL hemi-RD interface never being a regular hexagon
+(it genuinely isn't — D2h symmetry, confirmed computationally). This
+piece is different in kind: it intentionally TARGETS a real regular
+hexagon as its own distinct destination shape, exactly the way every
+other piece targets its own distinct destination shape (a triangle, a
+square, a kite, ...) — matching any unit-edge Archimedean solid with
+genuine regular hexagonal faces (truncated tetrahedron, truncated
+octahedron, truncated cuboctahedron, ...). Which specific one it's
+officially named after is left open "for the moment," since every
+unit-edge-normalized hexagon-faced Archimedean solid shares the exact
+same regular hexagon.
+
+Structurally unlike every other piece: same vertex count on both ends
+(6 -> 6), not a reduction. RVCMG has no single primitive for "reshape
+without changing count" (coalesce/splitVertex both change count by
+exactly one), so this is built as a genuine composite transformation
+(spec §8): coalesce `(v1,v2)` together [6 -> 5], deforming `v3..v6` to
+their final regular-hexagon corners in that same step since they never
+move again, then immediately `splitVertex()` the result back apart at
+the two REAL target corners [5 -> 6]. This is also the first REAL
+(non-synthetic) demonstration of spec §10/Stage 5's own
+"`S6(a) <-> S6(b)`" same-vertex-count state-graph edge —
+`stateGraph.test.ts` only ever exercised that case with a fabricated
+placeholder op, never real geometry.
+
+**A real bug, caught only by actually running the reversibility check,
+not by inspection**: undoing the composite requires two DIFFERENT
+inverse operations in sequence — `coalesce()` to undo the split,
+`separate()` to undo the original coalesce — and the intermediate
+recombined vertex needs BOTH its `id` and its `sourceIds` relabeled
+back to the true originals (`v1`/`v2`) before calling `separate()`, not
+just its `id`. Leaving `sourceIds` pointing at the composite's own
+transient split-step names (`v1r`/`v2r`) made `separate()` restore the
+right POSITIONS under the wrong ID LABELS — geometrically invisible in
+the final shape but a real failure of the reversibility check itself,
+caught directly rather than assumed fine because the shape looked
+right.
+
+Verified: all 6 edges exactly unit length, all 6 vertices equidistant
+from the centroid (a real regular hexagon, not merely equilateral),
+and the source hex confirmed genuinely non-regular first (so this
+piece is a real reshape, not a disguised no-op); full round-trip
+reversibility of the whole composite.
 
 ## Splitting the OTHER way: proving the multiply direction
 

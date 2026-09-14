@@ -1646,24 +1646,26 @@ for this family.
 ## RVCMG adapter pieces (2026-09-15)
 
 A new, separate feature: a small family of physical connector pieces
-(one universal hemi-rhombic-dodecahedron interface + 6 shape-specific
-adapters — triangle/square/pentagon/golden-rhombus/two kite variants)
-letting any two Platonic/Archimedean/Catalan solids bolt together
-through a shared, standardized joint. Full scoping, status, and
-postmortem in **`docs/rvcmg-adapter-pieces-spec.md`** (own doc, not
-duplicated here, matching how Catalan solids/prisms-antiprisms/star
-polyhedra/the 4D extension each got their own spec doc after this
-file's own Johnson-solids batches above).
+(one universal hemi-rhombic-dodecahedron interface + shape-specific
+adapters — triangle/square/pentagon/golden-rhombus/two kite variants/
+a regular hexagon) letting any two Platonic/Archimedean/Catalan solids
+bolt together through a shared, standardized joint. Normative geometric
+spec: **`docs/RVCMG.md`** (James Baker's own writeup). Full scoping,
+status, and postmortem in **`docs/rvcmg-adapter-pieces-spec.md`** (own
+doc, not duplicated here, matching how Catalan solids/prisms-
+antiprisms/star polyhedra/the 4D extension each got their own spec doc
+after this file's own Johnson-solids batches above).
 
 Core math library (`app/lib/rvcmg/`, Stages 0-7 of
 `docs/RVCMG-implementation-plan.md`): done, fully verified (`npm run
 verify:rvcmg-*` + `test:rvcmg`), including the general "multiply"
 primitive (`splitVertex()`) added mid-session once the original
 divide-only design was recognized as incomplete — proven both ways via
-`split-demos/{heptagon,octagon}.ts`. **All 6 physical pieces derived
-and verified**: Triangle-to-RD-H, Square-to-RD-H, Pentagon-to-RD-H,
-Golden-rhombus-to-RD-H, DI-kite-to-RD-H, DH-kite-to-RD-H
-(`app/lib/rvcmg/adapters/`) — the family's math is complete. The real
-3D solid extrusion (turning two flat cross-sections into a printable
+`split-demos/{heptagon,octagon}.ts`. **All 6 originally-planned physical
+pieces derived and verified, plus a 7th added afterward**:
+Triangle-to-RD-H, Square-to-RD-H, Pentagon-to-RD-H,
+Golden-rhombus-to-RD-H, DI-kite-to-RD-H, DH-kite-to-RD-H, and
+Regular-Hexagon-to-RD-H (`app/lib/rvcmg/adapters/`) — the family's math
+is complete. The real 3D solid extrusion (turning two flat cross-sections into a printable
 tapered piece) and face-attach/UI integration are still unbuilt — see
 the spec doc's own "Outstanding" section.

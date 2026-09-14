@@ -26,6 +26,7 @@ export { derivePentagonToRdH } from './adapters/pentagonToRdH';
 export { deriveGoldenRhombusToRdH, GOLDEN_RATIO_MEASURED } from './adapters/goldenRhombusToRdH';
 export { deriveDIKiteToRdH } from './adapters/diKiteToRdH';
 export { deriveDHKiteToRdH } from './adapters/dhKiteToRdH';
+export { deriveRegularHexToRdH } from './adapters/regularHexToRdH';
 export { measureKiteFace } from './adapters/kiteToRdH';
 export type { KiteFaceMeasured, KitePieceOptions } from './adapters/kiteToRdH';
 export { fitTargetPolygon } from './adapters/shared';

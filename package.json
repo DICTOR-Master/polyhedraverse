@@ -41,6 +41,7 @@
     "verify:rvcmg-pentagon-to-rd-h": "tsx app/lib/rvcmg/adapters/pentagonToRdH.test.ts",
     "verify:rvcmg-golden-rhombus-to-rd-h": "tsx app/lib/rvcmg/adapters/goldenRhombusToRdH.test.ts",
     "verify:rvcmg-kite-to-rd-h": "tsx app/lib/rvcmg/adapters/kiteToRdH.test.ts",
+    "verify:rvcmg-regular-hex-to-rd-h": "tsx app/lib/rvcmg/adapters/regularHexToRdH.test.ts",
     "test:rvcmg": "tsx app/lib/rvcmg/rvcmg.test.ts",
     "test:e2e": "playwright test"
   },
