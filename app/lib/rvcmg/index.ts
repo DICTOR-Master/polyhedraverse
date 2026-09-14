@@ -10,3 +10,5 @@ export type { RvcmgVertex, RvcmgState, CoalescenceOp } from './types';
 export { statesApproximatelyEqual, parseCompoundId } from './types';
 export { coalesce } from './coalesce';
 export { separate } from './separate';
+export type { StateGraph } from './stateGraph';
+export { createStateGraph, addState, addTransition, findPath, isComposite } from './stateGraph';
