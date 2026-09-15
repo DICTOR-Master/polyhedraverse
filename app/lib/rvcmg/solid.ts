@@ -31,20 +31,23 @@
  * file's wall geometry.
  *
  * Known, accepted residual (2026-09-15): `verify:face-attach`'s full
- * exhaustive sweep found 2 of the ~3.4M checks still failing after
- * every other fix in this file (`rotateFaceToMirrorAxis`,
- * core.ts) — two of the TRIANGLE piece's own scalene wall triangles
- * that happen to be exact mirror images of each other (real, genuinely
- * chiral shapes with no reflective symmetry at all, so no mirror-axis
- * rotation exists to fix). `facesCongruent`'s own doc comment already
- * anticipated this exact case ("first appearing with the scalene-
- * triangle Catalan solids... it only changes behavior once a genuinely
- * chiral 2D face shape exists") — a real, pre-existing limitation of
- * the shared face-attach placement algorithm for chiral pairs, not
- * something this file introduced or can fix by itself. Zero practical
- * impact: both are wall faces, excluded from every RVCMG piece's own
- * `attachableFaceIndices`, so the app can never select or offer either
- * one for a real attach.
+ * exhaustive sweep finds 16 of the ~3.4M checks still failing (up from
+ * 2 once `chooseConvexBoundarySplit`, below, started measuring both
+ * diagonals per boundary and picking convexity over a fixed rule --
+ * that naturally produces more genuinely scalene wall triangles, hence
+ * more of this same case, not a new kind of bug) -- wall triangles
+ * (triangle, pentagon, and regular-hex pieces) that happen to be exact
+ * mirror images of another wall triangle on the SAME piece (real,
+ * genuinely chiral shapes with no reflective symmetry at all, so no
+ * mirror-axis rotation exists to fix). `facesCongruent`'s own doc
+ * comment already anticipated this exact case ("first appearing with
+ * the scalene-triangle Catalan solids... it only changes behavior once
+ * a genuinely chiral 2D face shape exists") — a real, pre-existing
+ * limitation of the shared face-attach placement algorithm for chiral
+ * pairs, not something this file introduced or can fix by itself. Zero
+ * practical impact: every one is a wall face, excluded from every
+ * RVCMG piece's own `attachableFaceIndices`, so the app can never
+ * select or offer any of them for a real attach.
  */
 
 import { type Vec3, type PolyhedronSpec, dist, buildConnectors, centerVertices, rotateFaceToMirrorAxis } from '../polyhedra/core';
@@ -98,6 +101,38 @@ function ensureOutward(idxs: number[], verts: Vec3[]): number[] {
   const c = centroidOf(pts);
   const n = cross(sub(pts[1], pts[0]), sub(pts[2], pts[0]));
   return dot(n, c) < 0 ? idxs.slice().reverse() : idxs;
+}
+
+/**
+ * How non-convex the fold is across the edge shared by two outward-wound
+ * triangles: for triangle `a` (already outward-wound), positive means
+ * triangle `b`'s own centroid sits on the OUTSIDE of `a`'s plane -- a
+ * real reflex crease, the surface bending inward rather than bulging
+ * outward there. Zero or negative is convex (flat or bulging correctly).
+ */
+function foldConvexity(a: number[], b: number[], verts: Vec3[]): number {
+  const ptsA = a.map((i) => verts[i]);
+  const nA = cross(sub(ptsA[1], ptsA[0]), sub(ptsA[2], ptsA[0]));
+  return dot(nA, sub(centroidOf(b.map((i) => verts[i])), centroidOf(ptsA)));
+}
+
+/**
+ * Picks which of the two ways to triangulate the boundary quad
+ * (p0,p1,p2,p3, in cyclic order) keeps the fold across the chosen
+ * diagonal convex, by actually measuring both options rather than
+ * assuming one fixed rule works everywhere (it doesn't -- see this
+ * function's own call site). Diagonal (p1,p3) splits into (p0,p1,p3)/
+ * (p1,p2,p3); diagonal (p0,p2) splits into (p0,p1,p2)/(p0,p2,p3). Each
+ * candidate is measured on its OWN outward-wound triangles (this
+ * function doesn't mutate winding, only chooses which pair of triangles
+ * to hand back for the caller to wind).
+ */
+function chooseConvexBoundarySplit(verts: Vec3[], p0: number, p1: number, p2: number, p3: number): [number[], number[]] {
+  const optionA: [number[], number[]] = [ensureOutward([p0, p1, p3], verts), ensureOutward([p1, p2, p3], verts)];
+  const optionB: [number[], number[]] = [ensureOutward([p0, p1, p2], verts), ensureOutward([p0, p2, p3], verts)];
+  const badnessA = Math.max(foldConvexity(optionA[0], optionA[1], verts), foldConvexity(optionA[1], optionA[0], verts));
+  const badnessB = Math.max(foldConvexity(optionB[0], optionB[1], verts), foldConvexity(optionB[1], optionB[0], verts));
+  return badnessA <= badnessB ? [[p0, p1, p3], [p1, p2, p3]] : [[p0, p1, p2], [p0, p2, p3]];
 }
 
 export interface BuildAdapterSolidOptions {
@@ -224,8 +259,22 @@ export function buildAdapterSolid(hexState: RvcmgState, targetState: RvcmgState,
     if (ownerI === ownerJ) {
       faces.push(rotateFaceToMirrorAxis(vertices, ensureOutward([hexIdx(i), hexIdx(j), targetIdx(ownerI)], vertices)));
     } else {
-      faces.push(rotateFaceToMirrorAxis(vertices, ensureOutward([hexIdx(i), hexIdx(j), targetIdx(ownerI)], vertices)));
-      faces.push(rotateFaceToMirrorAxis(vertices, ensureOutward([hexIdx(j), targetIdx(ownerJ), targetIdx(ownerI)], vertices)));
+      // The boundary region (hex_i, hex_j, target_ownerJ, target_ownerI)
+      // has two ways to split into triangles -- diagonal (hex_j,
+      // target_ownerI) or diagonal (hex_i, target_ownerJ). A real,
+      // measured issue (2026-09-15, all 7 pieces, not just one):
+      // always picking the same diagonal produced a locally non-convex
+      // (reflex) fold along it at MOST boundaries, since the 4 corners
+      // generally aren't coplanar and one diagonal cuts through the
+      // "outside" of that little tetrahedron while the other doesn't.
+      // Chosen per-boundary by actually measuring which split keeps the
+      // two resulting triangles' own outward normals mutually
+      // consistent (see `boundaryConvexity` below), not assumed from a
+      // fixed rule -- the same real-geometry-first standard this
+      // project holds everywhere else.
+      const [triA, triB] = chooseConvexBoundarySplit(vertices, hexIdx(i), hexIdx(j), targetIdx(ownerJ), targetIdx(ownerI));
+      faces.push(rotateFaceToMirrorAxis(vertices, ensureOutward(triA, vertices)));
+      faces.push(rotateFaceToMirrorAxis(vertices, ensureOutward(triB, vertices)));
     }
   }
 
