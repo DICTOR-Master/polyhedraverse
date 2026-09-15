@@ -56,14 +56,22 @@ assert(near(dihedralAngleDeg(POLYHEDRA.D8)!, 109.47), `D8 dihedral angle ~= 109.
 assert(near(dihedralAngleDeg(POLYHEDRA.DODECAHEDRON)!, 116.57, 0.01), `DODECAHEDRON dihedral angle ~= 116.57deg: got ${dihedralAngleDeg(POLYHEDRA.DODECAHEDRON)}`);
 assert(near(dihedralAngleDeg(POLYHEDRA.D20)!, 138.19, 0.01), `D20 dihedral angle ~= 138.19deg: got ${dihedralAngleDeg(POLYHEDRA.D20)}`);
 
-// The real, current registry: exactly these 4 shapes are 4D-capable,
+// The real, current registry: exactly these 5 shapes are 4D-capable,
 // nothing more and nothing less -- computed against the live registry,
 // not a hand-typed expectation of what it "should" contain.
-const expected = new Set(['D4', 'CUBE', 'D8', 'DODECAHEDRON']);
+// PYRAMID_TRI_G2 (a graded-pyramid-family seed that is geometrically a
+// duplicate of D4 under its own registry id) is correctly included: the
+// classifier tests dihedral-angle uniformity on the shape's own real
+// vertex data, not a hand-maintained id list, so a geometrically
+// tetrahedral duplicate is expected to pass it too. See
+// docs/radial-cell-projection.md section 21.6 for how
+// radialProjection.ts's own parameter lookup routes this id to D4's
+// verified closures rather than needing a separate entry.
+const expected = new Set(['D4', 'CUBE', 'D8', 'DODECAHEDRON', 'PYRAMID_TRI_G2']);
 const actual = new Set(FOURD_CAPABLE_IDS);
 assert(
   actual.size === expected.size && [...expected].every((id) => actual.has(id)),
-  `FOURD_CAPABLE_IDS is exactly {D4, CUBE, D8, DODECAHEDRON}: got ${JSON.stringify(FOURD_CAPABLE_IDS)}`,
+  `FOURD_CAPABLE_IDS is exactly {D4, CUBE, D8, DODECAHEDRON, PYRAMID_TRI_G2}: got ${JSON.stringify(FOURD_CAPABLE_IDS)}`,
 );
 
 console.log(failures === 0 ? `\nAll checks passed.` : `\n${failures} check(s) FAILED.`);
