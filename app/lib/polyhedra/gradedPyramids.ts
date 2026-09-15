@@ -10,9 +10,11 @@
  * equilateral).
  *
  * Direct user request (2026-09-15): a "miscellaneous" family of
- * irregular add-on pieces including graded pyramids (grade 0 = low,
- * 1 = standard/regular height, 2 = tall, 3 = sharp/star-solid-like) on
- * various base shapes. This file prototypes the REGULAR-polygon-base
+ * irregular add-on pieces including graded pyramids (grade 1 = low,
+ * 2 = standard/regular height — matches whatever regular-faced pyramid
+ * already exists for that base — 3 = tall, 4 = sharp/star-solid-like;
+ * no grade 0, the scale starts at 1) on various base shapes. This file
+ * prototypes the REGULAR-polygon-base
  * case (triangular base first, per direct instruction, to validate the
  * apex-angle-to-height math before generalizing to square/pentagon/
  * hexagon and later to IRREGULAR bases (golden rhombus, kite, the real
@@ -53,23 +55,32 @@ export interface GradedPyramidGrade {
 
 /**
  * Default grading scale for a REGULAR n-gon base, proposed and
- * documented as an adjustable default (not a forced convention) —
- * grade 1 is fixed at the base's own "all lateral faces equilateral"
- * angle (`60` degrees always, since a unit-edge equilateral triangle's
- * own apex angle is 60 regardless of which base shape it's attached
- * to) so it reproduces whatever regular-faced pyramid already exists in
- * the registry for that base (D4 for a triangular base, J1 for square,
- * J2 for pentagonal). Grades 0/2/3 are round, clearly-progressive
- * choices: 100 (comfortably below the triangular base's own 120-degree
- * degenerate limit, clearly wider/flatter than grade 1), 40, and 20
- * (a deliberately sharp, star-polyhedra-evoking angle — the user's own
- * "sharp tall like star solids type" description).
+ * documented as an adjustable default (not a forced convention).
+ * Numbered 1-4 (no grade 0), direct user renumbering (2026-09-15):
+ *
+ * - Grade 1 (low): apex angle 90 degrees — chosen to match the user's
+ *   own "about half standard height" description exactly: for a
+ *   triangular base, half of grade 2's height (0.5 * 0.8165 = 0.4082)
+ *   corresponds to EXACTLY 90 degrees (`L = sqrt(h^2+R^2) = sqrt(0.5)`,
+ *   giving `apex angle = 2*asin(1/(2L)) = 90`) — a clean geometric
+ *   milestone (the two slant edges perpendicular at the apex), not a
+ *   coincidence worth losing by picking a different round angle number.
+ * - Grade 2 (standard): fixed at the base's own "all lateral faces
+ *   equilateral" angle (`60` degrees always, since a unit-edge
+ *   equilateral triangle's own apex angle is 60 regardless of which
+ *   base shape it's attached to) so it reproduces whatever regular-
+ *   faced pyramid already exists in the registry for that base (D4 for
+ *   a triangular base, J1 for square, J2 for pentagonal).
+ * - Grade 3 (tall): 40 degrees.
+ * - Grade 4 (highest/sharpest): 20 degrees — a deliberately sharp,
+ *   star-polyhedra-evoking angle, the user's own "sharp tall like star
+ *   solids type" description.
  */
 export const DEFAULT_GRADES: GradedPyramidGrade[] = [
-  { grade: 0, apexAngleDeg: 100 },
-  { grade: 1, apexAngleDeg: 60 },
-  { grade: 2, apexAngleDeg: 40 },
-  { grade: 3, apexAngleDeg: 20 },
+  { grade: 1, apexAngleDeg: 90 },
+  { grade: 2, apexAngleDeg: 60 },
+  { grade: 3, apexAngleDeg: 40 },
+  { grade: 4, apexAngleDeg: 20 },
 ];
 
 /** The degenerate apex-angle limit (degrees) for a regular n-gon base, beyond which no real pyramid exists. */

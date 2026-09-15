@@ -450,13 +450,13 @@ coalescence math: a new face-attach add-on family for irregular pieces
 — starting with **graded pyramids**, a base polygon topped by an apex
 whose height is driven by a target APEX ANGLE (the interior angle of
 each lateral triangular face, at the apex) rather than one fixed
-height. Four grades proposed and confirmed: 0 (low), 1 (standard —
-reproduces whatever regular-faced pyramid already exists for that
-base), 2 (tall), 3 (sharp, "like star solids"). Eventually this family
-is meant to also hold the 7 RVCMG adapter pieces once they're real
-solids, per the user's own framing — not a coincidence, a shared home
-for "attachable pieces that aren't one of the classical polyhedron
-families."
+height. Four grades, numbered 1-4 (no grade 0, direct user renumbering
+after the first proposal): 1 (low), 2 (standard — reproduces whatever
+regular-faced pyramid already exists for that base), 3 (tall), 4
+(sharp, "like star solids"). Eventually this family is meant to also
+hold the 7 RVCMG adapter pieces once they're real solids, per the
+user's own framing — not a coincidence, a shared home for "attachable
+pieces that aren't one of the classical polyhedron families."
 
 **Prototyped and verified for a triangular base**
 (`app/lib/polyhedra/gradedPyramids.ts`, `npm run
@@ -464,10 +464,15 @@ validate:graded-pyramids`): for a regular n-gon base of unit edge,
 `apexHeightForAngle(n, angle)` derives the exact height via
 `L = 1/(2*sin(angle/2))` (slant edge length) then
 `h = sqrt(L^2 - R^2)` (R = the base's own circumradius) — real
-geometry, not a fitted curve. Grade values (0/1/2/3 → 100°/60°/40°/20°)
-are a documented, adjustable default, not a forced convention; grade 1
+geometry, not a fitted curve. Grade values (1/2/3/4 → 90°/60°/40°/20°)
+are a documented, adjustable default, not a forced convention. Grade 2
 (60°) is fixed because that's the one apex angle that makes every
-lateral face equilateral, for ANY base shape.
+lateral face equilateral, for ANY base shape. Grade 1 (90°) is not an
+arbitrary round number either — it was chosen to match the user's own
+"about half standard height" description exactly: half of grade 2's
+height, for a triangular base, works out to precisely 90° (confirmed
+computationally, not fitted), a clean milestone (the two slant edges
+literally perpendicular at the apex).
 
 **Confirmed computationally, a genuinely useful side effect of building
 this**: a pyramid degenerates (`h -> 0`) exactly at apex angle
@@ -480,16 +485,16 @@ classification, it's geometrically impossible, confirmed directly
 (`apexHeightForAngle(6, 60)` correctly throws rather than returning a
 degenerate or fake height).
 
-Grade 1 on a triangular base was confirmed to exactly reproduce the
-existing `D4` (regular tetrahedron), vertex for vertex — a strong
-correctness check on the apex-angle formula itself, not just an
-isolated new construction.
+Grade 2 (standard) on a triangular base was confirmed to exactly
+reproduce the existing `D4` (regular tetrahedron), vertex for vertex —
+a strong correctness check on the apex-angle formula itself, not just
+an isolated new construction.
 
 ### Outstanding (graded pyramids)
 
 - Square, pentagonal, and hexagonal REGULAR bases — same formula,
-  should be close to a parameter change (verify grade 1 reproduces J1/
-  J2 where those exist; hexagonal base has NO valid grade-1 by the
+  should be close to a parameter change (verify grade 2 reproduces J1/
+  J2 where those exist; hexagonal base has NO valid grade-2 by the
   degenerate-limit finding above, needs its own decision for what
   "standard" means there, if anything).
 - IRREGULAR bases (golden rhombus, kite, the real hemi-RD hexagon) —
