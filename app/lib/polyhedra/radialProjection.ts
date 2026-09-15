@@ -176,7 +176,7 @@ export const FOUR_D_SHAPE_PARAMS: Record<string, FourDShapeParams[]> = {
  * D4-congruent (or CUBE-/D8-/DODECAHEDRON-congruent) duplicate resolves
  * correctly without needing its own entry here.
  */
-function resolveParamsKey(spec: PolyhedronSpec): string | undefined {
+export function resolveParamsKey(spec: PolyhedronSpec): string | undefined {
   if (FOUR_D_SHAPE_PARAMS[spec.id]) return spec.id;
   for (const key of Object.keys(FOUR_D_SHAPE_PARAMS)) {
     const base = POLYHEDRA[key];

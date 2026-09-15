@@ -21,6 +21,7 @@ import { collectSubtree, findParentConnection, hasCycle } from '../lib/graph';
 import { FOURD_CAPABLE_IDS } from '../lib/polyhedra/fourD';
 import { edgeClosingCorrection } from '../lib/polyhedra/fold4';
 import { buildWallPrism, duoprismBuildDepth } from '../lib/polyhedra/duoprism';
+import { buildRpcComplex, buildSyntheticCellSpec, type RpcComplex } from '../lib/polyhedra/rpcBuild';
 
 /**
  * The Miscellaneous family's face-attach eligibility policy, in one
@@ -521,6 +522,12 @@ export default function ShapeViewer({
   // never part of either node's own PlacedShape, since a wall-prism
   // isn't itself an assembly node.
   const duoprismMeshesRef = useRef<Map<string, THREE.Mesh>>(new Map());
+  // RPC-build: buildRpcComplex's own result is fully deterministic given
+  // just (seedSpecId, target) -- cached here, keyed by that pair, so
+  // switching between "Build next shell"/"Remove last shell" clicks (or
+  // multiple independent RPC roots sharing the same seed+target) never
+  // recomputes the whole 4-polytope complex from scratch each time.
+  const rpcComplexCacheRef = useRef<Map<string, RpcComplex>>(new Map());
   const onFoldConnectionsChangeRef = useRef(onFoldConnectionsChange);
   const onSelectionChangeRef = useRef(onSelectionChange);
   const onPendingChangeRef = useRef(onPendingChange);
@@ -823,6 +830,71 @@ export default function ShapeViewer({
       onNodeSelectionChangeRef.current?.(null);
     };
 
+    /** buildRpcComplex is fully deterministic given (seedSpecId, target) -- cached per that pair for the life of this scene (rpcComplexCacheRef), not recomputed on every click. */
+    const getRpcComplex = (seedSpecId: string, target: string): RpcComplex => {
+      const key = `${seedSpecId}::${target}`;
+      let complex = rpcComplexCacheRef.current.get(key);
+      if (!complex) {
+        complex = buildRpcComplex(seedSpecId, target);
+        rpcComplexCacheRef.current.set(key, complex);
+      }
+      return complex;
+    };
+
+    /**
+     * Recomputes and republishes the full NodeSelection for `placed`
+     * (must be the CURRENT selectedNodeRef.current) -- shared by the
+     * click handler below (previously duplicated inline).
+     */
+    const publishNodeSelection = (placed: PlacedShape) => {
+      const { specId, nodeId } = placed.object.userData as ShapeObjectUserData;
+      const faceIndex = selectedFaceIndexRef.current;
+      const faceSize = faceIndex !== null ? POLYHEDRA[specId].faces[faceIndex].length : null;
+      const faceOccupied = faceIndex !== null ? placed.faceOccupied[faceIndex] : true;
+      // Vertex count alone isn't enough once irregular-faced families exist
+      // (Catalan solids): a rhombus and a kite can both have 4 vertices
+      // without being the same shape at all, so gluing one onto the other
+      // wouldn't sit flush. facesCongruent checks the real edge-length +
+      // angle sequence — reduces to plain vertex-count matching for every
+      // regular-faced shape already in this registry (any two same-size
+      // faces there already ARE the same regular polygon), so this changes
+      // nothing for existing families and only starts mattering once
+      // irregular ones are selectable. See docs/catalan-solids-spec.md.
+      const targetFace = faceIndex !== null ? POLYHEDRA[specId].faces[faceIndex] : null;
+      const targetVertices = POLYHEDRA[specId].vertices;
+      // Miscellaneous-family eligibility policy (direct user instruction,
+      // scoped to this one family so Catalan solids' own irregular
+      // rhombi/kite faces keep face-attaching exactly as already shipped):
+      // a graded pyramid's pointed (non-regular lateral) face is never a
+      // valid attach surface at all, on either side of the connection —
+      // "so pointed pyramids don't stick to each other." RVCMG connector
+      // pieces use a different, more precise rule (isFaceEligibleForAttach
+      // below): exactly their two real ports, regardless of regularity.
+      const targetFaceEligible = faceIndex !== null && targetFace !== null && isFaceEligibleForAttach(POLYHEDRA[specId], faceIndex);
+      const faceAttachOptions =
+        faceIndex !== null && targetFaceEligible && targetFace !== null && !faceOccupied
+          ? POLYHEDRON_IDS.filter((id) =>
+              POLYHEDRA[id].faces.some(
+                (f, fi) => isFaceEligibleForAttach(POLYHEDRA[id], fi) && facesCongruent(targetVertices, targetFace, POLYHEDRA[id].vertices, f),
+              ),
+            )
+          : [];
+      const faceFold4Eligible = faceIndex !== null && !faceOccupied && FOURD_CAPABLE_IDS.includes(specId);
+      const faceDuoprismEligible = faceFold4Eligible;
+
+      onNodeSelectionChangeRef.current?.({
+        nodeId,
+        specId,
+        rewriteTarget: REWRITE_TARGET[specId] ?? null,
+        faceIndex,
+        faceSize,
+        faceOccupied,
+        faceAttachOptions,
+        faceFold4Eligible,
+        faceDuoprismEligible,
+      });
+    };
+
     const cancelAttach = () => {
       const pending = pendingRef.current;
       if (!pending) return;
@@ -923,9 +995,33 @@ export default function ShapeViewer({
     const loadAssembly = (assembly: Assembly) => {
       resetScene();
       const byNodeId = new Map<string, PlacedShape>();
+      const nodeById = new Map(assembly.nodes.map((n) => [n.id, n]));
+      // rpc4d children need their own warped synthetic geometry re-derived
+      // from the root's rpcPolytope + this connection's own cellId --
+      // never the plain registry shape their `shape` field names (see
+      // AssemblyNode.rpcPolytope's own doc comment: "fully re-derive
+      // geometry from rpcPolytope+cellId on load"). Indexed by child node
+      // id before the placement loop below, since connections are
+      // otherwise only processed AFTER every node is already placed.
+      const rpc4dParentByNode = new Map<string, Assembly['connections'][number]>();
+      for (const c of assembly.connections) {
+        if (!c.orphaned && c.kind === 'rpc4d') rpc4dParentByNode.set(c.nodeB, c);
+      }
 
       for (const node of assembly.nodes) {
-        const spec = POLYHEDRA[node.shape];
+        const rpcConn = rpc4dParentByNode.get(node.id);
+        let spec: PolyhedronSpec | undefined;
+        if (rpcConn) {
+          const rootNode = nodeById.get(rpcConn.nodeA);
+          if (rootNode?.rpcPolytope && rpcConn.cellId !== undefined) {
+            const complex = getRpcComplex(rootNode.rpcPolytope.seedSpecId, rootNode.rpcPolytope.target);
+            const cell = complex.cells.find((c) => c.id === rpcConn.cellId);
+            const cellSpec = POLYHEDRA[complex.seedSpecId];
+            if (cell && cellSpec) spec = buildSyntheticCellSpec(cellSpec, cell.id, cell.vertices3D);
+          }
+        } else {
+          spec = POLYHEDRA[node.shape];
+        }
         if (!spec) continue; // isValidAssembly already guards against this in practice
         const placed = buildPlacedShape(spec, node.id);
         placed.object.position.fromArray(node.transform.position);
@@ -943,6 +1039,14 @@ export default function ShapeViewer({
         if (conn.kind === 'face') {
           if (a) a.faceOccupied[conn.vertexA] = true;
           if (b) b.faceOccupied[conn.vertexB] = true;
+          continue;
+        }
+        if (conn.kind === 'rpc4d') {
+          // Nothing left to do here -- geometry was already re-derived
+          // in the placement loop above, and rpc4d reserves no face/
+          // vertex slot on the root the way face/duoprism/vertex attach
+          // do (vertexA/vertexB are unused placeholders, always 0 --
+          // see AssemblyConnection's own doc comment).
           continue;
         }
         if (conn.kind === 'duoprism') {
@@ -1625,6 +1729,15 @@ export default function ShapeViewer({
           }
         } else if (parentConn.kind === 'face') {
           if (parentPlaced) parentPlaced.faceOccupied[parentConn.vertexA] = false;
+        } else if (parentConn.kind === 'rpc4d') {
+          // rpc4d children reserve nothing on the root the way a vertex/
+          // face/duoprism attach does -- vertexA/vertexB are always 0
+          // unused placeholders (see AssemblyConnection's own doc
+          // comment), never a real vertex index to free. Falling through
+          // to the vertex-kind branch below would wrongly grab the
+          // root's own vertex 0 and reset ITS occupied state even when
+          // vertex 0 is independently in real use by an unrelated
+          // vertex-attach child -- a real bug caught while writing this.
         } else {
           const parentSphere = parentPlaced?.vertexGroup.children[parentConn.vertexA] as THREE.Mesh | undefined;
           if (parentSphere) {
@@ -2003,53 +2116,7 @@ export default function ShapeViewer({
       selectedNodeRef.current = hoveredNode;
       selectedFaceIndexRef.current = hoveredFaceIndexRef.current;
       applyNodeAppearance(hoveredNode, true);
-
-      const { specId, nodeId } = hoveredNode.object.userData as ShapeObjectUserData;
-      const faceIndex = selectedFaceIndexRef.current;
-      const faceSize = faceIndex !== null ? POLYHEDRA[specId].faces[faceIndex].length : null;
-      const faceOccupied = faceIndex !== null ? hoveredNode.faceOccupied[faceIndex] : true;
-      // Vertex count alone isn't enough once irregular-faced families exist
-      // (Catalan solids): a rhombus and a kite can both have 4 vertices
-      // without being the same shape at all, so gluing one onto the other
-      // wouldn't sit flush. facesCongruent checks the real edge-length +
-      // angle sequence — reduces to plain vertex-count matching for every
-      // regular-faced shape already in this registry (any two same-size
-      // faces there already ARE the same regular polygon), so this changes
-      // nothing for existing families and only starts mattering once
-      // irregular ones are selectable. See docs/catalan-solids-spec.md.
-      const targetFace = faceIndex !== null ? POLYHEDRA[specId].faces[faceIndex] : null;
-      const targetVertices = POLYHEDRA[specId].vertices;
-      // Miscellaneous-family eligibility policy (direct user instruction,
-      // scoped to this one family so Catalan solids' own irregular
-      // rhombi/kite faces keep face-attaching exactly as already shipped):
-      // a graded pyramid's pointed (non-regular lateral) face is never a
-      // valid attach surface at all, on either side of the connection —
-      // "so pointed pyramids don't stick to each other." RVCMG connector
-      // pieces use a different, more precise rule (isFaceEligibleForAttach
-      // below): exactly their two real ports, regardless of regularity.
-      const targetFaceEligible = faceIndex !== null && targetFace !== null && isFaceEligibleForAttach(POLYHEDRA[specId], faceIndex);
-      const faceAttachOptions =
-        faceIndex !== null && targetFaceEligible && targetFace !== null && !faceOccupied
-          ? POLYHEDRON_IDS.filter((id) =>
-              POLYHEDRA[id].faces.some(
-                (f, fi) => isFaceEligibleForAttach(POLYHEDRA[id], fi) && facesCongruent(targetVertices, targetFace, POLYHEDRA[id].vertices, f),
-              ),
-            )
-          : [];
-      const faceFold4Eligible = faceIndex !== null && !faceOccupied && FOURD_CAPABLE_IDS.includes(specId);
-      const faceDuoprismEligible = faceFold4Eligible;
-
-      onNodeSelectionChangeRef.current?.({
-        nodeId,
-        specId,
-        rewriteTarget: REWRITE_TARGET[specId] ?? null,
-        faceIndex,
-        faceSize,
-        faceOccupied,
-        faceAttachOptions,
-        faceFold4Eligible,
-        faceDuoprismEligible,
-      });
+      publishNodeSelection(hoveredNode);
     };
 
     const onKeyDown = (event: KeyboardEvent) => {

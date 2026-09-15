@@ -7,6 +7,7 @@
 
 import { POLYHEDRA } from './polyhedra';
 import { FOURD_CAPABLE_IDS } from './polyhedra/fourD';
+import { FOUR_D_SHAPE_PARAMS, resolveParamsKey } from './polyhedra/radialProjection';
 
 export interface AssemblyNode {
   id: string;
@@ -15,6 +16,19 @@ export interface AssemblyNode {
     position: [number, number, number];
     quaternion: [number, number, number, number]; // x, y, z, w
   };
+  // RPC-build (radial-perspective click-to-build): set ONLY on a true
+  // RPC-build root (the node an 'rpc4d' connection's nodeA points at,
+  // i.e. cell 0 of some 4-polytope closure) — every other node
+  // (including every rpc4d CHILD cell) leaves this unset. `seedSpecId`
+  // is the real registry id whose closures apply (e.g. 'D4'); `target`
+  // is which of that seed's (up to 3) closures this root is building
+  // (e.g. '16-cell', '5-cell', '600-cell' — see
+  // app/lib/polyhedra/radialProjection.ts's own FOUR_D_SHAPE_PARAMS).
+  // The root's own `shape`/`transform` are already ordinary — this is
+  // the only extra bookkeeping a root needs; every child cell's own
+  // geometry is fully re-derived from this field + its own connection's
+  // `cellId` on load, never stored directly (see rpcBuild.ts).
+  rpcPolytope?: { seedSpecId: string; target: string };
 }
 
 export interface AssemblyConnection {
@@ -37,7 +51,10 @@ export interface AssemblyConnection {
   // fields keeps exactly one pair of "which connector on each side"
   // fields, disambiguated by this tag, instead of two pairs where only
   // one is ever meaningful at a time.
-  kind?: 'vertex' | 'face' | 'duoprism';
+  // 'rpc4d': nodeA is an RPC-build root (see AssemblyNode.rpcPolytope),
+  // nodeB is one specific cell of that root's own 4-polytope closure —
+  // see the cellId/shell fields below.
+  kind?: 'vertex' | 'face' | 'duoprism' | 'rpc4d';
   // Set by Stage 7's rewrite rule when a node's shape changes and no
   // compatible vertex exists on the new shape for this connection's side.
   // vertexA/vertexB then keep their last-known (possibly now out-of-range
@@ -79,6 +96,21 @@ export interface AssemblyConnection {
   // index on the SAME shape as `vertexA`/`vertexB` (never repeating
   // vertexA itself or any other entry).
   duoprismExtraFaces?: number[];
+  // RPC-build only (kind === 'rpc4d'). `cellId` is which cell of the
+  // root's own deterministic complex nodeB represents (re-derive its
+  // geometry via app/lib/polyhedra/rpcBuild.ts's buildRpcComplex, never
+  // stored). `shell` is that cell's own BFS ring distance from the
+  // root — technically redundant with cellId+a recomputed complex, but
+  // cheap to store and avoids recomputing the whole complex just to
+  // answer "which shell is this" during render/UI, matching this
+  // codebase's general preference for storing what's cheap and
+  // deriving the rest. There's no natural vertex/face pairing for this
+  // connection kind (unlike 'face'/'duoprism', which reuse
+  // vertexA/vertexB meaningfully) — vertexA/vertexB are always 0 here,
+  // unused placeholders kept only because the schema's structural check
+  // (isConnection) requires them to be present numbers regardless of kind.
+  cellId?: number;
+  shell?: number;
 }
 
 export interface Assembly {
@@ -104,7 +136,13 @@ function isNode(v: unknown): v is AssemblyNode {
   if (typeof n.id !== 'string' || typeof n.shape !== 'string') return false;
   if (typeof n.transform !== 'object' || n.transform === null) return false;
   const t = n.transform as Record<string, unknown>;
-  return isVec3(t.position) && isQuat(t.quaternion);
+  if (!isVec3(t.position) || !isQuat(t.quaternion)) return false;
+  if (n.rpcPolytope !== undefined) {
+    if (typeof n.rpcPolytope !== 'object' || n.rpcPolytope === null) return false;
+    const rp = n.rpcPolytope as Record<string, unknown>;
+    if (typeof rp.seedSpecId !== 'string' || typeof rp.target !== 'string') return false;
+  }
+  return true;
 }
 
 function isConnection(v: unknown): v is AssemblyConnection {
@@ -118,7 +156,7 @@ function isConnection(v: unknown): v is AssemblyConnection {
   ) {
     return false;
   }
-  if (c.kind !== undefined && c.kind !== 'vertex' && c.kind !== 'face' && c.kind !== 'duoprism') return false;
+  if (c.kind !== undefined && c.kind !== 'vertex' && c.kind !== 'face' && c.kind !== 'duoprism' && c.kind !== 'rpc4d') return false;
   if (c.orphaned !== undefined && typeof c.orphaned !== 'boolean') return false;
   // Structural check only (no node/shape cross-reference here -- that
   // needs isValidAssembly below, which has nodeById available): fold4
@@ -127,6 +165,13 @@ function isConnection(v: unknown): v is AssemblyConnection {
   if (c.duoprismExtraFaces !== undefined) {
     if (c.kind !== 'duoprism') return false;
     if (!Array.isArray(c.duoprismExtraFaces) || !c.duoprismExtraFaces.every((f) => typeof f === 'number' && Number.isInteger(f) && f >= 0)) return false;
+  }
+  if (c.cellId !== undefined || c.shell !== undefined) {
+    if (c.kind !== 'rpc4d') return false;
+    if (typeof c.cellId !== 'number' || !Number.isInteger(c.cellId) || c.cellId < 0) return false;
+    if (typeof c.shell !== 'number' || !Number.isInteger(c.shell) || c.shell < 0) return false;
+  } else if (c.kind === 'rpc4d') {
+    return false; // rpc4d always carries cellId + shell
   }
   return true;
 }
@@ -187,6 +232,42 @@ export function isValidAssembly(v: unknown): v is Assembly {
       if (uniqueFaces.size !== allFaces.length) return false; // no duplicate/repeated face indices
       if (extras.some((f) => f < 0 || f >= faceCount)) return false;
     }
+    // RPC-build: nodeA must be a real root (rpcPolytope set, pointing at
+    // a real closure of a real seed), cellId must be a real cell of that
+    // closure, and nodeB's own shape must match whichever seed that
+    // closure's cells actually are (the 600-cell's own cells are always
+    // tetrahedra, i.e. 'D4', regardless of which D4-congruent shape the
+    // root itself used — see rpcBuild.ts's buildRpcComplex doc comment).
+    if (conn.kind === 'rpc4d') {
+      const rp = a.rpcPolytope;
+      if (!rp || !(rp.seedSpecId in POLYHEDRA)) return false;
+      const cellCount = closureCellCount(rp.seedSpecId, rp.target);
+      if (cellCount === undefined) return false;
+      if (conn.cellId === undefined || conn.cellId < 0 || conn.cellId >= cellCount) return false;
+      const cellShapeId = rp.target === '600-cell' ? 'D4' : rp.seedSpecId;
+      if (b.shape !== cellShapeId) return false;
+    }
+  }
+  // No duplicate cellId under the same rpc4d root.
+  const cellIdsByRoot = new Map<string, Set<number>>();
+  for (const conn of v.connections) {
+    if (conn.orphaned || conn.kind !== 'rpc4d' || conn.cellId === undefined) continue;
+    const seen = cellIdsByRoot.get(conn.nodeA) ?? new Set<number>();
+    if (seen.has(conn.cellId)) return false;
+    seen.add(conn.cellId);
+    cellIdsByRoot.set(conn.nodeA, seen);
   }
   return true;
+}
+
+/** The real cell count of `target` (one of an rpc4d root's real closures for `seedSpecId`), or undefined if it's not a real closure of that seed. Reuses radialProjection.ts's own resolveParamsKey (the exact congruence check buildCellComplex itself uses, e.g. for PYRAMID_TRI_G2 resolving to D4's params) rather than duplicating it. The 600-cell isn't in FOUR_D_SHAPE_PARAMS (it's built via dualize(), not a direct theta) so its cell count (600, the standard, independently-verified 600-cell count — see docs/radial-cell-projection.md section 21.3) is hardcoded here, gated on seedSpecId actually being D4-congruent. */
+function closureCellCount(seedSpecId: string, target: string): number | undefined {
+  const seed = POLYHEDRA[seedSpecId];
+  if (!seed) return undefined;
+  const key = resolveParamsKey(seed);
+  if (target === '600-cell') {
+    return key === 'D4' ? 600 : undefined;
+  }
+  if (!key) return undefined;
+  return FOUR_D_SHAPE_PARAMS[key].find((o) => o.name === target)?.cellCount;
 }
