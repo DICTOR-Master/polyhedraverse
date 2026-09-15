@@ -22,6 +22,7 @@
     "verify:graph": "tsx scripts/verify-graph.ts",
     "verify:face-connectors": "tsx scripts/verify-face-connectors.ts",
     "verify:face-attach": "tsx scripts/verify-face-attach.ts",
+    "verify:misc-face-eligibility": "tsx scripts/verify-misc-face-eligibility.ts",
     "verify:face-twist": "tsx scripts/verify-face-twist.ts",
     "verify:4d-closure": "tsx scripts/verify-4d-closure.ts",
     "verify:fold4": "tsx scripts/verify-fold4.ts",

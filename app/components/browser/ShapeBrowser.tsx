@@ -132,6 +132,27 @@ export default function ShapeBrowser({
     }
   }
 
+  // Real user complaint (2026-09-15): opening the browser in face-attach
+  // mode (filterIds set) used to always land on the plain Home screen --
+  // family CARDS with counts, not the actual compatible shapes -- so
+  // seeing what could actually attach meant an extra manual step into
+  // Full Catalog ("sometimes no shapes are offered and you have to go
+  // looking"). This component stays mounted across open/close (`if
+  // (!open) return null` below, not an unmount), so a plain `useState`
+  // initializer only ever runs once and can't react to a later re-open
+  // with filterIds active -- detect the open-transition during render
+  // instead, the same pattern fullCatalogRequestId/searchRequestId above
+  // already use. Scoped to when filterIds is ACTUALLY present, so a
+  // normal (unfiltered) re-open keeps whichever screen it already had.
+  const [prevOpenForFilter, setPrevOpenForFilter] = useState(open);
+  if (open !== prevOpenForFilter) {
+    setPrevOpenForFilter(open);
+    if (open && filterIds) {
+      setShowFullCatalog(true);
+      setFocusSection(undefined);
+    }
+  }
+
   if (!open) return null;
   const lang: LangCode = language;
 

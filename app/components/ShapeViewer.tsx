@@ -11,6 +11,8 @@ import {
   buildFaceConnectors,
   facesCongruent,
   faceRotationalSymmetry,
+  isRegularFace,
+  MISCELLANEOUS_ADDITION_IDS,
 } from '../lib/polyhedra';
 import { DELTAHEDRA } from '../lib/polyhedra/deltahedra';
 import { emptyAssembly, isValidAssembly, type Assembly } from '../lib/assembly';
@@ -1067,8 +1069,18 @@ export default function ShapeViewer({
       const targetFaceVerts = targetSpec.faces[targetFaceIndex];
       // Real congruence (edge lengths + angles), not just matching vertex
       // count — see the onClick filter above for why this matters once
-      // irregular-faced (Catalan) shapes are selectable.
-      const incomingFaceIndex = spec.faces.findIndex((f) => facesCongruent(targetSpec.vertices, targetFaceVerts, spec.vertices, f));
+      // irregular-faced (Catalan) shapes are selectable. For the
+      // Miscellaneous family specifically (graded pyramids and, later,
+      // RVCMG adapter pieces) ONLY, restrict to the incoming shape's own
+      // REGULAR faces — direct user instruction, scoped deliberately to
+      // this one family so Catalan solids' own irregular rhombi/kite
+      // faces keep working exactly as already shipped: a graded
+      // pyramid's pointed (non-regular lateral) face must never be an
+      // attach target, even if one happens to be geometrically congruent
+      // to something by coincidence.
+      const incomingFaceIndex = spec.faces.findIndex(
+        (f) => (!MISCELLANEOUS_ADDITION_IDS.includes(specId) || isRegularFace(spec.vertices, f)) && facesCongruent(targetSpec.vertices, targetFaceVerts, spec.vertices, f),
+      );
       if (incomingFaceIndex === -1) return; // UI should only ever offer compatible shapes
 
       scene.updateMatrixWorld(true);
@@ -1990,10 +2002,20 @@ export default function ShapeViewer({
       // irregular ones are selectable. See docs/catalan-solids-spec.md.
       const targetFace = faceIndex !== null ? POLYHEDRA[specId].faces[faceIndex] : null;
       const targetVertices = POLYHEDRA[specId].vertices;
+      // Miscellaneous-family eligibility policy (direct user instruction,
+      // scoped to this one family so Catalan solids' own irregular
+      // rhombi/kite faces keep face-attaching exactly as already shipped):
+      // a graded pyramid's pointed (non-regular lateral) face is never a
+      // valid attach surface at all, on either side of the connection —
+      // "so pointed pyramids don't stick to each other."
+      const targetIsMiscRestricted = MISCELLANEOUS_ADDITION_IDS.includes(specId);
+      const targetFaceEligible = targetFace !== null && (!targetIsMiscRestricted || isRegularFace(targetVertices, targetFace));
       const faceAttachOptions =
-        faceIndex !== null && targetFace !== null && !faceOccupied
+        faceIndex !== null && targetFaceEligible && targetFace !== null && !faceOccupied
           ? POLYHEDRON_IDS.filter((id) =>
-              POLYHEDRA[id].faces.some((f) => facesCongruent(targetVertices, targetFace, POLYHEDRA[id].vertices, f)),
+              POLYHEDRA[id].faces.some(
+                (f) => (!MISCELLANEOUS_ADDITION_IDS.includes(id) || isRegularFace(POLYHEDRA[id].vertices, f)) && facesCongruent(targetVertices, targetFace, POLYHEDRA[id].vertices, f),
+              ),
             )
           : [];
       const faceFold4Eligible = faceIndex !== null && !faceOccupied && FOURD_CAPABLE_IDS.includes(specId);

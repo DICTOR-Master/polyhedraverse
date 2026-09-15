@@ -15,6 +15,15 @@ export interface ChangelogDay {
 
 export const CHANGELOG: ChangelogDay[] = [
   {
+    date: '2026-09-15',
+    entries: [
+      'Added RVCMG (Reversible Vertex-Coalescence Morphing Geometry): a universal RD-hemi hexagonal joint plus 7 shape-specific physical adapter pieces (triangle, square, pentagon, golden-rhombus, both Catalan kite shapes, and regular-hexagon), each built by a real, verified vertex-coalescence morph from the shared hex interface -- reversible both ways, confirmed by building real heptagon/octagon shapes via the inverse "split" operation, not just asserting the divide direction has an inverse. Unlike every other family in this registry, these 7 connector shapes have no external precedent -- they are an original construction of this project, not a reproduction of a published classification.',
+      'Added a new "Miscellaneous" registry family for irregular/graded add-ons, starting with graded pyramids: every regular-pyramid-capable base (triangular, square, pentagonal) now has 4 height variants (low/standard/tall/sharp) alongside the existing standard one, each a real registered shape.',
+      'Face-attach eligibility, within the Miscellaneous family only: a graded pyramid\'s pointed (non-regular) lateral face is never offered for attachment, so pointed pyramids can\'t stick to each other -- its regular base remains fully attachable, and every other family\'s face-attach behavior (including Catalan solids\' own irregular rhombi/kite faces) is unaffected.',
+      'Face-attach now skips straight to the filtered Full Catalog instead of landing on the plain Home screen first -- seeing what a face can actually attach to no longer takes an extra manual step.',
+    ],
+  },
+  {
     date: '2026-09-11',
     entries: [
       'Added a real 4D extension: 4 shapes (tetrahedron, octahedron, cube, dodecahedron) are recognized as valid "cells" of a convex 4-polytope and gathered into a new 4D-Capable family, marked with a distinct gold "4D" badge on their cards.',

@@ -1,5 +1,5 @@
 import { test, expect } from './fixtures';
-import { getCanvasCenter, resetTo, readTooltipAt, clickWheelLabel, openBrowserWheel, exactLabel } from './utils';
+import { getCanvasCenter, resetTo, readTooltipAt, clickWheelLabel, openBrowserWheel, exactLabel, findOnCanvas } from './utils';
 
 test.beforeEach(async ({ page }) => {
   await page.goto('/');
@@ -184,4 +184,83 @@ test('face-attaching onto an RD face filters Home and Favorites too, not just th
   await browser.getByRole('button', { name: 'Favorites', exact: true }).click();
   await expect(browser.locator('text=/^rhombic dodecahedron$/i')).toBeVisible();
   await expect(browser.locator('text=/^triakis tetrahedron$/i')).toHaveCount(0);
+});
+
+test('Miscellaneous pyramid: pointed lateral face offers no attach at all, regular base skips straight to filtered Full Catalog', async ({ page }) => {
+  // PYRAMID_SQUARE_G1 ("low" grade) isn't on the wheel yet (Miscellaneous
+  // has no wheel face -- FAMILY_FACE_SLOTS.MISCELLANEOUS is still []), so
+  // it can't be reached via resetTo()'s normal wheel navigation. Seed it
+  // directly through the same persistence API Save/Load already use, then
+  // reload -- the app has no other UI path to this shape today.
+  await page.evaluate(() =>
+    fetch('/api/assemblies', {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify({
+        nodes: [{ id: 'a', shape: 'PYRAMID_SQUARE_G1', transform: { position: [0, 0, 0], quaternion: [0, 0, 0, 1] } }],
+        connections: [],
+      }),
+    }),
+  );
+  await page.reload();
+  await page.waitForTimeout(500);
+
+  const { cx, cy } = await getCanvasCenter(page);
+
+  // A root node's centroid always projects to the canvas center -- for
+  // this pyramid that centroid sits inside its lateral shell, so the
+  // center reliably lands on a 3-gon (lateral, pointed) face, never the
+  // 4-gon base. Confirmed directly (not assumed): this is exactly how the
+  // "should offer nothing" case was found while building the gate.
+  const lateralTip = await readTooltipAt(page, cx, cy);
+  expect(lateralTip).toContain('PYRAMID_SQUARE_G1');
+  expect(lateralTip).toMatch(/attach via this 3-gon face/);
+  await page.mouse.click(cx, cy);
+  await expect(page.locator('text=/Selected PYRAMID_SQUARE_G1 node \\(face \\d+, 3-gon\\)/')).toBeVisible();
+
+  // Direct user instruction: a graded pyramid's pointed (non-regular)
+  // lateral face must never offer face-attach at all, "so pointed
+  // pyramids don't stick to each other" -- the button itself shouldn't
+  // even render (faceAttachOptions.length > 0 gates it in page.tsx).
+  await expect(page.getByRole('button', { name: 'Attach via face…' })).toHaveCount(0);
+
+  // The base face is edge-on (near-zero screen width) under the default
+  // camera angle -- confirmed directly via a screenshot while building
+  // this test, not assumed. A modest orbit drag lands on ANOTHER edge-on
+  // angle just as often (the base's 4-fold symmetry around the apex axis
+  // means many azimuths are edge-on to some base edge) -- a wider, 320px
+  // net horizontal drag was the smallest tried that actually cleared it,
+  // confirmed empirically by trying several before picking this one, not
+  // guessed. Dragging starts on empty space away from the shape (well
+  // clear of its raycast target) so this is OrbitControls rotating the
+  // view, not a click/drag on the shape itself.
+  await page.mouse.move(cx - 160, cy);
+  await page.mouse.down();
+  for (let i = 1; i <= 20; i++) {
+    await page.mouse.move(cx - 160 + i * 16, cy, { steps: 2 });
+  }
+  await page.mouse.up();
+  await page.waitForTimeout(200);
+
+  const found = await findOnCanvas(page, cx, cy, (text) => text.includes('PYRAMID_SQUARE_G1') && /attach via this 4-gon face/.test(text), { radius: 220, step: 30 });
+  expect(found, 'expected to find the 4-gon base face somewhere around the canvas center').not.toBeNull();
+  await expect(page.locator('text=/Selected PYRAMID_SQUARE_G1 node \\(face \\d+, 4-gon\\)/')).toBeVisible();
+
+  const attachBtn = page.getByRole('button', { name: 'Attach via face…' });
+  await expect(attachBtn).toBeVisible();
+  await attachBtn.click();
+
+  // The actual UX fix under test: opening face-attach mode must land
+  // directly on the filtered Full Catalog (the "← Back" button, only
+  // shown in Full Catalog), not the plain Home screen of family tiles --
+  // real user complaint: "sometimes no shapes are offered and you have
+  // to go looking."
+  // A "Home"/"Favorites"/etc. bottom tab bar is always present regardless
+  // of showFullCatalog (each tab click resets it back to false) -- the
+  // real signal that this landed on Full Catalog directly, not Home, is
+  // the "← Back" button (only rendered while showFullCatalog is true) and
+  // the ABSENCE of Home-screen content like its family tiles.
+  const browser = page.getByRole('dialog', { name: 'Shape browser' });
+  await expect(browser.getByRole('button', { name: '← Back' })).toBeVisible();
+  await expect(browser.getByRole('button', { name: /Catalan/ })).toHaveCount(0);
 });

@@ -293,6 +293,60 @@ Since then:
   option in the main scene with no picker step, chainable into groups —
   the one 4D construction that's actually buildable, since duoprism
   pieces stay undistorted at any depth.
+- **RVCMG (Reversible Vertex-Coalescence Morphing Geometry)**
+  (`app/lib/rvcmg/`, `docs/RVCMG.md`, `docs/rvcmg-adapter-pieces-spec.md`)
+  — a physical adapter system, not a UI feature: a universal "RD-hemi"
+  joint (a real, non-regular hexagon derived by bisecting this project's
+  own rhombic dodecahedron, mirroring Rhombiverse's own
+  `hemisphereSplit()`) plus 7 shape-specific adapter pieces (triangle,
+  square, pentagon, golden-rhombus, and both real-Catalan (di-/dh-) kite
+  shapes, plus a regular-hexagon piece) that each morph the shared hex
+  interface down to that shape's own face via `coalesce()` — a real,
+  reversible (both directions: 6 points can reduce to 3, or split back
+  out to 12 or any other count) vertex-merge primitive, verified via a
+  dedicated Stage 7 transition-checker across every piece, plus two
+  from-scratch heptagon/octagon constructions proving the split
+  ("multiply") direction directly rather than just asserting divide has
+  an inverse. Adapter pieces are still flat cross-section math today —
+  real, closed, placeable 3D solids (a tapered wall connecting the two
+  cross-sections) are the next stage, not yet built. These 7 connector
+  shapes have no external precedent — unlike every other family in this
+  registry (Platonic, Archimedean, Johnson, Catalan, prisms/antiprisms,
+  the Kepler-Poinsot star polyhedra), which all reproduce a known,
+  published classification, RVCMG's adapter pieces are an original
+  construction of this Polyhedraverse project itself, designed to solve
+  a specific real-world physical-connector problem rather than to
+  recreate an existing mathematical catalog.
+- **A new "Miscellaneous" registry family** (`app/lib/polyhedra/
+  miscellaneous/`, symbol `⌂`) for irregular/graded add-ons that don't
+  belong to one of the classical families — a directory of two
+  sub-groups, each free to grow independently: `pyramids/` (done) and
+  `rvcmg-connectors/` (reserved scaffold for the RVCMG pieces above,
+  once they have real solid geometry). **Graded pyramids**: every
+  regular-pyramid-capable base already in the registry (triangular,
+  square, pentagonal — a regular hexagonal pyramid is geometrically
+  impossible, confirmed computationally: 60° is exactly both the
+  degenerate apex-angle limit at n=6 *and* the equilateral-triangle
+  angle) gets 4 graded height variants (1=low, 2=standard — an exact
+  duplicate of the existing D4/J1/J2 entry, confirmed vertex-for-vertex
+  — 3=tall, 4=sharp), height derived per grade from a target lateral
+  apex angle rather than hand-picked, and re-derived per base shape
+  rather than reused as a constant (an early version reused triangular
+  base's own grade-1 angle for every base, which happened to be exactly
+  square's own degenerate limit and crashed outright — fixed by deriving
+  each base's grade 1 independently). A new face-attach eligibility rule
+  applies ONLY within this family: a pyramid's pointed (non-regular,
+  except at grade 2) lateral face is never offered for attachment,
+  regardless of coincidental congruence, so pointed pyramids can't stick
+  to each other — a shape's real base (always a regular polygon, every
+  grade) is the only valid attach surface. Catalan solids' own irregular
+  rhombi/kite faces are untouched by this rule and keep face-attaching
+  exactly as already shipped.
+- **Face-attach now skips straight to the filtered results.** Opening
+  "Attach via face…" used to always land on the plain Home screen of
+  family tiles — seeing the actual compatible shapes meant a manual
+  extra step into Full Catalog. It now opens directly into the
+  already-filtered Full Catalog instead.
 
 ## Structure
 
@@ -312,7 +366,18 @@ polyhedraverse/
         radialProjection.ts # the real 4D system: generic Wythoff/Coxeter reflection engine + dualize()
         fold4.ts         # superseded by radialProjection.ts; kept only for backward-compat load/render of old saves
         duoprism.ts      # the 4D Prism (duoprism) construction -- always-exact, any shape, any chaining depth
+        gradedPyramids.ts # apex-angle-driven pyramid construction, shared by every graded-pyramid base
+        miscellaneous/   # the "Miscellaneous" family (symbol: house glyph) -- irregular/graded add-ons
+          index.ts         # combines the two sub-groups below into MISCELLANEOUS_ADDITIONS
+          pyramids/        # graded pyramids -- 3 bases x 4 grades, done
+          rvcmg-connectors/ # reserved scaffold for the 7 RVCMG adapter pieces (no solid geometry yet)
         index.ts         # combined POLYHEDRA / POLYHEDRON_IDS across every family
+      rvcmg/             # Reversible Vertex-Coalescence Morphing Geometry -- see docs/RVCMG.md
+        hemiRdInterface.ts # the shared RD-hemi hex joint, derived from POLYHEDRA.RHOMBIC_DODECAHEDRON
+        coalesce.ts / separate.ts / splitVertex.ts # the divide / undo-one-divide / multiply primitives
+        stateGraph.ts / morph.ts / verify.ts # traversal, smooth preview, Stage 7 transition verification
+        adapters/          # the 7 shape-specific adapter pieces + shared.ts (assignTargetAngles/fitTargetPolygon)
+        split-demos/       # heptagon/octagon -- real proof of the "multiply" (split) direction
       assembly.ts        # the real {nodes, connections} graph + validation (vertex-, face-, and fold4-kind)
       graph.ts           # subtree/cycle graph logic (pure, no three.js)
     components/
@@ -382,6 +447,13 @@ before being recorded, not transcribed from the narrative postmortems
 by hand.
 `docs/vercel-deployment-plan.md` records the intended repo/Vercel
 layout for when this deploys alongside Rhombiverse.
+`docs/RVCMG.md` is the normative RVCMG spec (author James Baker),
+updated in place once the described system was actually built.
+`docs/rvcmg-adapter-pieces-spec.md` is the working record of building
+it: the hemi-RD hex interface, all 7 adapter pieces, the heptagon/
+octagon split-direction proofs, the Miscellaneous family (graded
+pyramids + the reserved rvcmg-connectors scaffold), and the two
+face-attach UX/eligibility fixes above.
 
 ## Contributing
 

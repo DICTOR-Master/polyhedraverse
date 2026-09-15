@@ -247,6 +247,28 @@ export function faceRotationalSymmetry(vertices: Vec3[], face: number[], tol = 1
 }
 
 /**
+ * Whether a face is a genuine REGULAR polygon (equal edges AND equal
+ * interior angles) — full `n`-fold rotational symmetry
+ * (`faceRotationalSymmetry === face.length`) is exactly this condition
+ * for a planar convex polygon: if the edge+angle sequence maps onto
+ * itself under EVERY single-step rotation, every edge (and every angle)
+ * must equal its neighbor, hence all equal.
+ *
+ * A general geometric utility, not itself a face-attach policy — see
+ * `ShapeViewer.tsx`'s own use of this for the actual eligibility rule
+ * (direct user instruction, 2026-09-15, scoped to the Miscellaneous
+ * family only: a graded pyramid's LATERAL faces — isosceles, non-
+ * regular except at grade 2 — must never be offered for attachment to
+ * each other, "so pointed pyramids don't stick to each other." Explicitly
+ * NOT applied to Catalan solids' own irregular rhombi/kite faces, which
+ * remain fully face-attachable exactly as already shipped and verified —
+ * this function reports pure geometric fact regardless of policy).
+ */
+export function isRegularFace(vertices: Vec3[], face: number[], tol = 1e-4): boolean {
+  return faceRotationalSymmetry(vertices, face, tol) === face.length;
+}
+
+/**
  * Face connectors — the face-snap-mode counterpart to buildConnectors(),
  * derived from `vertices` + `faces` exactly the way vertex connectors are
  * derived from `vertices` + `edges` (construction-kit-spec.md's "Dual /
