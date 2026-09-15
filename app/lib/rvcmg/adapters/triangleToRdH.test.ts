@@ -1,4 +1,4 @@
-import { deriveTriangleToRdH, RD_EDGE_LENGTH, HEMI_RD_INTERFACE_UNIT } from './triangleToRdH';
+import { deriveTriangleToRdH, RD_EDGE_LENGTH, hemiRdStartState } from './triangleToRdH';
 import { HEMI_RD_INTERFACE } from '../hemiRdInterface';
 import { POLYHEDRA } from '../../polyhedra/index';
 import { separate } from '../separate';
@@ -13,11 +13,11 @@ function check(label: string, condition: boolean) {
 
 check('RD edge length measured (not hand-copied) is sqrt(3)/2', Math.abs(RD_EDGE_LENGTH - Math.sqrt(3) / 2) < 1e-12);
 const [rdI, rdJ] = POLYHEDRA.RHOMBIC_DODECAHEDRON.edges[0];
-const rdEdgeUnitScale = dist(POLYHEDRA.RHOMBIC_DODECAHEDRON.vertices[rdI], POLYHEDRA.RHOMBIC_DODECAHEDRON.vertices[rdJ]) / RD_EDGE_LENGTH;
-check('a real RD edge measures exactly 1 once rescaled by RD_EDGE_LENGTH', Math.abs(rdEdgeUnitScale - 1) < 1e-12);
+const rdEdgeNative = dist(POLYHEDRA.RHOMBIC_DODECAHEDRON.vertices[rdI], POLYHEDRA.RHOMBIC_DODECAHEDRON.vertices[rdJ]);
+check('a real RD edge measures exactly RD_EDGE_LENGTH (no rescaling involved)', Math.abs(rdEdgeNative - RD_EDGE_LENGTH) < 1e-12);
 check(
-  'HEMI_RD_INTERFACE_UNIT is HEMI_RD_INTERFACE uniformly rescaled by 1/RD_EDGE_LENGTH, not independently recomputed',
-  HEMI_RD_INTERFACE.every((v, i) => dist(HEMI_RD_INTERFACE_UNIT[i], [v[0] / RD_EDGE_LENGTH, v[1] / RD_EDGE_LENGTH, v[2] / RD_EDGE_LENGTH]) < 1e-12),
+  "hemiRdStartState()'s own vertices sit at RD's real, native scale -- HEMI_RD_INTERFACE unchanged, not rescaled (2026-09-15 correction: an earlier version rescaled this to an artificial unit-edge size, which broke RD-Hemi attaching to the real, already-registered RHOMBIC_DODECAHEDRON -- direct user report)",
+  hemiRdStartState().vertices.every((v, i) => dist(v.pos, HEMI_RD_INTERFACE[i]) < 1e-12),
 );
 
 const result = deriveTriangleToRdH();

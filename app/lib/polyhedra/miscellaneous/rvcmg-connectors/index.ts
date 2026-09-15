@@ -18,7 +18,7 @@ import { type Vec3, type PolyhedronSpec, buildFaceConnectors } from '../../core'
 import { CATALAN_ADDITIONS } from '../../catalan';
 import { buildAdapterSolid } from '../../../rvcmg/solid';
 import { hemiRdInterfaceFrame } from '../../../rvcmg/hemiRdInterface';
-import { deriveTriangleToRdH, RD_EDGE_LENGTH } from '../../../rvcmg/adapters/triangleToRdH';
+import { deriveTriangleToRdH } from '../../../rvcmg/adapters/triangleToRdH';
 import { deriveSquareToRdH } from '../../../rvcmg/adapters/squareToRdH';
 import { derivePentagonToRdH } from '../../../rvcmg/adapters/pentagonToRdH';
 import { deriveGoldenRhombusToRdH } from '../../../rvcmg/adapters/goldenRhombusToRdH';
@@ -43,8 +43,12 @@ const NORMAL = hemiRdInterfaceFrame().normal;
  * cut face. That dome has one real, measurable depth: the RD's own
  * vertices NOT on the bisection plane sit at a single consistent
  * distance from it (checked below, not assumed) -- `sqrt(2)/2` in RD's
- * own circumradius-1 frame, `sqrt(2/3)` once rescaled to the shared
- * unit-edge frame every adapter piece already uses (`RD_EDGE_LENGTH`).
+ * own real, native scale. Every RVCMG piece's shared hex is built at
+ * that SAME native scale (`hemiRdStartState`'s own corrected header,
+ * 2026-09-15 -- an earlier version rescaled it to unit-edge, which
+ * broke a real, wanted capability: RD-Hemi's own rhombi matching the
+ * actual registered `RHOMBIC_DODECAHEDRON`), so this depth needs no
+ * rescaling either.
  */
 const RD_HEMI_DEPTH: number = (() => {
   const RD = CATALAN_ADDITIONS.RHOMBIC_DODECAHEDRON;
@@ -57,7 +61,7 @@ const RD_HEMI_DEPTH: number = (() => {
       throw new Error(`RD's off-plane vertices do not share one consistent depth (got ${depths.map((x) => x.toFixed(6))}) -- RD_HEMI_DEPTH's derivation assumption is wrong`);
     }
   }
-  return magnitude / RD_EDGE_LENGTH;
+  return magnitude;
 })();
 
 /**

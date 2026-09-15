@@ -1,15 +1,20 @@
 # RVCMG Adapter Pieces — Scoping and Status
 
-**Status (2026-09-15): the core math library (Stages 0-7) is done and
-fully verified, including the general "multiply" primitive
-(`splitVertex()`) the divide-only original library was missing. All 6
-originally-planned adapter pieces are derived and verified (Triangle,
-Square, Pentagon, Golden-rhombus, DI-kite, DH-kite), plus a 7th
-(Regular-Hexagon) added afterward — the family's math is complete; what
-remains is the physical layer (3D solid extrusion, face-attach/UI
-integration, both still unbuilt). This doc is both the scoping record
-and the running status/postmortem, mirroring `catalan-solids-spec.md`'s
-own role for that family. The normative geometric specification this
+**Status (2026-09-15): DONE — the full family is real, placeable, and
+registered.** Stages 0-7 (the core math library, including the general
+"multiply" primitive `splitVertex()`) were done first. Stage 8
+(`app/lib/rvcmg/solid.ts`) then turned all 7 flat-hexed adapter pieces
+(Triangle, Square, Pentagon, Golden-rhombus, DI-kite, DH-kite,
+Regular-Hexagon) into real closed 3D solids, with a convex,
+correctly-triangulated wall and correct face-attach eligibility
+(`attachableFaceIndices`). `app/lib/rvcmg/rdHemi.ts` then added the
+8th, structurally different piece: the real bare RD-Hemi (an actual
+half-rhombic-dodecahedron dome, not a flat-hexed taper), whose own real
+rhombic faces attach both to itself (the "hourglass" — two RD-Hemis
+joined at their crown rhombus) and to the real, already-registered
+`RHOMBIC_DODECAHEDRON`. This doc is both the scoping record and the
+running status/postmortem, mirroring `catalan-solids-spec.md`'s own
+role for that family. The normative geometric specification this
 implements is `docs/RVCMG.md` (James Baker's own formal writeup,
 uploaded 2026-09-15).**
 
@@ -190,13 +195,25 @@ expressible without something to compare against.
 The pipeline prototype, validating the whole approach before
 generalizing to the other 5 pieces:
 
-1. **Shared physical scale**: RD's own edge length is measured directly
-   from the registry (`sqrt(3)/2` in the circumradius-1 frame, not
-   assumed) and used to rescale the hex interface so RD's edge becomes
-   exactly 1 — the same unit-edge convention every deltahedra/Platonic/
-   Johnson/prism shape already uses. Every adapter piece needs this
-   shared scale to physically mate with a real unit-edge tetrahedron/
-   cube/etc.
+1. **Shared physical scale — CORRECTED 2026-09-15**: RD's own edge
+   length is measured directly from the registry (`sqrt(3)/2` in the
+   circumradius-1 frame, not assumed). An earlier version of this
+   section used that to rescale the hex interface so RD's own edge
+   became exactly 1, reasoning that was needed to physically mate with
+   unit-edge families. That reasoning was wrong and has since been
+   reverted (`hemiRdStartState`'s own corrected header, triangleToRdH.ts):
+   each adapter piece's own TARGET face is placed at its own
+   independently-chosen absolute size regardless of the hex's own scale
+   (`coalesce()` moves points to literal target positions; nothing
+   reads the hex's own scale back out), so the rescale bought nothing
+   for target compatibility while actively breaking a real, wanted
+   capability — RD-Hemi's own real rhombic faces (`rdHemi.ts`) need to
+   match the ACTUAL, already-registered `RHOMBIC_DODECAHEDRON`, which
+   only happens at RD's own real, native (circumradius-1) scale. Direct
+   user report that surfaced this: "you dont seem to have allowed
+   RD-Hemi to attach to full RD." The shared hex interface (used by all
+   8 RVCMG pieces, adapters and RD-Hemi alike) is now built directly
+   from `HEMI_RD_INTERFACE` at that native scale, no rescaling at all.
 2. **Merge sequence**: 3 `coalesce()` steps merging alternate edges of
    the hexagon — `(v1,v2)`, `(v3,v4)`, `(v5,v6)` — a perfect matching
    of 3 disjoint real edges, chosen because merging one pair never
@@ -409,39 +426,33 @@ pieces — no physical target shape names a 7- or 8-vertex Catalan/
 Platonic/Archimedean face — purely a demonstration that the duality is
 real and general, not a divide-only illusion.
 
-### Outstanding
+### Outstanding — DONE (2026-09-15)
 
-- **3D solid extrusion**: RVCMG's own states are flat 2D cross-sections
-  (the hex face and the target face), not yet a real printable solid.
-  The next real step for each piece is a tapered wall connecting the
-  two end cross-sections at some physical depth — likely following
-  `duoprism.ts`'s own wall-prism construction as the closest existing
-  precedent in this codebase (a similar "two end polygons + connecting
-  lateral faces" problem), rather than inventing a new technique.
-  Compactness (minimizing that depth) is an explicit physical
-  requirement, not yet designed.
+Every item below is now shipped. Kept as a historical record of what
+was planned, not a live TODO list.
+
+- **3D solid extrusion**: done — `app/lib/rvcmg/solid.ts`
+  (`buildAdapterSolid`) for the 7 flat-hexed pieces, `app/lib/rvcmg/
+  rdHemi.ts` (`buildRdHemiSolid`) for the real bare RD-Hemi dome. The
+  wall is a triangulated (never quad) taper, with the diagonal at each
+  boundary chosen per-quad to stay locally convex
+  (`chooseConvexBoundarySplit`) rather than a single fixed rule. The
+  taper depth (`WALL_HEIGHT`) is derived from the real RD's own dome
+  depth, halved per piece since two hex-terminated pieces add their
+  depths when joined.
 - **Stage 8/9 as originally written** (an interactive morph-explorer UI;
-  optional STL export) are superseded by this piece-family framing —
-  the real UI/export need is "browse and export these 6(+1) fixed
-  pieces," not a free-form live morph tool. Not yet scoped in detail.
-- **UI integration model (direct from the user, 2026-09-15): these
-  pieces snap onto faces exactly the way ordinary shape-to-shape
-  face-attach already works in this app** (`ShapeViewer.tsx`'s
-  "Attach via face…", `core.ts`'s `facesCongruent`/
-  `faceRotationalSymmetry`, `computeFaceAttach`) — NOT a bespoke new
-  interaction. They are their own separate registry family (own
-  `FamilyKey`/`FAMILY_META` entry in `families.ts`, own wheel/browser
-  category), not folded into Deltahedra/Platonic/Catalan/etc. This is
-  the real reason the 3D solid extrusion above matters and can't be
-  deferred indefinitely: face-attach requires a genuine `PolyhedronSpec`
-  (real vertices/edges/faces, `facesCongruent`-compatible), so each
-  finished adapter piece needs BOTH of its end faces (the hex + the
-  target polygon) registered as real, attachable faces once the solid
-  exists — not just the flat boundary loops RVCMG's own states are.
-  **When this lands, "Attach via face…" should surface every
-  geometrically valid match (including these adapter pieces and the
-  graded pyramids below), not just same-family shapes** (direct user
-  instruction, 2026-09-15).
+  optional STL export): superseded by the piece-family framing below,
+  as anticipated — no separate morph-explorer UI was built; the real
+  registry entries ARE the deliverable.
+- **UI integration model**: done exactly as specified — these 8 pieces
+  are real `PolyhedronSpec` entries (`app/lib/polyhedra/miscellaneous/
+  rvcmg-connectors/`) that face-attach via the app's own ordinary
+  `facesCongruent`/`computeFaceAttach` mechanic, no bespoke interaction
+  built. A new `attachableFaceIndices` field on `PolyhedronSpec`
+  (`core.ts`) restricts each piece to its real ports (the two flat ends
+  for the 7 adapters; the hex plus all 5 real rhombi, crown included,
+  for RD-Hemi) — direct user report, 2026-09-15, that wall/side
+  triangles were "confusingly attachable."
 
 ## A planned "Miscellaneous" family: graded pyramids (and, eventually, the adapter pieces above)
 

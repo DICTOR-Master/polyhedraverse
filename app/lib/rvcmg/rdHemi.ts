@@ -24,31 +24,25 @@
  * vertices, the 4 positive vertices, 5 whole rhombi, 2 half-rhombus
  * triangles, and the one new hex cap face — 10 vertices, 8 faces.
  *
- * Scale: rescaled by the same `1/RD_EDGE_LENGTH` factor every adapter
- * piece already uses, so this piece's own hex face lands EXACTLY on
- * `hemiRdStartState()`'s own positions (confirmed below, not assumed)
- * — the actual point of building this at all: a real RD-Hemi must
- * face-attach to any of the 7 adapter pieces' own hex ends. Its 5 real
- * rhombi (uniform edge length, since RD itself has one) become unit
- * edge in this scale, congruent to each other but NOT to
- * `POLYHEDRA.RHOMBIC_DODECAHEDRON`'s own (differently, circumradius-1,
- * normalized) rhombi — the same family of scale mismatch
- * `goldenRhombusToRdH.ts`/`kiteToRdH.ts` had and were fixed for
- * (rvcmg-connectors/index.ts's own header), except here the hex-
- * compatibility requirement is the one that actually matters (this
- * piece's whole purpose is mating with the other 7), so this scale
- * choice is deliberate, not a repeat of that bug.
+ * Scale: RD's own real, native scale — NOT rescaled at all. Every
+ * adapter piece's own shared hex is ALSO built at this same native
+ * scale (`hemiRdStartState`'s own corrected header, 2026-09-15), so
+ * this piece's hex face lands exactly on theirs (confirmed below, not
+ * assumed) AND its 5 real rhombi (uniform edge length, since RD itself
+ * has one) land EXACTLY on `POLYHEDRA.RHOMBIC_DODECAHEDRON`'s own real
+ * rhombi too — direct user report that surfaced the earlier, wrongly-
+ * rescaled version's real gap: "you dont seem to have allowed RD-Hemi
+ * to attach to full RD."
  */
 
 import { type Vec3, type PolyhedronSpec, dist, buildConnectors, centerVertices, rotateFaceToMirrorAxis } from '../polyhedra/core';
 import { CATALAN_ADDITIONS } from '../polyhedra/catalan';
 import { hemiRdInterfaceFrame } from './hemiRdInterface';
-import { hemiRdStartState, RD_EDGE_LENGTH } from './adapters/triangleToRdH';
+import { hemiRdStartState } from './adapters/triangleToRdH';
 
 const sub = (a: Vec3, b: Vec3): Vec3 => [a[0] - b[0], a[1] - b[1], a[2] - b[2]];
 const cross = (a: Vec3, b: Vec3): Vec3 => [a[1] * b[2] - a[2] * b[1], a[2] * b[0] - a[0] * b[2], a[0] * b[1] - a[1] * b[0]];
 const dot = (a: Vec3, b: Vec3): number => a[0] * b[0] + a[1] * b[1] + a[2] * b[2];
-const scale = (a: Vec3, s: number): Vec3 => [a[0] * s, a[1] * s, a[2] * s];
 const centroidOf = (vs: Vec3[]): Vec3 => {
   const c: Vec3 = [0, 0, 0];
   for (const v of vs) {
@@ -84,7 +78,6 @@ export function buildRdHemiSolid(id: string, name: string): BuildRdHemiResult {
   const classes = RD.vertices.map(classify);
 
   const hexState = hemiRdStartState();
-  const rdUnitVertices = RD.vertices.map((v) => scale(v, 1 / RD_EDGE_LENGTH));
 
   // Map each on-plane RD vertex index to its slot (0..5) in
   // hemiRdStartState()'s own hex, by position -- never assumed from
@@ -93,7 +86,7 @@ export function buildRdHemiSolid(id: string, name: string): BuildRdHemiResult {
   const onPlaneToHexSlot = new Map<number, number>();
   RD.vertices.forEach((v, i) => {
     if (classes[i] !== 0) return;
-    const slot = hexState.vertices.findIndex((hv) => dist(hv.pos, rdUnitVertices[i]) < 1e-6);
+    const slot = hexState.vertices.findIndex((hv) => dist(hv.pos, RD.vertices[i]) < 1e-6);
     if (slot === -1) {
       problems.push(`RD vertex ${i} (on-plane) doesn't match any of hemiRdStartState()'s own 6 hex positions`);
       return;
@@ -108,7 +101,7 @@ export function buildRdHemiSolid(id: string, name: string): BuildRdHemiResult {
   // New vertex list: the 6 shared hex vertices (hexState's own
   // positions, byte-for-byte -- guarantees exact hex-to-hex congruence
   // with every adapter piece), then the 4 positive RD vertices.
-  const rawVertices: Vec3[] = [...hexState.vertices.map((v) => v.pos), ...positiveIndices.map((i) => rdUnitVertices[i])];
+  const rawVertices: Vec3[] = [...hexState.vertices.map((v) => v.pos), ...positiveIndices.map((i) => RD.vertices[i])];
 
   const remap = (rdIndex: number): number => {
     const hexSlot = onPlaneToHexSlot.get(rdIndex);

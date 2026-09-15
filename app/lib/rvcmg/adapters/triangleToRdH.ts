@@ -31,29 +31,48 @@ const scale = (a: Vec3, s: number): Vec3 => [a[0] * s, a[1] * s, a[2] * s];
 const dot = (a: Vec3, b: Vec3): number => a[0] * b[0] + a[1] * b[1] + a[2] * b[2];
 
 /**
- * The shared physical unit: RD's own edge length, measured directly from
- * the registry (never hand-copied — see hemiRdInterface.ts's own
- * corrected comment, an earlier version of that comment asserted
- * `2-sqrt(2)` without checking and was wrong; the real value is
- * `sqrt(3)/2`). Every adapter piece must rescale the hex interface by
- * this factor to share ONE physical edge-length unit with the
- * unit-edge-normalized families (deltahedra/Platonic/Johnson/prisms) it
- * needs to physically mate with.
+ * RD's own edge length, measured directly from the registry (never
+ * hand-copied — see hemiRdInterface.ts's own corrected comment, an
+ * earlier version of that comment asserted `2-sqrt(2)` without checking
+ * and was wrong; the real value is `sqrt(3)/2`). Kept as a real,
+ * independently-useful measured fact, but no longer used to rescale the
+ * shared hex interface — see `hemiRdStartState`'s own comment for why
+ * that rescaling was removed.
  */
 export const RD_EDGE_LENGTH: number = (() => {
   const [i, j] = CATALAN_ADDITIONS.RHOMBIC_DODECAHEDRON.edges[0];
   return dist(CATALAN_ADDITIONS.RHOMBIC_DODECAHEDRON.vertices[i], CATALAN_ADDITIONS.RHOMBIC_DODECAHEDRON.vertices[j]);
 })();
 
-/** The hex interface rescaled so RD's own edge length is exactly 1 — the shared physical scale every adapter piece is built in. */
-export const HEMI_RD_INTERFACE_UNIT: Vec3[] = HEMI_RD_INTERFACE.map((v) => scale(v, 1 / RD_EDGE_LENGTH));
-
-/** The starting 6-vertex state for adapter-piece derivation, in the shared unit-edge scale (not testFixtures' unscaled test-only version). */
+/**
+ * The starting 6-vertex state for every adapter piece's own derivation,
+ * built directly from `HEMI_RD_INTERFACE` at RD's OWN real, native
+ * scale — NOT rescaled to make RD's own edge exactly 1.
+ *
+ * A real, corrected design choice (2026-09-15): an earlier version
+ * rescaled this to unit-edge, reasoning it needed "ONE physical
+ * edge-length unit" shared with the unit-edge-normalized families
+ * (Platonic/Johnson/etc.) each piece's own TARGET face matches. That
+ * reasoning was simply wrong — each piece's own target face (triangle/
+ * square/pentagon/regular-hex's own `EDGE = 1`, golden-rhombus/kite's
+ * own measured Catalan-solid scale) is placed at its OWN independently
+ * chosen absolute size regardless of the hex's own scale (`coalesce()`
+ * moves points to literal target positions; nothing in that math reads
+ * the hex's own scale back out) — so rescaling the hex bought nothing
+ * for target-face compatibility, while actively breaking a REAL,
+ * wanted capability: a genuine RD-Hemi piece (`rdHemi.ts`) needs its
+ * hex AND its own real rhombic faces built from the SAME rigid,
+ * uniform scale, and the only scale where its rhombi match the
+ * ACTUAL, already-registered `RHOMBIC_DODECAHEDRON` is RD's own native
+ * one. Direct user report that surfaced this: "you dont seem to have
+ * allowed RD-Hemi to attach to full RD" — confirmed, and traced to
+ * this unnecessary rescale, not a missing feature.
+ */
 export function hemiRdStartState(): RvcmgState {
-  const n = HEMI_RD_INTERFACE_UNIT.length;
+  const n = HEMI_RD_INTERFACE.length;
   return {
-    id: 'HEMI_RD_UNIT',
-    vertices: HEMI_RD_INTERFACE_UNIT.map((pos, i) => ({ id: `v${i + 1}`, pos, sourceIds: [] })),
+    id: 'HEMI_RD_NATIVE',
+    vertices: HEMI_RD_INTERFACE.map((pos, i) => ({ id: `v${i + 1}`, pos, sourceIds: [] })),
     boundaryEdges: Array.from({ length: n }, (_, i) => [i, (i + 1) % n] as [number, number]),
   };
 }

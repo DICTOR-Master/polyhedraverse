@@ -20,7 +20,7 @@ export { interpolate, classifyState } from './morph';
 export type { VerifyTransitionOptions } from './verify';
 export { verifyTransition } from './verify';
 export type { AdapterPieceResult } from './adapters/triangleToRdH';
-export { deriveTriangleToRdH, hemiRdStartState, RD_EDGE_LENGTH, HEMI_RD_INTERFACE_UNIT } from './adapters/triangleToRdH';
+export { deriveTriangleToRdH, hemiRdStartState, RD_EDGE_LENGTH } from './adapters/triangleToRdH';
 export { deriveSquareToRdH } from './adapters/squareToRdH';
 export { derivePentagonToRdH } from './adapters/pentagonToRdH';
 export { deriveGoldenRhombusToRdH, GOLDEN_RATIO_MEASURED } from './adapters/goldenRhombusToRdH';

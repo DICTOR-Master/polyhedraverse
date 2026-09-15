@@ -51,8 +51,12 @@ check(
   "RD's own off-bisection-plane vertices all sit at one consistent depth",
   depths.every((d) => Math.abs(Math.abs(d) - magnitude) < 1e-9),
 );
-const RD_HEMI_DEPTH = magnitude / RD_EDGE_LENGTH;
-check('re-derived RD_HEMI_DEPTH matches the known closed form sqrt(2/3)', Math.abs(RD_HEMI_DEPTH - Math.sqrt(2 / 3)) < 1e-9);
+// No longer rescaled by RD_EDGE_LENGTH -- the shared hex (and this
+// depth) live at RD's own real, native scale now (2026-09-15
+// correction: rescaling to unit-edge broke RD-Hemi's own rhombi
+// matching the real, already-registered RHOMBIC_DODECAHEDRON).
+const RD_HEMI_DEPTH = magnitude;
+check('re-derived RD_HEMI_DEPTH matches the known closed form sqrt(2)/2', Math.abs(RD_HEMI_DEPTH - Math.sqrt(2) / 2) < 1e-9);
 const EXPECTED_WALL_HEIGHT = RD_HEMI_DEPTH / 2;
 
 const NORMAL = hemiRdInterfaceFrame().normal;
@@ -171,7 +175,13 @@ for (const { id, derive } of PIECES) {
   for (const fi of rhombusFaces) {
     const f = hemi.faces[fi];
     const lens = f.map((v, k) => dist(hemi.vertices[v], hemi.vertices[f[(k + 1) % f.length]]));
-    check(`RVCMG_RD_HEMI: rhombus face ${fi} is unit-edge (matches RD's own uniform edge length, rescaled)`, lens.every((l) => Math.abs(l - 1) < 1e-9));
+    check(`RVCMG_RD_HEMI: rhombus face ${fi} matches RD's own real, native edge length exactly`, lens.every((l) => Math.abs(l - RD_EDGE_LENGTH) < 1e-9));
+    // The actual point of this fix (direct user report, 2026-09-15:
+    // "you dont seem to have allowed RD-Hemi to attach to full RD"):
+    // each real rhombus must be genuinely facesCongruent to a real face
+    // of the already-registered RHOMBIC_DODECAHEDRON.
+    const matchesRealRD = RD.faces.some((rdFace) => facesCongruent(hemi.vertices, f, RD.vertices, rdFace));
+    check(`RVCMG_RD_HEMI: rhombus face ${fi} is genuinely congruent to a real RHOMBIC_DODECAHEDRON face`, matchesRealRD);
   }
 
   // Overall convexity: a real sub-polytope of the (convex) RD should be
