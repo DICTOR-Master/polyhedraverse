@@ -531,3 +531,42 @@ placeholder `FOURD` uses) — a real UI design decision, not done yet.
   solid extrusion" note above) — the family directory structure is
   ready for them, but they aren't there yet.
 - Wheel/browser UI navigation for the Miscellaneous family itself.
+
+**Done since the above was written (2026-09-15, same day, later
+session)**:
+- `app/lib/polyhedra/miscellaneous/` restructured from a flat
+  `pyramids.ts` file into two independently-growable sub-directories:
+  `pyramids/` (the existing graded pyramids, moved unchanged) and
+  `rvcmg-connectors/` (a real but empty scaffold — `RVCMG_CONNECTOR_
+  ADDITIONS = {}` / `_IDS = []` — reserved for the 7 adapter pieces once
+  they have real solid geometry, so that addition is a same-shape change
+  to one file rather than a restructure).
+- **Real face-attach bug, user-reported and fixed**: "sometimes no
+  shapes are offered and you have to go looking" — opening "Attach via
+  face…" always landed on the plain Home screen of family tiles instead
+  of the actual compatible shapes. Root cause was a UX/discoverability
+  gap, not a geometry bug (`facesCongruent` re-verified clean, 3.4M
+  checks, 0 failures) — `ShapeBrowser.tsx` now detects the open-with-
+  filterIds transition during render (the component stays mounted
+  across open/close, so a plain `useState` initializer can't react to a
+  later re-open) and jumps straight to the filtered Full Catalog.
+- **Real eligibility gap, user-reported and fixed**: "so pointed
+  pyramids dont stick to each other" — a graded pyramid's pointed
+  lateral face (isosceles, non-regular except at grade 2) could
+  coincidentally match another pyramid's lateral face and offer a
+  face-attach that was never a real design intent. New `isRegularFace()`
+  (`core.ts`, `faceRotationalSymmetry(...) === face.length`) gates this
+  in `ShapeViewer.tsx`, scoped deliberately to `MISCELLANEOUS_ADDITION_
+  IDS` only — Catalan solids' own irregular rhombi/kite faces are
+  untouched and keep face-attaching exactly as already shipped. Verified
+  by a new dedicated script, `scripts/verify-misc-face-eligibility.ts`
+  (28 checks: base faces always regular, lateral faces regular iff grade
+  2, zero attach options from a pointed face, Catalan solids unaffected)
+  and a new e2e test in `tests/e2e/face-attach.spec.ts` proving both the
+  "pointed face offers nothing" and "regular base attaches, straight to
+  Full Catalog" cases live in one browser session.
+- Confirmed (not assumed): every Miscellaneous shape gets a real
+  wireframe preview for free, the same way every other registry shape
+  does — `ShapePreviewCard`/`ShapePreview.tsx` draw directly from
+  `spec.vertices`/`spec.edges` via a generic 2D-canvas projection, no
+  per-shape asset needed.
