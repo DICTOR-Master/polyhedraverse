@@ -438,3 +438,64 @@ real and general, not a divide-only illusion.
   finished adapter piece needs BOTH of its end faces (the hex + the
   target polygon) registered as real, attachable faces once the solid
   exists — not just the flat boundary loops RVCMG's own states are.
+  **When this lands, "Attach via face…" should surface every
+  geometrically valid match (including these adapter pieces and the
+  graded pyramids below), not just same-family shapes** (direct user
+  instruction, 2026-09-15).
+
+## A planned "Miscellaneous" family: graded pyramids (and, eventually, the adapter pieces above)
+
+Direct user request (2026-09-15), separate from RVCMG's own vertex-
+coalescence math: a new face-attach add-on family for irregular pieces
+— starting with **graded pyramids**, a base polygon topped by an apex
+whose height is driven by a target APEX ANGLE (the interior angle of
+each lateral triangular face, at the apex) rather than one fixed
+height. Four grades proposed and confirmed: 0 (low), 1 (standard —
+reproduces whatever regular-faced pyramid already exists for that
+base), 2 (tall), 3 (sharp, "like star solids"). Eventually this family
+is meant to also hold the 7 RVCMG adapter pieces once they're real
+solids, per the user's own framing — not a coincidence, a shared home
+for "attachable pieces that aren't one of the classical polyhedron
+families."
+
+**Prototyped and verified for a triangular base**
+(`app/lib/polyhedra/gradedPyramids.ts`, `npm run
+validate:graded-pyramids`): for a regular n-gon base of unit edge,
+`apexHeightForAngle(n, angle)` derives the exact height via
+`L = 1/(2*sin(angle/2))` (slant edge length) then
+`h = sqrt(L^2 - R^2)` (R = the base's own circumradius) — real
+geometry, not a fitted curve. Grade values (0/1/2/3 → 100°/60°/40°/20°)
+are a documented, adjustable default, not a forced convention; grade 1
+(60°) is fixed because that's the one apex angle that makes every
+lateral face equilateral, for ANY base shape.
+
+**Confirmed computationally, a genuinely useful side effect of building
+this**: a pyramid degenerates (`h -> 0`) exactly at apex angle
+`360/n` degrees — for a triangular base that's 120°, confirmed by
+direct construction; for a HEXAGONAL base it's exactly 60°, which is
+also the exact apex angle a unit-edge equilateral triangle needs. This
+is the actual reason no Johnson solid or convex deltahedron is a
+regular-faced hexagonal pyramid — it's not merely absent from the
+classification, it's geometrically impossible, confirmed directly
+(`apexHeightForAngle(6, 60)` correctly throws rather than returning a
+degenerate or fake height).
+
+Grade 1 on a triangular base was confirmed to exactly reproduce the
+existing `D4` (regular tetrahedron), vertex for vertex — a strong
+correctness check on the apex-angle formula itself, not just an
+isolated new construction.
+
+### Outstanding (graded pyramids)
+
+- Square, pentagonal, and hexagonal REGULAR bases — same formula,
+  should be close to a parameter change (verify grade 1 reproduces J1/
+  J2 where those exist; hexagonal base has NO valid grade-1 by the
+  degenerate-limit finding above, needs its own decision for what
+  "standard" means there, if anything).
+- IRREGULAR bases (golden rhombus, kite, the real hemi-RD hexagon) —
+  a genuinely different problem: their lateral faces aren't congruent,
+  so there's no single apex angle, only a per-edge one. Not yet
+  designed.
+- The shared "Miscellaneous" registry family itself (`families.ts`) —
+  not yet created; both graded pyramids and the 7 RVCMG adapter pieces
+  are meant to eventually live there together.
