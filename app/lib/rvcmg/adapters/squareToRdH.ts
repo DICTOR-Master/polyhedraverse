@@ -89,10 +89,34 @@ export function deriveSquareToRdH(): AdapterPieceResult {
   const angles = groups.map(groupAngle);
   const targetAngles = assignTargetAngles(angles);
 
+  // Direct user instruction (2026-09-16): rotate the whole assignment so
+  // RD-H's own LONGEST hex edges (v3-v4 and v6-v1, length 1 vs. the 4
+  // short edges' sqrt(3)/2 -- hemiRdInterface.ts's own documented D2h
+  // symmetry) end up parallel to the square's own sides, overriding
+  // assignTargetAngles's default least-corner-twist phase for this piece
+  // specifically (a real, separate design choice, not a derived
+  // necessity -- confirmed correct visually and by direct measurement
+  // rather than assumed). The (v2,v3)-group corner and the v4 corner are
+  // adjacent by construction (indices 1 and 2 in `groups` above, and the
+  // hex's own vertices are already in monotonic angular order so ranks
+  // match group indices exactly, confirmed computationally), so the
+  // square's edge between them is exactly the surviving image of the
+  // original v3-v4 edge -- aligning ITS direction with v3-v4's own
+  // original direction is the real criterion, not an arbitrary rotation.
+  // A uniform phase shift changes only the square's absolute
+  // orientation, never its shape (edge lengths / right angles are
+  // rotation-invariant), so this can't disturb any of this function's
+  // own downstream correctness checks.
+  const v3 = posOf(s6, 'v3');
+  const longEdgeDir = Math.atan2(dot(sub(v4, v3), w), dot(sub(v4, v3), u));
+  const currentEdge1Dir = targetAngles[1] + (3 * Math.PI) / 4; // adjacent-corners-on-a-circle chord-direction formula
+  const rotationOffset = longEdgeDir - currentEdge1Dir;
+  const alignedTargetAngles = targetAngles.map((a) => a + rotationOffset);
+
   const EDGE = 1; // unit edge, matching a unit-edge cube face
   const circumradius = EDGE / Math.sqrt(2);
   const targetFor = (groupIndex: number): Vec3 => {
-    const theta = targetAngles[groupIndex];
+    const theta = alignedTargetAngles[groupIndex];
     return add(centroid, add(scale(u, circumradius * Math.cos(theta)), scale(w, circumradius * Math.sin(theta))));
   };
   const targetV1 = targetFor(0);

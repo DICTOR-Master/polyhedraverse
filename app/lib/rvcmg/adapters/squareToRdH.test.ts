@@ -27,6 +27,35 @@ const e2 = sub(final.vertices[3].pos, final.vertices[0].pos);
 const cosAngle = dot(e1, e2) / (Math.hypot(...e1) * Math.hypot(...e2));
 check('corners are real 90° angles (a genuine square, not a rhombus)', Math.abs(cosAngle) < 1e-9);
 
+// Direct user instruction (2026-09-16): RD-H's own longest hex edges
+// (v3-v4, v6-v1) must end up parallel to the finished square's own
+// sides. Measured directly against the real initial/final states, not
+// trusted from the derivation's own reasoning.
+{
+  const initial = result.states[0];
+  const posOf = (id: string) => initial.vertices.find((v) => v.id === id)!.pos;
+  const v3 = posOf('v3');
+  const v4 = posOf('v4');
+
+  // Find which final corner is v4 and which is the merged (v2,v3) pair,
+  // to isolate the exact square edge that's the surviving image of v3-v4.
+  const v4Corner = final.vertices.find((v) => v.id === 'v4')!;
+  const pairCorner = final.vertices.find((v) => v.sourceIds.length === 2 && v.sourceIds.includes('v2') && v.sourceIds.includes('v3'))!;
+  const squareEdge = sub(v4Corner.pos, pairCorner.pos);
+  const originalLongEdge = sub(v4, v3);
+
+  // Parallel (not necessarily same-direction) in 3D: the cross product's
+  // magnitude relative to the vectors' own lengths must be ~0.
+  const cross: Vec3 = [
+    squareEdge[1] * originalLongEdge[2] - squareEdge[2] * originalLongEdge[1],
+    squareEdge[2] * originalLongEdge[0] - squareEdge[0] * originalLongEdge[2],
+    squareEdge[0] * originalLongEdge[1] - squareEdge[1] * originalLongEdge[0],
+  ];
+  const crossMag = Math.hypot(...cross);
+  const denom = Math.hypot(...squareEdge) * Math.hypot(...originalLongEdge);
+  check(`the square's edge descended from RD-H's long edge (v3-v4) is parallel to it (sin(angle)=${(crossMag / denom).toExponential(3)})`, crossMag / denom < 1e-6);
+}
+
 // --- Derivation-reversibility, including the non-identity deformation step (a math check on the derivation itself, not a claim about the physical piece attaching/detaching) ---
 let back = final;
 for (let i = result.ops.length - 1; i >= 0; i--) {
