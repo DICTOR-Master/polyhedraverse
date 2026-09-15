@@ -39,9 +39,19 @@
  */
 
 import { type Vec3, buildFaceConnectors, dist } from '../polyhedra/core';
-import { POLYHEDRA } from '../polyhedra/index';
+// Imports RHOMBIC_DODECAHEDRON directly from catalan.ts, NOT from the
+// combined `polyhedra/index.ts` -- that combined module now also
+// assembles the Miscellaneous family (app/lib/polyhedra/miscellaneous/),
+// which itself pulls in the RVCMG adapter pieces, which need this very
+// file. Importing the top-level index here would make that a real
+// circular import (`index.ts` -> `miscellaneous/` -> `rvcmg-connectors/`
+// -> this file -> `index.ts`), which surfaced live as a runtime
+// "Cannot access 'POLYHEDRA' before initialization" the first time this
+// piece was seeded into the app -- caught by actually running it, not
+// just typechecking (a circular ES-module import type-checks fine).
+import { CATALAN_ADDITIONS } from '../polyhedra/catalan';
 
-const RD = POLYHEDRA.RHOMBIC_DODECAHEDRON;
+const RD = CATALAN_ADDITIONS.RHOMBIC_DODECAHEDRON;
 
 const sub = (a: Vec3, b: Vec3): Vec3 => [a[0] - b[0], a[1] - b[1], a[2] - b[2]];
 const dot = (a: Vec3, b: Vec3): number => a[0] * b[0] + a[1] * b[1] + a[2] * b[2];

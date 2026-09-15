@@ -17,7 +17,12 @@
  */
 
 import { dist, type Vec3 } from '../../polyhedra/core';
-import { POLYHEDRA } from '../../polyhedra/index';
+// Imports directly from catalan.ts, not the combined `polyhedra/index.ts`
+// -- see hemiRdInterface.ts's own comment on the real circular-import
+// bug this avoids. Both real callers (diKiteToRdH.ts,
+// dhKiteToRdH.ts) pass a Catalan solid id, so catalan.ts's own registry
+// covers every real `catalanId` this function is ever called with.
+import { CATALAN_ADDITIONS } from '../../polyhedra/catalan';
 import { hemiRdInterfaceFrame } from '../hemiRdInterface';
 import { coalesce } from '../coalesce';
 import { verifyTransition } from '../verify';
@@ -48,7 +53,7 @@ export interface KiteFaceMeasured {
  * `w = normal x u`).
  */
 export function measureKiteFace(catalanId: string): KiteFaceMeasured {
-  const spec = POLYHEDRA[catalanId];
+  const spec = CATALAN_ADDITIONS[catalanId];
   const face = spec.faces[0];
   const pts = face.map((i) => spec.vertices[i]);
   const centroid: Vec3 = [0, 0, 0];
@@ -82,17 +87,22 @@ export interface KitePieceOptions {
  * `fitTargetPolygon` resolves by least total distortion, not assumed
  * from symmetry the way the rhombus piece's role assignment was.
  *
- * Scale: rescaled so the kite's own SHORT edge is exactly 1 — a
- * documented judgment call, not a forced convention (a kite has two
- * genuinely different edge lengths, so unlike every other piece there
- * is no single "the edge" to normalize to 1; the short edge was picked
- * for consistency between DI/DH, both of which happen to have their
- * short edge first in the same measured winding position).
+ * Scale: NOT rescaled at all -- uses `measured`'s own real, current
+ * radii directly. An earlier version rescaled so the kite's own short
+ * edge was exactly 1 (matching the "shared unit-edge convention" every
+ * non-Catalan piece uses); a real bug, caught computationally
+ * (2026-09-15) the same way goldenRhombusToRdH.ts's own EDGE=1 bug was:
+ * direct `facesCongruent` testing against the live registry found zero
+ * matches, because DELTOIDAL_ICOSITETRAHEDRON/HEXECONTAHEDRON are
+ * Catalan solids (circumradius-1 normalized, not unit-edge --
+ * `docs/catalan-solids-spec.md`), so a short-edge-1 kite is the wrong
+ * absolute size to ever match either one. Fixed by keeping `measured`'s
+ * own real scale untouched -- an adapter piece's target face must match
+ * its target shape's CURRENT real scale, not an assumed convention.
  */
 export function deriveKiteToRdH({ catalanId, pieceName }: KitePieceOptions): AdapterPieceResult {
   const measured = measureKiteFace(catalanId);
-  const s = 1 / measured.edgeShort;
-  const targetCorners: TargetCorner[] = measured.corners.map((c) => ({ relativeAngle: c.theta, radius: c.r * s }));
+  const targetCorners: TargetCorner[] = measured.corners.map((c) => ({ relativeAngle: c.theta, radius: c.r }));
 
   const s6 = hemiRdStartState();
   const { centroid, u, w } = hemiRdInterfaceFrame();

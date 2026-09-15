@@ -15,7 +15,10 @@
  */
 
 import { dist, type Vec3 } from '../../polyhedra/core';
-import { POLYHEDRA } from '../../polyhedra/index';
+// Imports directly from catalan.ts, not the combined `polyhedra/index.ts`
+// -- see hemiRdInterface.ts's own comment on the real circular-import
+// bug this avoids.
+import { CATALAN_ADDITIONS } from '../../polyhedra/catalan';
 import { hemiRdInterfaceFrame } from '../hemiRdInterface';
 import { coalesce } from '../coalesce';
 import { verifyTransition } from '../verify';
@@ -32,14 +35,27 @@ const dot = (a: Vec3, b: Vec3): number => a[0] * b[0] + a[1] * b[1] + a[2] * b[2
 /**
  * The rhombic triacontahedron's own rhombus, measured directly from the
  * registry (never hand-copied): edge length `1/phi` and diagonal ratio
- * exactly `phi` in RT's own circumradius-1 frame. Rescaled here to unit
- * edge length (multiply by `phi`) — the same shared-scale convention
- * every adapter piece uses — giving half-diagonals `phi/sqrt(phi^2+1)`
- * (long) and `1/sqrt(phi^2+1)` (short) for a UNIT-EDGE rhombus with the
- * real RT proportions.
+ * exactly `phi` in RT's own circumradius-1 frame (Catalan solids in
+ * this registry are normalized by circumradius, NEVER by edge length --
+ * `makeSpecByCircumradius`, `docs/catalan-solids-spec.md` -- so RT's own
+ * edge is not 1 the way a Platonic/Johnson/deltahedron's is).
+ *
+ * A real bug, caught computationally (2026-09-15, while wiring this
+ * piece's real 3D solid and cross-checking actual face-attach against
+ * the live registry, not assumed from the math alone): an earlier
+ * version of this file rescaled the target rhombus to EDGE=1 here,
+ * under the belief that unit-edge is "the same shared-scale convention
+ * every adapter piece uses." It is NOT, for any Catalan-solid target --
+ * confirmed by direct `facesCongruent` testing, that unit-edge rhombus
+ * did not match ANY face of the real, currently-registered RT (whose
+ * own edge is `1/phi ~ 0.618`, not 1), meaning this piece could never
+ * actually have attached to the shape it exists to mate with. Fixed by
+ * using RT's own measured edge directly (`EDGE = RT_FACE_MEASURED.edge`
+ * below) -- an adapter piece's target face must match its target
+ * shape's CURRENT real scale, not an assumed universal convention.
  */
 const RT_FACE_MEASURED = (() => {
-  const rt = POLYHEDRA.RHOMBIC_TRIACONTAHEDRON;
+  const rt = CATALAN_ADDITIONS.RHOMBIC_TRIACONTAHEDRON;
   const face = rt.faces[0];
   const pts = face.map((i) => rt.vertices[i]);
   const edge = dist(pts[0], pts[1]);
@@ -49,8 +65,9 @@ const RT_FACE_MEASURED = (() => {
 })();
 
 export const GOLDEN_RATIO_MEASURED: number = RT_FACE_MEASURED.ratio;
+export const RHOMBIC_TRIACONTAHEDRON_EDGE_MEASURED: number = RT_FACE_MEASURED.edge;
 
-const EDGE = 1; // unit edge, matching a unit-edge rhombic-triacontahedron face
+const EDGE = RT_FACE_MEASURED.edge; // RT's own real, current edge length -- not an assumed unit-edge convention
 const HALF_DIAG_LONG = EDGE / Math.sqrt(GOLDEN_RATIO_MEASURED ** 2 + 1) * GOLDEN_RATIO_MEASURED;
 const HALF_DIAG_SHORT = EDGE / Math.sqrt(GOLDEN_RATIO_MEASURED ** 2 + 1);
 

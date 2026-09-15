@@ -13,7 +13,12 @@
  */
 
 import { dist, type Vec3 } from '../../polyhedra/core';
-import { POLYHEDRA } from '../../polyhedra/index';
+// Imports directly from catalan.ts, not the combined `polyhedra/index.ts`
+// -- see hemiRdInterface.ts's own comment on the real circular-import
+// bug this avoids (index.ts -> Miscellaneous -> rvcmg-connectors ->
+// this file -> index.ts), caught live as a runtime error, not by
+// typechecking.
+import { CATALAN_ADDITIONS } from '../../polyhedra/catalan';
 import { HEMI_RD_INTERFACE, hemiRdInterfaceFrame } from '../hemiRdInterface';
 import { coalesce } from '../coalesce';
 import { verifyTransition } from '../verify';
@@ -36,8 +41,8 @@ const dot = (a: Vec3, b: Vec3): number => a[0] * b[0] + a[1] * b[1] + a[2] * b[2
  * needs to physically mate with.
  */
 export const RD_EDGE_LENGTH: number = (() => {
-  const [i, j] = POLYHEDRA.RHOMBIC_DODECAHEDRON.edges[0];
-  return dist(POLYHEDRA.RHOMBIC_DODECAHEDRON.vertices[i], POLYHEDRA.RHOMBIC_DODECAHEDRON.vertices[j]);
+  const [i, j] = CATALAN_ADDITIONS.RHOMBIC_DODECAHEDRON.edges[0];
+  return dist(CATALAN_ADDITIONS.RHOMBIC_DODECAHEDRON.vertices[i], CATALAN_ADDITIONS.RHOMBIC_DODECAHEDRON.vertices[j]);
 })();
 
 /** The hex interface rescaled so RD's own edge length is exactly 1 — the shared physical scale every adapter piece is built in. */

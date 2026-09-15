@@ -24,12 +24,15 @@ function checkKitePiece(label: string, result: AdapterPieceResult, catalanId: st
   check(`${label}: exactly 2 short + 2 long edges (a real kite, not a rhombus)`, Math.abs(sorted[1] - sorted[0]) < 1e-6 && Math.abs(sorted[3] - sorted[2]) < 1e-6 && sorted[2] - sorted[1] > 1e-6);
 
   // Cross-check the measured proportions directly, independent of the
-  // derivation's own internal edgeLenBetweenCorners logic.
+  // derivation's own internal edgeLenBetweenCorners logic. NOT rescaled
+  // (a real bug this project shipped and caught: rescaling to "short
+  // edge = 1" made this piece unable to facesCongruent-match the real,
+  // currently-registered Catalan solid at all, since that solid's own
+  // scale is circumradius-1, not unit-edge).
   const measured = measureKiteFace(catalanId);
-  const scale = 1 / measured.edgeShort;
   check(`${label}: short/long edge ratio matches the measured Catalan face exactly`, Math.abs(sorted[0] / sorted[2] - measured.edgeShort / measured.edgeLong) < 1e-9);
-  check(`${label}: the short edge is exactly unit length (the chosen shared scale)`, Math.abs(sorted[0] - 1) < 1e-9);
-  check(`${label}: the long edge matches the measured, rescaled value exactly`, Math.abs(sorted[2] - measured.edgeLong * scale) < 1e-9);
+  check(`${label}: the short edge exactly matches the REAL Catalan face's own short edge (not rescaled)`, Math.abs(sorted[0] - measured.edgeShort) < 1e-9);
+  check(`${label}: the long edge exactly matches the REAL Catalan face's own long edge (not rescaled)`, Math.abs(sorted[2] - measured.edgeLong) < 1e-9);
 
   // --- Derivation-reversibility through the real (non-identity) deformation ---
   let back = final;

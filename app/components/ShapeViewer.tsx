@@ -22,6 +22,26 @@ import { FOURD_CAPABLE_IDS } from '../lib/polyhedra/fourD';
 import { edgeClosingCorrection } from '../lib/polyhedra/fold4';
 import { buildWallPrism, duoprismBuildDepth } from '../lib/polyhedra/duoprism';
 
+/**
+ * The Miscellaneous family's face-attach eligibility policy, in one
+ * place rather than duplicated at each call site. `spec.attachableFaceIndices`
+ * (set only by RVCMG connector pieces, see rvcmg-connectors/index.ts)
+ * takes priority when present -- exactly those faces are eligible,
+ * regardless of `isRegularFace` (a wall/side triangle can coincidentally
+ * BE a genuine regular polygon, and the golden-rhombus/kite pieces' own
+ * real target faces are deliberately NOT regular polygons -- both wrong
+ * under a pure regularity rule, direct user report 2026-09-15: wall
+ * faces "look confusingly attachable to squares etc"). Everything else
+ * in the Miscellaneous family (graded pyramids) falls back to
+ * `isRegularFace`, unchanged from before. Every other family is fully
+ * unrestricted, exactly as already shipped.
+ */
+function isFaceEligibleForAttach(spec: PolyhedronSpec, faceIndex: number): boolean {
+  if (spec.attachableFaceIndices) return spec.attachableFaceIndices.includes(faceIndex);
+  if (!MISCELLANEOUS_ADDITION_IDS.includes(spec.id)) return true;
+  return isRegularFace(spec.vertices, spec.faces[faceIndex]);
+}
+
 const VERTEX_RADIUS = 0.06; // relative to unit edge length
 const COLOR_FREE = 0xffcc33;
 const COLOR_SELECTED = 0x33ff88;
@@ -1070,16 +1090,13 @@ export default function ShapeViewer({
       // Real congruence (edge lengths + angles), not just matching vertex
       // count — see the onClick filter above for why this matters once
       // irregular-faced (Catalan) shapes are selectable. For the
-      // Miscellaneous family specifically (graded pyramids and, later,
-      // RVCMG adapter pieces) ONLY, restrict to the incoming shape's own
-      // REGULAR faces — direct user instruction, scoped deliberately to
-      // this one family so Catalan solids' own irregular rhombi/kite
-      // faces keep working exactly as already shipped: a graded
-      // pyramid's pointed (non-regular lateral) face must never be an
-      // attach target, even if one happens to be geometrically congruent
-      // to something by coincidence.
+      // Miscellaneous family specifically ONLY, restrict to the incoming
+      // shape's own ELIGIBLE faces (isFaceEligibleForAttach below) —
+      // direct user instruction, scoped deliberately to this one family
+      // so Catalan solids' own irregular rhombi/kite faces keep working
+      // exactly as already shipped.
       const incomingFaceIndex = spec.faces.findIndex(
-        (f) => (!MISCELLANEOUS_ADDITION_IDS.includes(specId) || isRegularFace(spec.vertices, f)) && facesCongruent(targetSpec.vertices, targetFaceVerts, spec.vertices, f),
+        (f, fi) => isFaceEligibleForAttach(spec, fi) && facesCongruent(targetSpec.vertices, targetFaceVerts, spec.vertices, f),
       );
       if (incomingFaceIndex === -1) return; // UI should only ever offer compatible shapes
 
@@ -2007,14 +2024,15 @@ export default function ShapeViewer({
       // rhombi/kite faces keep face-attaching exactly as already shipped):
       // a graded pyramid's pointed (non-regular lateral) face is never a
       // valid attach surface at all, on either side of the connection —
-      // "so pointed pyramids don't stick to each other."
-      const targetIsMiscRestricted = MISCELLANEOUS_ADDITION_IDS.includes(specId);
-      const targetFaceEligible = targetFace !== null && (!targetIsMiscRestricted || isRegularFace(targetVertices, targetFace));
+      // "so pointed pyramids don't stick to each other." RVCMG connector
+      // pieces use a different, more precise rule (isFaceEligibleForAttach
+      // below): exactly their two real ports, regardless of regularity.
+      const targetFaceEligible = faceIndex !== null && targetFace !== null && isFaceEligibleForAttach(POLYHEDRA[specId], faceIndex);
       const faceAttachOptions =
         faceIndex !== null && targetFaceEligible && targetFace !== null && !faceOccupied
           ? POLYHEDRON_IDS.filter((id) =>
               POLYHEDRA[id].faces.some(
-                (f) => (!MISCELLANEOUS_ADDITION_IDS.includes(id) || isRegularFace(POLYHEDRA[id].vertices, f)) && facesCongruent(targetVertices, targetFace, POLYHEDRA[id].vertices, f),
+                (f, fi) => isFaceEligibleForAttach(POLYHEDRA[id], fi) && facesCongruent(targetVertices, targetFace, POLYHEDRA[id].vertices, f),
               ),
             )
           : [];

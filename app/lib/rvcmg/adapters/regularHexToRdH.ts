@@ -153,5 +153,21 @@ export function deriveRegularHexToRdH(): AdapterPieceResult {
     problems.push('undoing step 1 (separating v1/v2 back) does not reproduce the original hemi-RD hex interface');
   }
 
-  return { states: [s6, s5, s6Regular], ops: [op1], problems };
+  // Public output relabel: 'v1r'/'v2r' are this file's OWN transient
+  // names for the split-vertex step (needed above to avoid colliding
+  // with the composite-undo's real 'v1'/'v2'), but to any EXTERNAL
+  // consumer they represent the exact same interface slots as 'v1' and
+  // 'v2' -- Stage 8's solid.ts (buildAdapterSolid) recovers each target
+  // vertex's originating hex vertex purely by parsing id strings back to
+  // the hex's own ids ('v1'..'v6'), so a leftover 'v1r'/'v2r' here would
+  // silently fail to resolve (caught live: "leaf id v1r is not one of
+  // the hex interface's own vertex ids"). Relabeling here, not in
+  // solid.ts, keeps that resolution logic generic instead of special-
+  // casing this one piece's internal naming choice.
+  const s6RegularPublic: RvcmgState = {
+    ...s6Regular,
+    vertices: s6Regular.vertices.map((v) => (v.id === 'v1r' ? { ...v, id: 'v1' } : v.id === 'v2r' ? { ...v, id: 'v2' } : v)),
+  };
+
+  return { states: [s6, s5, s6RegularPublic], ops: [op1], problems };
 }

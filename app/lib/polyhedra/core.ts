@@ -27,6 +27,24 @@ export interface PolyhedronSpec {
   edges: [number, number][];
   faces: number[][]; // outward-wound (CCW as seen from outside); 3 for deltahedra, larger n-gons for other families
   connectors: Connector[];
+  /**
+   * Optional face-attach eligibility override: indices into `faces` that
+   * are valid attach targets, to the EXCLUSION of every other face on
+   * this shape -- regardless of `isRegularFace`. Only RVCMG connector
+   * pieces set this (their two real "ports" -- the hex interface and the
+   * shape-specific target face -- known exactly at construction time,
+   * see rvcmg-connectors/index.ts). Needed because `isRegularFace` alone
+   * gets this family wrong in BOTH directions: a wall/side triangle can
+   * coincidentally BE a genuine regular polygon (nothing stops that) and
+   * would wrongly become attachable, while the golden-rhombus/kite
+   * pieces' own real target faces are deliberately NOT regular polygons
+   * (matching Catalan solids' own irregular rhombi/kite faces) and would
+   * wrongly be excluded. Every other family leaves this undefined, and
+   * ShapeViewer.tsx's eligibility check falls back to `isRegularFace`
+   * exactly as before -- no behavior change for Catalan solids or
+   * graded pyramids.
+   */
+  attachableFaceIndices?: number[];
 }
 
 export interface FaceConnector {
@@ -244,6 +262,77 @@ export function faceRotationalSymmetry(vertices: Vec3[], face: number[], tol = 1
     if (matches) order++;
   }
   return order;
+}
+
+/**
+ * Rotates a face's cyclic vertex order so vertex 0 lies on a real
+ * mirror-symmetry axis of the polygon (its edge-length sequence reads
+ * as a palindrome starting there), if one exists. Every hand-authored
+ * face list in this registry already satisfies this by construction —
+ * a kite's own vertex 0 is deliberately "where the two short edges
+ * meet" (kiteToRdH.ts), a rhombus's any vertex works (both diagonals
+ * are mirror axes) — because `computeFaceAttach`
+ * (verify-face-attach.ts, mirrored in ShapeViewer.tsx) aligns two
+ * congruent faces by matching vertex 0's own direction and reversing
+ * the rest (`incoming[i] <-> target[(n-i)%n]`), which is only correct
+ * when vertex 0 sits on such an axis — the SAME "face-vertex-0 needing
+ * a consistent geometric role, not just a consistent index" bug class
+ * `docs/build-plan.md` records from the first Catalan solids.
+ *
+ * Needed for GENERICALLY constructed faces (`app/lib/rvcmg/solid.ts`'s
+ * hex/target caps), where vertex 0 is whatever a generic algorithm
+ * happened to start from, not hand-picked — caught live: the real
+ * hemi-RD hex interface (D2h symmetry, not full hexagonal symmetry)
+ * failed exactly this way in `verify:face-attach` before this fix,
+ * every other already-registered face having satisfied it by hand-
+ * authored convention rather than by an enforced invariant. Returns the
+ * face unrotated if no starting vertex satisfies the palindrome (a
+ * genuinely asymmetric polygon, e.g. a scalene wall triangle) — such a
+ * face can only ever be congruent to an equally asymmetric one, which
+ * would need the same fix applied to IT, not this one; harmless
+ * otherwise since facesCongruent already wouldn't match it to anything
+ * with a real mirror axis.
+ */
+export function rotateFaceToMirrorAxis(vertices: Vec3[], face: number[], tol = 1e-6): number[] {
+  const n = face.length;
+  const pts = face.map((i) => vertices[i]);
+  const edges = Array.from({ length: n }, (_, i) => dist(pts[i], pts[(i + 1) % n]));
+  // A shape can have MORE THAN ONE valid mirror-axis start (a kite's own
+  // 4-gon has exactly two: the short-short corner AND the long-long
+  // corner, both individually satisfying the palindrome check below) --
+  // a real bug, caught computationally (2026-09-15): picking whichever
+  // one happened to come first left this function unable to match the
+  // REAL, externally-authored Catalan solid registry's own consistent
+  // convention (kiteToRdH.ts's own documented choice: "corner 0 is
+  // where the two SHORT edges meet"). Collecting every valid candidate
+  // and preferring the one with the SMALLEST shared adjacent-edge value
+  // reproduces that same convention generally, without hard-coding
+  // "kite" anywhere in this family-agnostic function: at any valid
+  // mirror start k, the two edges touching vertex 0 (`edges[k]` and
+  // `edges[k-1]`) are equal to each other by definition of the check
+  // below, so "smallest" unambiguously means "the shorter of the two
+  // symmetric edge values this shape has," matching "short-short" for a
+  // kite and simply being a no-op tie-break for a fully regular polygon
+  // or a rhombus (where every valid start shares the same edge length
+  // anyway).
+  const validStarts: number[] = [];
+  for (let k = 0; k < n; k++) {
+    let ok = true;
+    for (let j = 0; j < n; j++) {
+      const a = edges[(k + j) % n];
+      const b = edges[(k + n - 1 - j) % n];
+      if (Math.abs(a - b) > tol) {
+        ok = false;
+        break;
+      }
+    }
+    if (ok) validStarts.push(k);
+  }
+  if (validStarts.length > 0) {
+    const k = validStarts.reduce((best, cand) => (edges[cand] < edges[best] ? cand : best));
+    return Array.from({ length: n }, (_, i) => face[(k + i) % n]);
+  }
+  return face;
 }
 
 /**

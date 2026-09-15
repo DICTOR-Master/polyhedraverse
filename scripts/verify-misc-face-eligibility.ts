@@ -17,8 +17,9 @@
  * covers the policy this session added on top of it.
  */
 import { POLYHEDRA, POLYHEDRON_IDS } from '../app/lib/polyhedra/index';
-import { MISCELLANEOUS_ADDITION_IDS } from '../app/lib/polyhedra/miscellaneous';
-import { facesCongruent, isRegularFace, faceRotationalSymmetry } from '../app/lib/polyhedra/core';
+import { MISCELLANEOUS_ADDITION_IDS, GRADED_PYRAMID_ADDITION_IDS } from '../app/lib/polyhedra/miscellaneous';
+import { RVCMG_CONNECTOR_ADDITION_IDS } from '../app/lib/polyhedra/miscellaneous/rvcmg-connectors';
+import { facesCongruent, isRegularFace, faceRotationalSymmetry, type PolyhedronSpec } from '../app/lib/polyhedra/core';
 
 let failures = 0;
 function check(label: string, condition: boolean) {
@@ -26,19 +27,22 @@ function check(label: string, condition: boolean) {
   if (!condition) failures++;
 }
 
+// Mirrors ShapeViewer.tsx's own isFaceEligibleForAttach exactly:
+// attachableFaceIndices (RVCMG pieces) takes priority when set, else
+// isRegularFace within the Miscellaneous family, else unrestricted.
+function isFaceEligibleForAttach(spec: PolyhedronSpec, faceIndex: number): boolean {
+  if (spec.attachableFaceIndices) return spec.attachableFaceIndices.includes(faceIndex);
+  if (!MISCELLANEOUS_ADDITION_IDS.includes(spec.id)) return true;
+  return isRegularFace(spec.vertices, spec.faces[faceIndex]);
+}
+
 // Mirrors ShapeViewer.tsx's faceAttachOptions computation exactly.
 function attachOptionsFor(targetId: string, faceIdx: number): string[] {
   const targetSpec = POLYHEDRA[targetId];
   const targetFace = targetSpec.faces[faceIdx];
-  const targetIsMiscRestricted = MISCELLANEOUS_ADDITION_IDS.includes(targetId);
-  const targetEligible = !targetIsMiscRestricted || isRegularFace(targetSpec.vertices, targetFace);
-  if (!targetEligible) return [];
+  if (!isFaceEligibleForAttach(targetSpec, faceIdx)) return [];
   return POLYHEDRON_IDS.filter((id) =>
-    POLYHEDRA[id].faces.some(
-      (f) =>
-        (!MISCELLANEOUS_ADDITION_IDS.includes(id) || isRegularFace(POLYHEDRA[id].vertices, f)) &&
-        facesCongruent(targetSpec.vertices, targetFace, POLYHEDRA[id].vertices, f),
-    ),
+    POLYHEDRA[id].faces.some((f, fi) => isFaceEligibleForAttach(POLYHEDRA[id], fi) && facesCongruent(targetSpec.vertices, targetFace, POLYHEDRA[id].vertices, f)),
   );
 }
 
@@ -81,8 +85,12 @@ check(
 );
 
 // --- Every grade's base face is regular, every non-grade-2 lateral is
-// not, across all three bases -- the general shape of the policy. ---
-for (const id of MISCELLANEOUS_ADDITION_IDS) {
+// not, across all three bases -- the general shape of the policy.
+// Scoped to graded pyramids only (RVCMG_CONNECTOR_ADDITION_IDS uses a
+// completely different eligibility mechanism, attachableFaceIndices,
+// checked in its own block below -- their "base" hex face is
+// deliberately NOT a regular polygon at all). ---
+for (const id of GRADED_PYRAMID_ADDITION_IDS) {
   const spec = POLYHEDRA[id];
   const grade = Number(id.match(/_G(\d)$/)?.[1]);
   const baseN = spec.faces.reduce((max, f) => Math.max(max, f.length), 0);
@@ -93,6 +101,22 @@ for (const id of MISCELLANEOUS_ADDITION_IDS) {
     const lateralIsRegular = isRegularFace(spec.vertices, spec.faces[lateralFaceIdx]);
     check(`${id}: lateral face regularity matches grade (regular iff grade 2, got grade ${grade}, regular=${lateralIsRegular})`, lateralIsRegular === (grade === 2));
   }
+}
+
+// --- RVCMG connector pieces: attachableFaceIndices names exactly the
+// two real ports (hex + target), and both are reachable through
+// attachOptionsFor with at least one real cross-family match -- proving
+// the eligibility gate doesn't just exclude everything by accident. ---
+for (const id of RVCMG_CONNECTOR_ADDITION_IDS) {
+  const spec = POLYHEDRA[id];
+  check(`${id}: has attachableFaceIndices set to exactly 2 faces`, Array.isArray(spec.attachableFaceIndices) && spec.attachableFaceIndices.length === 2);
+  const [hexIdx, targetIdx] = spec.attachableFaceIndices ?? [-1, -1];
+  spec.faces.forEach((_, fi) => {
+    const shouldBeEligible = fi === hexIdx || fi === targetIdx;
+    check(`${id}: face ${fi} eligibility matches attachableFaceIndices (expected ${shouldBeEligible})`, isFaceEligibleForAttach(spec, fi) === shouldBeEligible);
+  });
+  const targetOptions = attachOptionsFor(id, targetIdx);
+  check(`${id}: target port offers at least one real cross-family match (got ${targetOptions.length}: ${targetOptions.slice(0, 3).join(', ')})`, targetOptions.length > 0);
 }
 
 // --- Catalan solids must be completely unaffected: their irregular

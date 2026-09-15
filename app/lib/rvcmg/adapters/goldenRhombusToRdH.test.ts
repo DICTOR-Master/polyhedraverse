@@ -1,4 +1,4 @@
-import { deriveGoldenRhombusToRdH, GOLDEN_RATIO_MEASURED } from './goldenRhombusToRdH';
+import { deriveGoldenRhombusToRdH, GOLDEN_RATIO_MEASURED, RHOMBIC_TRIACONTAHEDRON_EDGE_MEASURED } from './goldenRhombusToRdH';
 import { separate } from '../separate';
 import { statesApproximatelyEqual } from '../types';
 import { dist, type Vec3 } from '../../polyhedra/core';
@@ -19,7 +19,10 @@ const final = result.states[2];
 check('final state has exactly 4 vertices', final.vertices.length === 4);
 
 const edgeLens = final.vertices.map((v, i) => dist(v.pos, final.vertices[(i + 1) % 4].pos));
-check('all 4 edges are exactly unit length (a rhombus is always equilateral)', edgeLens.every((l) => Math.abs(l - 1) < 1e-9));
+check(
+  'all 4 edges exactly match the REAL rhombic triacontahedron face edge length (not an assumed unit edge -- a real bug this project shipped and caught)',
+  edgeLens.every((l) => Math.abs(l - RHOMBIC_TRIACONTAHEDRON_EDGE_MEASURED) < 1e-9),
+);
 
 const diag1 = dist(final.vertices[0].pos, final.vertices[2].pos);
 const diag2 = dist(final.vertices[1].pos, final.vertices[3].pos);

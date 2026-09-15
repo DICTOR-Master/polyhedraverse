@@ -15,7 +15,7 @@
  * base (90° is precisely n=4's own degenerate limit).
  */
 import { buildGradedPyramid, validateGradedPyramid, apexHeightForAngle, gradeApexAngleDeg, degenerateApexAngleDeg, regularPolygonCircumradius, GRADE_NUMBERS } from '../app/lib/polyhedra/gradedPyramids';
-import { MISCELLANEOUS_ADDITIONS } from '../app/lib/polyhedra/miscellaneous';
+import { GRADED_PYRAMID_ADDITIONS } from '../app/lib/polyhedra/miscellaneous';
 import { POLYHEDRA } from '../app/lib/polyhedra/index';
 import { dist } from '../app/lib/polyhedra/core';
 
@@ -49,9 +49,13 @@ for (const base of BASES) {
   check(`${base.label} base grade 2 exactly reproduces the existing ${base.standardId}`, grade2Spec.vertices.every((v, i) => dist(v, standard.vertices[i]) < 1e-9));
 }
 
-// --- The real registry entries (miscellaneous.ts) build without throwing and are internally consistent ---
-check('MISCELLANEOUS_ADDITIONS has all 12 entries (3 bases x 4 grades)', Object.keys(MISCELLANEOUS_ADDITIONS).length === 12);
-for (const [id, spec] of Object.entries(MISCELLANEOUS_ADDITIONS)) {
+// --- The real registry entries (pyramids/index.ts) build without throwing and are internally consistent ---
+// Scoped to graded pyramids only -- the Miscellaneous family's OTHER
+// sub-group (rvcmg-connectors) has its own completely different shape
+// (a hex/target-polygon taper, not a base+apex pyramid) and its own
+// dedicated verify:rvcmg-solids script.
+check('GRADED_PYRAMID_ADDITIONS has all 12 entries (3 bases x 4 grades)', Object.keys(GRADED_PYRAMID_ADDITIONS).length === 12);
+for (const [id, spec] of Object.entries(GRADED_PYRAMID_ADDITIONS)) {
   const baseFaceSize = spec.faces[0].length; // faces[0] is always the base, by buildGradedPyramid's own construction
   check(`registry entry ${id}: vertex count matches base size + 1 apex`, spec.vertices.length === baseFaceSize + 1);
   check(`registry entry ${id}: face count matches base + one lateral triangle per base edge`, spec.faces.length === baseFaceSize + 1 && spec.faces.length === spec.faceCount);
