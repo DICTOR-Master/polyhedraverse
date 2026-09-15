@@ -637,7 +637,67 @@ radial projection
 
 This is the RCP formulation developed for Polyhedraverse.
 
-## 21. Provenance
+## 21. Extended Verification: Additional Closures (Polyhedraverse implementation, 2026-09-15)
+
+*Editorial note: this section documents work carried out in the Polyhedraverse codebase after the original RCP method above was written, extending the implementation's own verified closure set beyond the original four. It is added as further evidence in the same spirit as §17's own verification record, not a revision of the RCP method itself — the reflection construction, closure test, and projection formula are unchanged. Verification methodology and diagnostics in this section (including the dualization false-alarm trace in §21.3): Claude Sonnet 5, in collaboration with James Baker.*
+
+### 21.1 The tetrahedron seed has three real closures, not one
+
+The original implementation supplied exactly one verified $\theta$ per seed (§23, as originally written). Re-examining the tetrahedron seed specifically found it satisfies the angle-defect closure test (§11) at three different $k$ (copies meeting at a shared edge), not one:
+
+| $k$ | angle defect | closure kind |
+|---|---|---|
+| 3 | $148.4°$ | closes (5-cell) |
+| 4 | $77.9°$ | closes (16-cell — the original, already-verified case) |
+| 5 | $7.4°$ | closes (600-cell) |
+| $\geq 6$ | negative | does not close |
+
+Only the $k=4$ case (16-cell) had been built and verified before this extension. The other two are equally real closures of the same seed and are addressed below.
+
+### 21.2 The 5-cell: a new $\theta$, derived and verified
+
+For a regular $n$-simplex, the angle between two facet outward normals is the standard, independently-checkable closed form
+
+$$\theta = \arccos\left(-\frac{1}{n}\right).$$
+
+For $n=3$ (the ordinary tetrahedron) this gives $\arccos(-1/3) = 109.47°$, the real, well-known value — confirming the formula before trusting it at $n=4$. At $n=4$:
+
+$$\theta_{\text{5-cell}} = \arccos\left(-\frac{1}{4}\right) \approx 104.4775°.$$
+
+This was then verified directly against the real implementation, not merely trusted from the formula: with the tetrahedron seed and this $\theta$, the reflection recursion (§10) closes at exactly 5 cells, every cell has degree exactly 4 (every one of the 5 tetrahedra touches all 4 others — $K_5$, matching the 5-cell's own known combinatorics), every generated cell is an undistorted isometric copy of the seed (§12, worst measured deviation $3 \times 10^{-16}$), and every adjacent pair shares its full, literally coincident set of embedded vertices (§12) — the same three checks §17 already applies to the original four seeds.
+
+One candidate value was tried and rejected during this process: a plausible-looking angle (also derived from a facet-normal argument, but for the wrong combinatorial object) closed into a real but irrelevant 12-cell structure rather than the 5-cell. This is recorded because it demonstrates the same principle §11 and §13 already state — a value that produces *some* finite closure is not thereby confirmed correct; only a match against the *independently known* target combinatorics (cell count, degree, undistorted copies, shared-face coincidence) counts as verification.
+
+### 21.3 The 600-cell: not a new $\theta$, but the existing dualization operation
+
+No direct $\theta$ was sought for a tetrahedron-seeded 600-cell closure. Instead, §15's own dualization operation was applied to the already-verified dodecahedron→120-cell complex: dualizing exchanges vertices and cells (§15), and the 120-cell's own 600 vertices, each with exactly 4 incident dodecahedral cells, become the 600-cell's own 600 tetrahedral cells under this operation — reproducing the known duality between these two regular 4-polytopes exactly, using the general `dualize()` operation already implemented for any complex, not a case built specifically for this pair.
+
+This was re-verified directly (not merely trusted from the original implementation), including tracing down and ruling out an apparent irregularity: an early diagnostic script measured the resulting dual cells as consistently non-regular tetrahedra (a repeatable 3-short/3-long edge split). Extensive elimination — checking the dual cell's vertex *membership* against an independently-recomputed version (identical), checking that every cell centroid sits at a uniform distance from the origin (uniform to 6 decimal places), and testing the smallest possible case (cube→tesseract→16-cell) to see whether the same pattern appeared there too (it did) — eventually located the actual cause: the diagnostic script itself was computing pairwise distance with a three-dimensional distance function applied to four-dimensional points, silently discarding the fourth coordinate. Reproducing the exact reported discrepancy by deliberately reintroducing that specific error confirmed the diagnosis. The dualization implementation itself was correct throughout; every dual cell, in both the tesseract→16-cell case and the dodecahedron→120-cell→600-cell case, is a genuinely regular tetrahedron once measured correctly in four dimensions.
+
+This is recorded in full, including the wrong turn, for the same reason §11's own "verified seed + verified $\theta$" discipline is stated explicitly: a measurement that appears to show a defect deserves the same scrutiny as one that appears to confirm closure, and the actual fault may lie in the measurement rather than the construction.
+
+### 21.4 Shell structure as recorded data
+
+§10's recursive generation already discovers cells in breadth-first order from the seed cell outward — each cell's distance (in reflection steps) from the seed is therefore already determined during generation. The implementation now records this distance on each generated cell rather than discarding it, so that "every cell within $N$ reflections of the seed" can be queried directly instead of recomputed from the adjacency graph. This is bookkeeping only; it changes nothing about the reflection construction, the closure test, or the projection formula.
+
+### 21.5 Updated closure table
+
+Extending §11.2's own table with the two additional verified tetrahedron closures:
+
+| Seed cell | $\theta$ | Cells | Adjacency degree | 4D polytope |
+|---|---|---|---|---|
+| Tetrahedron | $60°$ | 16 | 4 | 16-cell |
+| Tetrahedron | $\arccos(-1/4) \approx 104.4775°$ | 5 | 4 | 5-cell |
+| Tetrahedron (dualizing the dodecahedron→120-cell result) | — | 600 | 4 | 600-cell |
+| Cube | $90°$ | 8 | 6 | Tesseract |
+| Octahedron | $60°$ | 24 | 8 | 24-cell |
+| Dodecahedron | $36°$ | 120 | 12 | 120-cell |
+
+### 21.6 A routing gap found while looking up parameters by seed identity
+
+Polyhedraverse separately maintains a "graded pyramid" seed (registry id `PYRAMID_TRI_G2`) that is geometrically identical to the tetrahedron seed above — same vertices, same regular-tetrahedron shape — but registered under its own distinct id because it belongs to a different shape family in the UI. The classifier that flags a seed as 4D-capable (§18) tests shape, not id, so it correctly flags `PYRAMID_TRI_G2` as capable; the parameter lookup that supplies $\theta$ for a given closure, however, had been keyed by id, so a shape flagged capable by the classifier could still have no usable $\theta$ despite being geometrically the same tetrahedron as an already-verified seed. This is recorded as a found-and-fixed implementation gap, not a limitation of the RCP method itself (§20's own distinction between the method and its particular implementation applies directly here): the fix looks up parameters by matching a candidate seed's own vertex set against each verified seed's vertex set (to the same numerical tolerance §17 already uses elsewhere), so any future geometrically-tetrahedral duplicate registered under a new id inherits the tetrahedron's three verified closures automatically rather than silently losing them.
+
+## 22. Provenance
 
 Radial Cell Projection was conceived and developed by James Baker during the development of Polyhedraverse in 2026.
 
@@ -647,20 +707,22 @@ The known mathematical objects produced by the method are not claimed as new obj
 
 The subsequent comparison of generated structures against established four-dimensional geometry serves as validation of the implementation.
 
-## 22. Current Scope and Limitations
+## 23. Current Scope and Limitations
 
 The present implementation has four verified regular seed cells: tetrahedron, cube, octahedron, dodecahedron.
+
+*Editorial update (Polyhedraverse implementation, 2026-09-15, see §21): the tetrahedron seed is now verified to have three real closures rather than one (5-cell, 16-cell, 600-cell-via-dualization), for six verified closures in total across the four original seed cells. This does not add a new seed cell — it corrects an undercount of how many of this method's own closures a single already-verified seed actually produces.*
 
 The method should not presently be described as a universal generator for every three-dimensional polyhedron or every possible four-dimensional polytope. In particular:
 
 - $\theta$ is presently supplied as a verified parameter rather than discovered automatically;
-- finite closure is verified for the four supported cases rather than guaranteed for arbitrary inputs;
+- finite closure is verified for the six supported cases (see §21.5) rather than guaranteed for arbitrary inputs;
 - the radial projection is a representation of the generated complex rather than its defining construction;
-- additional seed cells require independent geometric verification before being described as supported RCP cases.
+- additional seed cells, and additional closures of an already-verified seed, require independent geometric verification (per §21's own worked example) before being described as supported RCP cases.
 
 These restrictions are part of the current mathematical definition of the implementation and prevent the method from being described more broadly than the evidence supports.
 
-## 23. Conclusion
+## 24. Conclusion
 
 Radial Cell Projection provides a cell-first computational route from regular three-dimensional polyhedral geometry to four-dimensional cell complexes.
 
@@ -672,6 +734,8 @@ For the four validated cases, the construction produces:
 - cube → tesseract,
 - octahedron → 24-cell,
 - dodecahedron → 120-cell.
+
+*Editorial update (Polyhedraverse implementation, 2026-09-15, see §21): the tetrahedron seed also closes, at two further verified $\theta$/operation choices, to the 5-cell and — by dualizing the already-validated dodecahedron → 120-cell complex — the 600-cell, bringing the validated total to six closures. See §21.5 for the full updated table.*
 
 The resulting four-dimensional structures are then available for radial projection, visualization, interaction, and further computational operations such as dualization.
 
