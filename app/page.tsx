@@ -101,6 +101,16 @@ export default function Home() {
   // 4D themselves -- matches ShapeViewer's own foldAmountRef default.
   const [hasFoldConnections, setHasFoldConnections] = useState(false);
   const [foldPercent, setFoldPercent] = useState(0);
+  // RPC-build (radial-perspective click-to-build), replacing fold4 as
+  // the live 4D folding-construction feature: rpcPickerOpen shows the
+  // small inline "which closure?" choice for a seed with more than one
+  // real target (only D4/PYRAMID_TRI_G2 today); rpcOpen mirrors the
+  // 3D/4D toggle's own current state so its two buttons can be styled
+  // as pressed/unpressed (ShapeViewer never reports this back on its
+  // own — it's pure page-level UI state, same as foldPercent). Both
+  // reset whenever the selection changes to a different node (below).
+  const [rpcPickerOpen, setRpcPickerOpen] = useState(false);
+  const [rpcOpen, setRpcOpen] = useState(true);
   const [changelogOpen, setChangelogOpen] = useState(false);
   // Real user request: "a little x in the corner so you can clear the
   // space" -- the default-state instruction pill has no way to dismiss
@@ -150,6 +160,19 @@ export default function Home() {
     window.addEventListener('keydown', onKeyDown);
     return () => window.removeEventListener('keydown', onKeyDown);
   }, [wheelOpen, browserOpen, welcomeOpen]);
+
+  // Both are pure page-level UI state scoped to "the current selection" --
+  // reset whenever the selection moves to a different node (or away
+  // entirely) so neither leaks into an unrelated node's own panel.
+  // Adjusted during render (React's own recommended pattern for resetting
+  // state when a prop changes), not in an effect -- avoids the extra
+  // render-then-effect-then-render cascade a useEffect version would cause.
+  const [rpcSelectionTrackedId, setRpcSelectionTrackedId] = useState<string | null>(null);
+  if ((nodeSelection?.nodeId ?? null) !== rpcSelectionTrackedId) {
+    setRpcSelectionTrackedId(nodeSelection?.nodeId ?? null);
+    setRpcPickerOpen(false);
+    setRpcOpen(true);
+  }
 
   const handleSave = async () => {
     setSaveStatus('saving');
@@ -433,6 +456,120 @@ export default function Home() {
               >
                 Attach via Duoprism…
               </button>
+            )}
+            {/* RPC-build (radial-perspective click-to-build): replaces
+                fold4 as the live 4D folding-construction feature (fold4's
+                own slider above stays only for already-saved fold4
+                connections — no new UI path creates one). Violet accent,
+                distinct from amber (ordinary)/gold (4D-capable badge)/
+                teal (duoprism)/red (delete) — a genuinely new family so
+                it reads as its own construction mode, not a variant of
+                an existing one. */}
+            {nodeSelection.rpcBuildEligible && !nodeSelection.rpcRoot && (
+              rpcPickerOpen && nodeSelection.rpcClosureOptions.length > 1 ? (
+                <>
+                  <span className="text-xs uppercase tracking-wide" style={{ color: '#b388ff' }}>
+                    Build which 4-polytope?
+                  </span>
+                  {nodeSelection.rpcClosureOptions.map((target) => (
+                    <button
+                      key={target}
+                      type="button"
+                      onClick={() => {
+                        handleRef.current?.beginRpcBuild(nodeSelection.specId, target);
+                        setRpcPickerOpen(false);
+                      }}
+                      className="rounded-full px-4 py-1.5 text-sm font-medium text-white transition-colors"
+                      style={{ background: '#8a3ffc' }}
+                    >
+                      {target}
+                    </button>
+                  ))}
+                  <button
+                    type="button"
+                    onClick={() => setRpcPickerOpen(false)}
+                    className="rounded-full bg-zinc-800 px-4 py-1.5 text-sm font-medium text-zinc-300 transition-colors hover:bg-zinc-700"
+                  >
+                    Cancel
+                  </button>
+                </>
+              ) : (
+                <button
+                  type="button"
+                  onClick={() => {
+                    if (nodeSelection.rpcClosureOptions.length > 1) setRpcPickerOpen(true);
+                    else handleRef.current?.beginRpcBuild(nodeSelection.specId, nodeSelection.rpcClosureOptions[0]);
+                  }}
+                  title="Build the real 4-polytope this shape closes into, one cell at a time — the radial-perspective click-to-build (RPC) construction"
+                  className="rounded-full px-4 py-1.5 text-sm font-medium text-white transition-colors"
+                  style={{ background: '#8a3ffc' }}
+                >
+                  Build via RPC…
+                </button>
+              )
+            )}
+            {nodeSelection.rpcRoot && !nodeSelection.rpcRoot.shell1Complete && (
+              <button
+                type="button"
+                onClick={() => handleRef.current?.buildNextRpcCell()}
+                title="Add one more shell-1 cell (a direct face-neighbor of the seed) — click through all of them one at a time"
+                className="rounded-full px-4 py-1.5 text-sm font-medium text-white transition-colors"
+                style={{ background: '#8a3ffc' }}
+              >
+                Add next cell ({nodeSelection.rpcRoot.builtCount} / {nodeSelection.rpcRoot.shell1Size})
+              </button>
+            )}
+            {nodeSelection.rpcRoot?.shell1Complete && (
+              <>
+                <button
+                  type="button"
+                  onClick={() => handleRef.current?.buildNextRpcShell()}
+                  disabled={nodeSelection.rpcRoot.maxBuiltShell >= nodeSelection.rpcRoot.complexMaxShell}
+                  className="rounded-full px-4 py-1.5 text-sm font-medium text-white transition-colors disabled:opacity-50"
+                  style={{ background: '#8a3ffc' }}
+                >
+                  Build next shell
+                </button>
+                <button
+                  type="button"
+                  onClick={() => handleRef.current?.removeLastRpcShell()}
+                  disabled={nodeSelection.rpcRoot.maxBuiltShell <= 1}
+                  className="rounded-full px-4 py-1.5 text-sm font-medium transition-colors disabled:opacity-50"
+                  style={{ background: 'none', border: '1px solid #b388ff', color: '#b388ff' }}
+                >
+                  Remove last shell
+                </button>
+              </>
+            )}
+            {nodeSelection.rpcRoot?.toggleAvailable && (
+              <div
+                className="flex items-center gap-1 rounded-full px-3 py-1 text-xs font-medium"
+                style={{ background: '#0e1209', border: '1px solid #b388ff' }}
+                title="3D: the ordinary flush dihedral fan, real gap visible if it doesn't close evenly. 4D: the same 2 cells with that gap closed exactly."
+              >
+                <button
+                  type="button"
+                  onClick={() => {
+                    setRpcOpen(true);
+                    handleRef.current?.setRpcOpen(true);
+                  }}
+                  className="rounded-full px-2 py-0.5 transition-colors"
+                  style={{ background: rpcOpen ? '#8a3ffc' : 'transparent', color: rpcOpen ? '#fff' : '#b388ff' }}
+                >
+                  3D open
+                </button>
+                <button
+                  type="button"
+                  onClick={() => {
+                    setRpcOpen(false);
+                    handleRef.current?.setRpcOpen(false);
+                  }}
+                  className="rounded-full px-2 py-0.5 transition-colors"
+                  style={{ background: !rpcOpen ? '#8a3ffc' : 'transparent', color: !rpcOpen ? '#fff' : '#b388ff' }}
+                >
+                  4D closed
+                </button>
+              </div>
             )}
           </>
         ) : selection ? (

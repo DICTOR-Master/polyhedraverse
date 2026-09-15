@@ -19,9 +19,10 @@ import { emptyAssembly, isValidAssembly, type Assembly } from '../lib/assembly';
 import { matchRewriteVertices, REWRITE_TARGET } from '../lib/polyhedra/rewrite';
 import { collectSubtree, findParentConnection, hasCycle } from '../lib/graph';
 import { FOURD_CAPABLE_IDS } from '../lib/polyhedra/fourD';
-import { edgeClosingCorrection } from '../lib/polyhedra/fold4';
+import { edgeClosingCorrection, edgeClosingCorrectionForK } from '../lib/polyhedra/fold4';
 import { buildWallPrism, duoprismBuildDepth } from '../lib/polyhedra/duoprism';
-import { buildRpcComplex, buildSyntheticCellSpec, type RpcComplex } from '../lib/polyhedra/rpcBuild';
+import { buildRpcComplex, buildSyntheticCellSpec, cellsAtShell, maxShell, closureRingSize, type RpcComplex } from '../lib/polyhedra/rpcBuild';
+import { resolveParamsKey, FOUR_D_SHAPE_PARAMS } from '../lib/polyhedra/radialProjection';
 
 /**
  * The Miscellaneous family's face-attach eligibility policy, in one
@@ -222,6 +223,29 @@ export interface ShapeViewerHandle {
    * onFoldConnectionsChange for when the UI should even show this control.
    */
   setFoldAmount(t: number): void;
+  /**
+   * RPC-build: marks the currently whole-node-selected (see
+   * NodeSelection.rpcBuildEligible) node as an RPC-build root for
+   * `target` (one of its own real closures). No-op if nothing eligible
+   * is selected or `target` isn't a real closure of that node's shape.
+   */
+  beginRpcBuild(seedSpecId: string, target: string): void;
+  /** While the selected RPC-build root's shell 1 isn't yet complete, adds exactly one more shell-1 cell (its own next not-yet-built face-neighbor, in face-index order). No-op otherwise. */
+  buildNextRpcCell(): void;
+  /** Once shell 1 is complete, adds every remaining cell at (current max shell + 1) in one batch. No-op if shell 1 isn't complete yet or the complex is already fully built. */
+  buildNextRpcShell(): void;
+  /** The inverse of buildNextRpcShell: removes every node at the current max shell in one batch. No-op if only the root (or an incomplete shell 1) remains. */
+  removeLastRpcShell(): void;
+  /**
+   * The 3D/4D open/closed toggle for the selected RPC-build root's
+   * shell-1 reference sibling pair (see rpcBuild's own toggle design
+   * note): `open=true` is the ordinary, uncorrected flush position
+   * (ShapeViewer's own real self-attach registration); `open=false`
+   * applies the generalized gap-closing correction
+   * (fold4.ts's edgeClosingCorrectionForK). No-op if the reference pair
+   * doesn't exist yet (fewer than 2 adjacent shell-1 cells built).
+   */
+  setRpcOpen(open: boolean): void;
 }
 
 export interface ShapeSelection {
@@ -258,6 +282,45 @@ export interface NodeSelection {
    * scope later without an implicit coupling.
    */
   faceDuoprismEligible: boolean;
+  /**
+   * RPC-build (radial-perspective click-to-build), replacing fold4 as
+   * the live 4D folding-construction feature: true iff this NODE (its
+   * OWN shape, regardless of which face happens to also be hover/click-
+   * selected -- RPC-build operates on the whole node, matching Delete's
+   * own real, unconditional-on-faceIndex behavior, not gated on a
+   * WHOLE-node selection the way face-attach/fold4/duoprism deliberately
+   * are) resolves to a real verified 4D closure (`resolveParamsKey` --
+   * covers PYRAMID_TRI_G2 resolving to D4's own closures, not just the 4
+   * directly-keyed ids), and it has no incoming connection (a real,
+   * unattached root -- same "is this a real root" condition duoprism's
+   * own far-copy reuse logic already establishes elsewhere).
+   * `rpcClosureOptions` is the seed's own real closure names (1 for
+   * CUBE/D8/DODECAHEDRON, 3 for D4/PYRAMID_TRI_G2 --
+   * '5-cell'/'16-cell'/'600-cell').
+   */
+  rpcBuildEligible: boolean;
+  rpcClosureOptions: string[];
+  /**
+   * Set once this SPECIFIC node is a real RPC-build root (its own
+   * `rpcPolytope` field is set) -- null otherwise, including for a node
+   * that's merely `rpcBuildEligible` but hasn't started building yet.
+   * `shell1Complete`/`totalCells` let page.tsx decide between the
+   * one-click-at-a-time shell-1 UI and the batch shell-by-shell UI;
+   * `builtCount`/`maxBuiltShell` drive the progress label and the
+   * "Remove last shell"/"Build next shell" disabled states.
+   */
+  rpcRoot: {
+    seedSpecId: string;
+    target: string;
+    shell1Complete: boolean;
+    shell1Size: number;
+    builtCount: number;
+    totalCells: number;
+    maxBuiltShell: number;
+    complexMaxShell: number;
+    /** Whether the 3D/4D open/closed toggle has anything to show yet (the reference sibling pair exists). */
+    toggleAvailable: boolean;
+  } | null;
 }
 
 function buildFaceGeometry(spec: PolyhedronSpec): { geometry: THREE.BufferGeometry; triangleToFaceIndex: number[] } {
@@ -528,6 +591,27 @@ export default function ShapeViewer({
   // multiple independent RPC roots sharing the same seed+target) never
   // recomputes the whole 4-polytope complex from scratch each time.
   const rpcComplexCacheRef = useRef<Map<string, RpcComplex>>(new Map());
+  // RPC-build's 3D/4D open/closed toggle: the reference sibling pair (2
+  // adjacent shell-1 cells) its per-root gap demo is keyed off, plus the
+  // seed/face/k needed to recompute the correction, and which state is
+  // currently applied. One entry per RPC-build root that has reached 2
+  // built shell-1 siblings; a root with fewer never gets an entry (no
+  // pair to show a gap between yet -- see NodeSelection's own
+  // toggleAvailable field).
+  const rpcTogglePairRef = useRef<
+    Map<
+      string,
+      {
+        seedSpecId: string;
+        faceIndexA: number;
+        faceIndexB: number;
+        nodeIdA: string;
+        nodeIdB: string;
+        k: number;
+        open: boolean;
+      }
+    >
+  >(new Map());
   const onFoldConnectionsChangeRef = useRef(onFoldConnectionsChange);
   const onSelectionChangeRef = useRef(onSelectionChange);
   const onPendingChangeRef = useRef(onPendingChange);
@@ -841,6 +925,323 @@ export default function ShapeViewer({
       return complex;
     };
 
+    /** Every OTHER face of `spec` sharing an edge with `faceIndex`, via otherFaceAcrossEdge. */
+    const facesAdjacentTo = (spec: PolyhedronSpec, faceIndex: number): number[] => {
+      const face = spec.faces[faceIndex];
+      const out: number[] = [];
+      for (let k = 0; k < face.length; k++) {
+        const other = otherFaceAcrossEdge(spec, faceIndex, face[k], face[(k + 1) % face.length]);
+        if (other !== null) out.push(other);
+      }
+      return out;
+    };
+
+    /**
+     * RPC-build's shell-1 placement: the REAL ordinary flush self-attach
+     * ShapeViewer.tsx's own beginFaceAttach already computes for any
+     * attach (rotation-only -- no mirror/reflection anywhere in this
+     * app's real attach mechanic), specialized to a SELF-attach (spec
+     * attached to itself at `targetFaceIndex`) against `rootPlaced`'s
+     * OWN current world pose. Reads `rootPlaced.object.matrixWorld`
+     * directly rather than `foldGroup.matrixWorld` -- correct here
+     * because an RPC-build root never has an incoming fold4 connection
+     * (fold4 and rpc4d are mutually exclusive connection kinds), so
+     * `foldGroup`'s own local matrix is always identity for it.
+     */
+    const computeSelfAttachTransform = (rootPlaced: PlacedShape, spec: PolyhedronSpec, targetFaceIndex: number): { position: THREE.Vector3; quaternion: THREE.Quaternion } | null => {
+      const targetFace = spec.faces[targetFaceIndex];
+      // Same congruent-face search beginFaceAttach itself does for a
+      // same-shape self-attach -- the FIRST congruent (here: same-size,
+      // eligible) face in array order, exactly what a fresh "Attach via
+      // face" would default to before any registration cycling.
+      const incomingFaceIndex = spec.faces.findIndex(
+        (f, fi) => isFaceEligibleForAttach(spec, fi) && facesCongruent(spec.vertices, targetFace, spec.vertices, f),
+      );
+      if (incomingFaceIndex === -1) return null;
+
+      const faceConnectors = buildFaceConnectors(spec);
+      const targetFaceConnector = faceConnectors[targetFaceIndex];
+      const incomingFaceConnector = faceConnectors[incomingFaceIndex];
+
+      const targetWorldPos = new THREE.Vector3(...targetFaceConnector.pos).applyMatrix4(rootPlaced.object.matrixWorld);
+      const targetWorldQuat = new THREE.Quaternion();
+      rootPlaced.object.getWorldQuaternion(targetWorldQuat);
+      const targetWorldNormal = new THREE.Vector3(...targetFaceConnector.normal).applyQuaternion(targetWorldQuat).normalize();
+
+      const Cg = new THREE.Vector3(...incomingFaceConnector.pos);
+      const Ng = new THREE.Vector3(...incomingFaceConnector.normal);
+      const desiredWorldDir = targetWorldNormal.clone().negate();
+      const baseQuat = new THREE.Quaternion().setFromUnitVectors(Ng, desiredWorldDir);
+
+      const targetFaceVertexIndices = spec.faces[targetFaceIndex];
+      const targetV0World = new THREE.Vector3(...spec.vertices[targetFaceVertexIndices[0]]).applyMatrix4(rootPlaced.object.matrixWorld);
+      const dTargetWorld = targetV0World.clone().sub(targetWorldPos).normalize();
+      const dTargetLocal = dTargetWorld.clone().applyQuaternion(baseQuat.clone().invert());
+
+      const incomingFaceVertexIndices = spec.faces[incomingFaceIndex];
+      const incomingV0 = new THREE.Vector3(...spec.vertices[incomingFaceVertexIndices[0]]);
+      const dIncomingLocal = incomingV0.clone().sub(Cg).normalize();
+
+      const u = dIncomingLocal.clone();
+      const w = new THREE.Vector3().crossVectors(Ng, u).normalize();
+      const theta = Math.atan2(dTargetLocal.dot(w), dTargetLocal.dot(u));
+
+      const registrationBaseQuat = baseQuat.clone().multiply(new THREE.Quaternion().setFromAxisAngle(Ng, theta));
+      const rotatedCg = Cg.clone().applyQuaternion(registrationBaseQuat);
+      const position = targetWorldPos.clone().sub(rotatedCg);
+      return { position, quaternion: registrationBaseQuat };
+    };
+
+    /**
+     * Applies (or clears) the generalized gap-closing correction to the
+     * toggle pair tracked for `rootId`, if it has one yet -- called both
+     * from setRpcOpen and whenever a new shell-1 cell might complete the
+     * pair. Mutates the two nodes' OWN object.position/quaternion
+     * directly (not a foldGroup overlay -- these are discrete two-state
+     * button toggles, not the continuous fold4 slider, so there's no
+     * need for that machinery here).
+     */
+    const applyRpcToggle = (rootId: string) => {
+      const pair = rpcTogglePairRef.current.get(rootId);
+      if (!pair) return;
+      const spec = POLYHEDRA[pair.seedSpecId];
+      const placedA = findPlaced(pair.nodeIdA);
+      const placedB = findPlaced(pair.nodeIdB);
+      const nodeA = graphRef.current.nodes.find((n) => n.id === pair.nodeIdA);
+      const nodeB = graphRef.current.nodes.find((n) => n.id === pair.nodeIdB);
+      if (!placedA || !placedB || !nodeA || !nodeB) return;
+
+      // Always start from each node's own stored (uncorrected, ordinary
+      // flush) transform -- the correction is applied ON TOP of that,
+      // never accumulated across repeated toggles.
+      placedA.object.position.fromArray(nodeA.transform.position);
+      placedA.object.quaternion.fromArray(nodeA.transform.quaternion);
+      placedB.object.position.fromArray(nodeB.transform.position);
+      placedB.object.quaternion.fromArray(nodeB.transform.quaternion);
+
+      if (!pair.open) {
+        const corrA = edgeClosingCorrectionForK(spec, pair.faceIndexA, pair.faceIndexB, pair.k);
+        const corrB = edgeClosingCorrectionForK(spec, pair.faceIndexB, pair.faceIndexA, pair.k);
+        // The root's own object.matrixWorld == its local matrix here
+        // (every placed node is added directly to `scene`, never nested
+        // under another node -- see loadAssembly/placeRoot) and the root
+        // never moves during this operation, so reading it once before
+        // rotating A/B is safe regardless of update order below.
+        scene.updateMatrixWorld(true);
+        const rootPlaced = findPlaced(rootId)!;
+        const rootWorld = rootPlaced.object.matrixWorld;
+        for (const [placed, corr] of [
+          [placedA, corrA],
+          [placedB, corrB],
+        ] as const) {
+          if (!corr) continue;
+          const pivotWorld = new THREE.Vector3(...corr.pivot).applyMatrix4(rootWorld);
+          const axisWorld = new THREE.Vector3(...corr.axis).transformDirection(rootWorld).normalize();
+          const rotationQuat = new THREE.Quaternion().setFromAxisAngle(axisWorld, corr.angleRad);
+          // Rotate the whole rigid node around the external pivot: every
+          // point p (including the node's own origin) maps to
+          // pivot + rotationQuat * (p - pivot); the node's own
+          // orientation is likewise pre-multiplied by the same rotation.
+          placed.object.position.sub(pivotWorld).applyQuaternion(rotationQuat).add(pivotWorld);
+          placed.object.quaternion.premultiply(rotationQuat);
+        }
+      }
+      scene.updateMatrixWorld(true);
+    };
+
+    /** The registry id an rpc4d child's own `node.shape` (and, for shell-1, its own placed geometry) must use -- matches assembly.ts's isValidAssembly exactly: always 'D4' for the 600-cell (its cells are tetrahedra regardless of which D4-congruent seed built it), the root's own seedSpecId otherwise. */
+    const cellShapeIdFor = (seedSpecId: string, target: string): string => (target === '600-cell' ? 'D4' : seedSpecId);
+
+    const beginRpcBuild = (seedSpecId: string, target: string) => {
+      const placed = selectedNodeRef.current;
+      if (!placed || pendingRef.current) return;
+      const { specId, nodeId } = placed.object.userData as ShapeObjectUserData;
+      if (specId !== seedSpecId) return; // caller must pass the actually-selected node's own shape
+      if (findParentConnection(graphRef.current.connections, nodeId)) return; // must be a real, unattached root
+      const key = resolveParamsKey(POLYHEDRA[specId]);
+      if (!key) return;
+      const isRealClosure = target === '600-cell' ? key === 'D4' : (FOUR_D_SHAPE_PARAMS[key]?.some((o) => o.name === target) ?? false);
+      if (!isRealClosure) return;
+
+      const node = graphRef.current.nodes.find((n) => n.id === nodeId);
+      if (!node) return;
+      node.rpcPolytope = { seedSpecId: specId, target };
+      publishNodeSelection(placed);
+    };
+
+    const buildNextRpcCell = () => {
+      const placed = selectedNodeRef.current;
+      if (!placed || pendingRef.current) return;
+      const { nodeId } = placed.object.userData as ShapeObjectUserData;
+      const node = graphRef.current.nodes.find((n) => n.id === nodeId);
+      if (!node?.rpcPolytope) return;
+      const { seedSpecId, target } = node.rpcPolytope;
+      const spec = POLYHEDRA[seedSpecId];
+      const shell1Conns = graphRef.current.connections.filter((c) => !c.orphaned && c.kind === 'rpc4d' && c.nodeA === nodeId && c.shell === 1);
+      const builtCount = shell1Conns.length;
+      if (builtCount >= spec.faces.length) return; // shell 1 already complete
+
+      const transform = computeSelfAttachTransform(placed, spec, builtCount);
+      if (!transform) return;
+      const complex = getRpcComplex(seedSpecId, target);
+      const shell1Cells = cellsAtShell(complex, 1).slice().sort((a, b) => a.id - b.id);
+      const cellId = shell1Cells[builtCount]?.id;
+      if (cellId === undefined) return; // shouldn't happen -- shell1Cells.length should equal spec.faces.length
+
+      const childNodeId = crypto.randomUUID();
+      const childSpec = POLYHEDRA[cellShapeIdFor(seedSpecId, target)];
+      const childPlaced = buildPlacedShape(childSpec, childNodeId);
+      childPlaced.object.position.copy(transform.position);
+      childPlaced.object.quaternion.copy(transform.quaternion);
+      applyViewMode(childPlaced, viewModeRef.current);
+      scene.add(childPlaced.object);
+      applyNodeAppearance(childPlaced, false);
+      placedRef.current.push(childPlaced);
+
+      graphRef.current.nodes.push({
+        id: childNodeId,
+        shape: cellShapeIdFor(seedSpecId, target),
+        transform: {
+          position: childPlaced.object.position.toArray() as [number, number, number],
+          quaternion: childPlaced.object.quaternion.toArray() as [number, number, number, number],
+        },
+      });
+      graphRef.current.connections.push({
+        nodeA: nodeId,
+        nodeB: childNodeId,
+        vertexA: 0,
+        vertexB: 0,
+        kind: 'rpc4d',
+        cellId,
+        shell: 1,
+      });
+
+      // Reference toggle pair (see the RPC-build UI plan's own "Design
+      // decision" section): face 0's own child is always built first
+      // (builtCount===0 here); once a SECOND shell-1 cell adjacent to
+      // face 0 exists, that pair is what this root's 3D/4D toggle
+      // demonstrates. Only ever the FIRST such pair found -- every other
+      // shell-1 cell stays at its ordinary flush position always,
+      // deliberately not attempting fold4's own documented-unsolved
+      // n-simultaneous-partner closure.
+      if (builtCount > 0 && !rpcTogglePairRef.current.has(nodeId) && facesAdjacentTo(spec, 0).includes(builtCount)) {
+        const face0NodeId = shell1Conns[0]?.nodeB;
+        const k = closureRingSize(target);
+        if (face0NodeId && k !== undefined) {
+          rpcTogglePairRef.current.set(nodeId, {
+            seedSpecId,
+            faceIndexA: 0,
+            faceIndexB: builtCount,
+            nodeIdA: face0NodeId,
+            nodeIdB: childNodeId,
+            k,
+            open: true,
+          });
+        }
+      }
+
+      reportCageStatus();
+      publishNodeSelection(placed);
+    };
+
+    const buildNextRpcShell = () => {
+      const placed = selectedNodeRef.current;
+      if (!placed || pendingRef.current) return;
+      const { nodeId } = placed.object.userData as ShapeObjectUserData;
+      const node = graphRef.current.nodes.find((n) => n.id === nodeId);
+      if (!node?.rpcPolytope) return;
+      const { seedSpecId, target } = node.rpcPolytope;
+      const spec = POLYHEDRA[seedSpecId];
+      const complex = getRpcComplex(seedSpecId, target);
+
+      const rootConns = graphRef.current.connections.filter((c) => !c.orphaned && c.kind === 'rpc4d' && c.nodeA === nodeId);
+      const shell1Count = rootConns.filter((c) => c.shell === 1).length;
+      if (shell1Count < spec.faces.length) return; // shell 1 must be complete first
+
+      const builtCellIds = new Set(rootConns.map((c) => c.cellId!));
+      const currentMax = Math.max(0, ...rootConns.map((c) => c.shell!));
+      const nextShell = currentMax + 1;
+      const targetCells = cellsAtShell(complex, nextShell).filter((c) => !builtCellIds.has(c.id));
+      if (targetCells.length === 0) return; // nothing left at the next shell (already fully closed)
+
+      const childShapeId = cellShapeIdFor(seedSpecId, target);
+      for (const cell of targetCells) {
+        const syntheticSpec = buildSyntheticCellSpec(spec, cell.id, cell.vertices3D);
+        const childNodeId = crypto.randomUUID();
+        const childPlaced = buildPlacedShape(syntheticSpec, childNodeId);
+        // Shell-2+ cells' own vertices already encode their full warped
+        // position relative to the root's own local frame (buildRpcComplex's
+        // shared perspective projection) -- the node's OWN transform is
+        // therefore exactly the root's own, carried along unchanged
+        // (matching loadAssembly's own rpc4d re-derivation, which relies
+        // on this same "root's transform + synthetic vertices" split).
+        childPlaced.object.position.copy(placed.object.position);
+        childPlaced.object.quaternion.copy(placed.object.quaternion);
+        applyViewMode(childPlaced, viewModeRef.current);
+        scene.add(childPlaced.object);
+        applyNodeAppearance(childPlaced, false);
+        placedRef.current.push(childPlaced);
+
+        graphRef.current.nodes.push({
+          id: childNodeId,
+          shape: childShapeId,
+          transform: {
+            position: childPlaced.object.position.toArray() as [number, number, number],
+            quaternion: childPlaced.object.quaternion.toArray() as [number, number, number, number],
+          },
+        });
+        graphRef.current.connections.push({
+          nodeA: nodeId,
+          nodeB: childNodeId,
+          vertexA: 0,
+          vertexB: 0,
+          kind: 'rpc4d',
+          cellId: cell.id,
+          shell: nextShell,
+        });
+      }
+
+      reportCageStatus();
+      publishNodeSelection(placed);
+    };
+
+    const removeLastRpcShell = () => {
+      const placed = selectedNodeRef.current;
+      if (!placed || pendingRef.current) return;
+      const { nodeId } = placed.object.userData as ShapeObjectUserData;
+      const node = graphRef.current.nodes.find((n) => n.id === nodeId);
+      if (!node?.rpcPolytope) return;
+      const conns = graphRef.current.connections.filter((c) => !c.orphaned && c.kind === 'rpc4d' && c.nodeA === nodeId);
+      if (conns.length === 0) return;
+      const currentMax = Math.max(...conns.map((c) => c.shell!));
+      // Shell 1 is built/removed one cell at a time via buildNextRpcCell
+      // only -- "Remove last shell" only ever targets shell 2+, matching
+      // the plan's own UI gating (the batch buttons only appear once
+      // shell 1 is complete).
+      if (currentMax <= 1) return;
+      const toRemove = conns.filter((c) => c.shell === currentMax).map((c) => c.nodeB);
+      for (const id of toRemove) deleteNodeById(id);
+
+      // deleteNodeById clears selection as part of its own per-node
+      // cleanup -- re-select the root so the panel doesn't just vanish
+      // after removing a shell (matches this function's own "stay on
+      // the root, keep building/removing" UX, same as buildNextRpcShell).
+      selectedNodeRef.current = placed;
+      selectedFaceIndexRef.current = null;
+      applyNodeAppearance(placed, true);
+      publishNodeSelection(placed);
+    };
+
+    const setRpcOpen = (open: boolean) => {
+      const placed = selectedNodeRef.current;
+      if (!placed) return;
+      const { nodeId } = placed.object.userData as ShapeObjectUserData;
+      const pair = rpcTogglePairRef.current.get(nodeId);
+      if (!pair) return;
+      pair.open = open;
+      applyRpcToggle(nodeId);
+    };
+
     /**
      * Recomputes and republishes the full NodeSelection for `placed`
      * (must be the CURRENT selectedNodeRef.current) -- shared by the
@@ -882,6 +1283,41 @@ export default function ShapeViewer({
       const faceFold4Eligible = faceIndex !== null && !faceOccupied && FOURD_CAPABLE_IDS.includes(specId);
       const faceDuoprismEligible = faceFold4Eligible;
 
+      // RPC-build eligibility: this NODE (regardless of which face
+      // happens to also be hover/click-selected -- RPC-build operates on
+      // the whole node, same as Delete's own real, unconditional
+      // behavior, not gated on faceIndex) is a real, unattached root
+      // whose shape resolves (by congruence, not just id -- covers
+      // PYRAMID_TRI_G2 resolving to D4's own closures) to a real
+      // verified 4D closure. See NodeSelection.rpcBuildEligible's own
+      // doc comment.
+      const rpcParamsKey = resolveParamsKey(POLYHEDRA[specId]);
+      const hasNoIncoming = !findParentConnection(graphRef.current.connections, nodeId);
+      const rpcClosureOptions = rpcParamsKey ? [...(FOUR_D_SHAPE_PARAMS[rpcParamsKey] ?? []).map((o) => o.name), ...(rpcParamsKey === 'D4' ? ['600-cell'] : [])] : [];
+      const rpcBuildEligible = hasNoIncoming && rpcClosureOptions.length > 0;
+
+      const node = graphRef.current.nodes.find((n) => n.id === nodeId);
+      let rpcRoot: NodeSelection['rpcRoot'] = null;
+      if (node?.rpcPolytope) {
+        const { seedSpecId, target } = node.rpcPolytope;
+        const seedSpec = POLYHEDRA[seedSpecId];
+        const complex = getRpcComplex(seedSpecId, target);
+        const rootConns = graphRef.current.connections.filter((c) => !c.orphaned && c.kind === 'rpc4d' && c.nodeA === nodeId);
+        const shell1Size = seedSpec.faces.length;
+        const shell1BuiltCount = rootConns.filter((c) => c.shell === 1).length;
+        rpcRoot = {
+          seedSpecId,
+          target,
+          shell1Complete: shell1BuiltCount >= shell1Size,
+          shell1Size,
+          builtCount: rootConns.length,
+          totalCells: complex.cells.length,
+          maxBuiltShell: rootConns.length > 0 ? Math.max(...rootConns.map((c) => c.shell!)) : 0,
+          complexMaxShell: maxShell(complex),
+          toggleAvailable: rpcTogglePairRef.current.has(nodeId),
+        };
+      }
+
       onNodeSelectionChangeRef.current?.({
         nodeId,
         specId,
@@ -892,6 +1328,9 @@ export default function ShapeViewer({
         faceAttachOptions,
         faceFold4Eligible,
         faceDuoprismEligible,
+        rpcBuildEligible,
+        rpcClosureOptions,
+        rpcRoot,
       });
     };
 
@@ -996,16 +1435,23 @@ export default function ShapeViewer({
       resetScene();
       const byNodeId = new Map<string, PlacedShape>();
       const nodeById = new Map(assembly.nodes.map((n) => [n.id, n]));
-      // rpc4d children need their own warped synthetic geometry re-derived
-      // from the root's rpcPolytope + this connection's own cellId --
-      // never the plain registry shape their `shape` field names (see
-      // AssemblyNode.rpcPolytope's own doc comment: "fully re-derive
-      // geometry from rpcPolytope+cellId on load"). Indexed by child node
-      // id before the placement loop below, since connections are
-      // otherwise only processed AFTER every node is already placed.
+      // Shell-2+ rpc4d children need their own warped synthetic geometry
+      // re-derived from the root's rpcPolytope + this connection's own
+      // cellId -- never the plain registry shape their `shape` field
+      // names (see AssemblyNode.rpcPolytope's own doc comment: "fully
+      // re-derive geometry from rpcPolytope+cellId on load"). Indexed by
+      // child node id before the placement loop below, since connections
+      // are otherwise only processed AFTER every node is already placed.
+      // Shell-1 children are deliberately EXCLUDED here: they're real,
+      // RIGID (undistorted) self-attach copies of the seed, not warped
+      // projections (see the RPC-build UI plan's own "Design decision"
+      // section for why) -- their own real, already-computed transform
+      // is stored directly on the node like any ordinary node, so they
+      // fall through to the plain `POLYHEDRA[node.shape]` branch below
+      // unchanged, same as a vertex/face/duoprism child.
       const rpc4dParentByNode = new Map<string, Assembly['connections'][number]>();
       for (const c of assembly.connections) {
-        if (!c.orphaned && c.kind === 'rpc4d') rpc4dParentByNode.set(c.nodeB, c);
+        if (!c.orphaned && c.kind === 'rpc4d' && c.shell !== 1) rpc4dParentByNode.set(c.nodeB, c);
       }
 
       for (const node of assembly.nodes) {
@@ -1841,6 +2287,11 @@ export default function ShapeViewer({
       getAssembly,
       setViewMode,
       setFoldAmount,
+      beginRpcBuild,
+      buildNextRpcCell,
+      buildNextRpcShell,
+      removeLastRpcShell,
+      setRpcOpen,
     });
 
     let cancelled = false;
