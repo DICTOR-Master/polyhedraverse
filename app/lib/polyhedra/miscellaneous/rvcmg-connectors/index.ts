@@ -25,6 +25,7 @@ import { deriveGoldenRhombusToRdH } from '../../../rvcmg/adapters/goldenRhombusT
 import { deriveDIKiteToRdH } from '../../../rvcmg/adapters/diKiteToRdH';
 import { deriveDHKiteToRdH } from '../../../rvcmg/adapters/dhKiteToRdH';
 import { deriveRegularHexToRdH } from '../../../rvcmg/adapters/regularHexToRdH';
+import { buildRdHemiSolid } from '../../../rvcmg/rdHemi';
 
 const NORMAL = hemiRdInterfaceFrame().normal;
 
@@ -99,6 +100,17 @@ function buildPiece(id: string, name: string, derive: () => ReturnType<typeof de
   return { ...spec, attachableFaceIndices: [hexFaceIndex, targetFaceIndex] };
 }
 
+/**
+ * The bare RD-Hemi itself -- direct user request (2026-09-15: "there is
+ * no actual RD-H in the directory"). Built separately from `buildPiece`
+ * above (which is specific to the 7 flat-hexed adapter pieces):
+ * `buildRdHemiSolid` derives a real dome, not a flat-hex-plus-taper.
+ */
+const rdHemiResult = buildRdHemiSolid('RVCMG_RD_HEMI', 'RD-Hemi (bare)');
+if (rdHemiResult.problems.length > 0) {
+  throw new Error(`RVCMG_RD_HEMI: unresolved problems: ${JSON.stringify(rdHemiResult.problems)}`);
+}
+
 export const RVCMG_CONNECTOR_ADDITIONS: Record<string, PolyhedronSpec> = {
   RVCMG_TRIANGLE_TO_RDH: buildPiece('RVCMG_TRIANGLE_TO_RDH', 'triangle to RD-H adapter', deriveTriangleToRdH),
   RVCMG_SQUARE_TO_RDH: buildPiece('RVCMG_SQUARE_TO_RDH', 'square to RD-H adapter', deriveSquareToRdH),
@@ -107,6 +119,7 @@ export const RVCMG_CONNECTOR_ADDITIONS: Record<string, PolyhedronSpec> = {
   RVCMG_DI_KITE_TO_RDH: buildPiece('RVCMG_DI_KITE_TO_RDH', 'DI-kite to RD-H adapter', deriveDIKiteToRdH),
   RVCMG_DH_KITE_TO_RDH: buildPiece('RVCMG_DH_KITE_TO_RDH', 'DH-kite to RD-H adapter', deriveDHKiteToRdH),
   RVCMG_REGULAR_HEX_TO_RDH: buildPiece('RVCMG_REGULAR_HEX_TO_RDH', 'regular hexagon to RD-H adapter', deriveRegularHexToRdH),
+  RVCMG_RD_HEMI: rdHemiResult.spec,
 };
 
 export const RVCMG_CONNECTOR_ADDITION_IDS: string[] = Object.keys(RVCMG_CONNECTOR_ADDITIONS);

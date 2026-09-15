@@ -28,7 +28,10 @@ import { deriveDHKiteToRdH } from '../app/lib/rvcmg/adapters/dhKiteToRdH';
 import { deriveRegularHexToRdH } from '../app/lib/rvcmg/adapters/regularHexToRdH';
 import { deriveTriangleToRdH } from '../app/lib/rvcmg/adapters/triangleToRdH';
 import { CATALAN_ADDITIONS } from '../app/lib/polyhedra/catalan';
-import { isRegularFace, rotateFaceToMirrorAxis, dist, buildFaceConnectors, type Vec3 } from '../app/lib/polyhedra/core';
+import { isRegularFace, rotateFaceToMirrorAxis, facesCongruent, dist, buildFaceConnectors, type Vec3 } from '../app/lib/polyhedra/core';
+
+const sub = (a: Vec3, b: Vec3): Vec3 => [a[0] - b[0], a[1] - b[1], a[2] - b[2]];
+const cross = (a: Vec3, b: Vec3): Vec3 => [a[1] * b[2] - a[2] * b[1], a[2] * b[0] - a[0] * b[2], a[0] * b[1] - a[1] * b[0]];
 
 let failures = 0;
 function check(label: string, condition: boolean) {
@@ -64,7 +67,10 @@ const PIECES: { id: string; derive: () => ReturnType<typeof deriveTriangleToRdH>
   { id: 'RVCMG_REGULAR_HEX_TO_RDH', derive: deriveRegularHexToRdH },
 ];
 
-check('rvcmg-connectors registers exactly these 7 ids', PIECES.every((p) => RVCMG_CONNECTOR_ADDITION_IDS.includes(p.id)) && RVCMG_CONNECTOR_ADDITION_IDS.length === 7);
+check(
+  'rvcmg-connectors registers exactly these 7 tapered pieces + the bare RD-Hemi (8 total)',
+  PIECES.every((p) => RVCMG_CONNECTOR_ADDITION_IDS.includes(p.id)) && RVCMG_CONNECTOR_ADDITION_IDS.includes('RVCMG_RD_HEMI') && RVCMG_CONNECTOR_ADDITION_IDS.length === 8,
+);
 
 for (const { id, derive } of PIECES) {
   const spec = RVCMG_CONNECTOR_ADDITIONS[id];
@@ -132,6 +138,79 @@ for (const { id, derive } of PIECES) {
     `${id}: hex cap edges match the real hemi-RD interface exactly (as a multiset)`,
     hexEdgeLensBuilt.every((l, k) => Math.abs(l - hexEdgeLensReal[k]) < 1e-9),
   );
+}
+
+// --- RVCMG_RD_HEMI: the bare RD-Hemi, a genuinely different shape from
+// the 7 tapered pieces (a real dome, not a flat hex + wall) -- checked
+// on its own terms. ---
+{
+  const hemi = RVCMG_CONNECTOR_ADDITIONS.RVCMG_RD_HEMI;
+  const V = hemi.vertices.length,
+    E = hemi.edges.length,
+    F = hemi.faces.length;
+  check(`RVCMG_RD_HEMI: Euler characteristic holds (V=${V} E=${E} F=${F})`, V - E + F === 2);
+  check('RVCMG_RD_HEMI: exactly 10 vertices, 8 faces (1 hex + 5 rhombi + 2 half-rhombus triangles)', V === 10 && F === 8);
+  check(
+    'RVCMG_RD_HEMI: face sizes are exactly one 6, five 4s, two 3s',
+    JSON.stringify(hemi.faces.map((f) => f.length).sort((a, b) => a - b)) === JSON.stringify([3, 3, 4, 4, 4, 4, 4, 6]),
+  );
+  check('RVCMG_RD_HEMI: attachableFaceIndices names exactly 6 faces (hex + 5 rhombi, not the 2 triangle artifacts)', hemi.attachableFaceIndices?.length === 6);
+
+  const hexFace = hemi.faces[0];
+  check('RVCMG_RD_HEMI: face 0 is the hex', hexFace.length === 6);
+  const hemiHexLens = hexFace.map((v, k) => dist(hemi.vertices[v], hemi.vertices[hexFace[(k + 1) % 6]])).sort((a, b) => a - b);
+  const realHexState = hemiRdStartState();
+  const realHexLens = realHexState.vertices.map((v, k) => dist(v.pos, realHexState.vertices[(k + 1) % 6].pos)).sort((a, b) => a - b);
+  check(
+    "RVCMG_RD_HEMI's own hex matches every adapter piece's own hex exactly (as a multiset) -- the actual point of this shape",
+    hemiHexLens.every((l, k) => Math.abs(l - realHexLens[k]) < 1e-9),
+  );
+
+  const rhombusFaces = hemi.attachableFaceIndices!.filter((fi) => fi !== 0);
+  check('RVCMG_RD_HEMI: exactly 5 rhombus ports', rhombusFaces.length === 5);
+  for (const fi of rhombusFaces) {
+    const f = hemi.faces[fi];
+    const lens = f.map((v, k) => dist(hemi.vertices[v], hemi.vertices[f[(k + 1) % f.length]]));
+    check(`RVCMG_RD_HEMI: rhombus face ${fi} is unit-edge (matches RD's own uniform edge length, rescaled)`, lens.every((l) => Math.abs(l - 1) < 1e-9));
+  }
+
+  // Overall convexity: a real sub-polytope of the (convex) RD should be
+  // convex too -- checked directly, not assumed from that argument alone.
+  const solidCentroid = centroidOf(hemi.vertices);
+  let hemiConvexFailures = 0;
+  hemi.faces.forEach((f) => {
+    const pts = f.map((i) => hemi.vertices[i]);
+    const c = centroidOf(pts);
+    const planeNormal = cross(sub(pts[1], pts[0]), sub(pts[2], pts[0]));
+    for (let vi = 0; vi < hemi.vertices.length; vi++) {
+      if (f.includes(vi)) continue;
+      if (dot(planeNormal, sub(hemi.vertices[vi], c)) > 1e-6) hemiConvexFailures++;
+    }
+    if (dot(planeNormal, sub(c, solidCentroid)) < 0) hemiConvexFailures++;
+  });
+  check('RVCMG_RD_HEMI: every face is convex-consistent with the whole solid (a real dome, not a warped one)', hemiConvexFailures === 0);
+
+  // The crown: the one rhombus touching none of the hex's own 6 vertices
+  // -- self-attaches to another copy of itself cleanly (the actual
+  // "hourglass" join, direct user description: "rhombi faces at
+  // crown... forms a rhombi waist").
+  const hexVertexSet = new Set(hexFace);
+  const crownCandidates = rhombusFaces.filter((fi) => hemi.faces[fi].every((v) => !hexVertexSet.has(v)));
+  check('RVCMG_RD_HEMI: exactly one crown rhombus (touching none of the hex vertices)', crownCandidates.length === 1);
+  if (crownCandidates.length === 1) {
+    const crownFi = crownCandidates[0];
+    check('RVCMG_RD_HEMI: crown rhombus is congruent to itself (a real face-attach candidate)', facesCongruent(hemi.vertices, hemi.faces[crownFi], hemi.vertices, hemi.faces[crownFi]));
+  }
+}
+
+function centroidOf(vs: Vec3[]): Vec3 {
+  const c: Vec3 = [0, 0, 0];
+  for (const v of vs) {
+    c[0] += v[0] / vs.length;
+    c[1] += v[1] / vs.length;
+    c[2] += v[2] / vs.length;
+  }
+  return c;
 }
 
 console.log(`\n${failures} failures.`);

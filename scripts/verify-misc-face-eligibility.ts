@@ -107,7 +107,11 @@ for (const id of GRADED_PYRAMID_ADDITION_IDS) {
 // two real ports (hex + target), and both are reachable through
 // attachOptionsFor with at least one real cross-family match -- proving
 // the eligibility gate doesn't just exclude everything by accident. ---
-for (const id of RVCMG_CONNECTOR_ADDITION_IDS) {
+// RVCMG_RD_HEMI is a genuinely different shape from the other 7 (a real
+// dome with 6 real ports -- the hex plus 5 congruent rhombi -- not a
+// flat hex + one target face), checked separately below with its own
+// expected port count.
+for (const id of RVCMG_CONNECTOR_ADDITION_IDS.filter((i) => i !== 'RVCMG_RD_HEMI')) {
   const spec = POLYHEDRA[id];
   check(`${id}: has attachableFaceIndices set to exactly 2 faces`, Array.isArray(spec.attachableFaceIndices) && spec.attachableFaceIndices.length === 2);
   const [hexIdx, targetIdx] = spec.attachableFaceIndices ?? [-1, -1];
@@ -117,6 +121,22 @@ for (const id of RVCMG_CONNECTOR_ADDITION_IDS) {
   });
   const targetOptions = attachOptionsFor(id, targetIdx);
   check(`${id}: target port offers at least one real cross-family match (got ${targetOptions.length}: ${targetOptions.slice(0, 3).join(', ')})`, targetOptions.length > 0);
+}
+
+{
+  const hemi = POLYHEDRA.RVCMG_RD_HEMI;
+  check('RVCMG_RD_HEMI: has attachableFaceIndices set to exactly 6 faces (hex + 5 rhombi)', Array.isArray(hemi.attachableFaceIndices) && hemi.attachableFaceIndices.length === 6);
+  hemi.faces.forEach((_, fi) => {
+    const shouldBeEligible = hemi.attachableFaceIndices!.includes(fi);
+    check(`RVCMG_RD_HEMI: face ${fi} eligibility matches attachableFaceIndices (expected ${shouldBeEligible})`, isFaceEligibleForAttach(hemi, fi) === shouldBeEligible);
+  });
+  // Each rhombus port (including the crown) should offer at least a
+  // self-match (another RVCMG_RD_HEMI, if two get placed) -- the actual
+  // "hourglass" join.
+  for (const fi of hemi.attachableFaceIndices!.filter((f) => f !== 0)) {
+    const options = attachOptionsFor('RVCMG_RD_HEMI', fi);
+    check(`RVCMG_RD_HEMI: rhombus port ${fi} offers at least one match (got ${options.length}: ${options.slice(0, 3).join(', ')})`, options.length > 0);
+  }
 }
 
 // --- Catalan solids must be completely unaffected: their irregular
