@@ -47,41 +47,57 @@
 
 import { type Vec3, centerVertices, dist, buildConnectors, type PolyhedronSpec } from './core';
 
-export interface GradedPyramidGrade {
-  grade: number;
-  /** Target apex angle in degrees — the interior angle of each lateral triangular face, at the apex. */
-  apexAngleDeg: number;
-}
-
 /**
- * Default grading scale for a REGULAR n-gon base, proposed and
- * documented as an adjustable default (not a forced convention).
- * Numbered 1-4 (no grade 0), direct user renumbering (2026-09-15):
+ * Default grading scale, proposed and documented as an adjustable
+ * default (not a forced convention). Numbered 1-4 (no grade 0), direct
+ * user renumbering (2026-09-15):
  *
- * - Grade 1 (low): apex angle 90 degrees — chosen to match the user's
- *   own "about half standard height" description exactly: for a
- *   triangular base, half of grade 2's height (0.5 * 0.8165 = 0.4082)
- *   corresponds to EXACTLY 90 degrees (`L = sqrt(h^2+R^2) = sqrt(0.5)`,
- *   giving `apex angle = 2*asin(1/(2L)) = 90`) — a clean geometric
- *   milestone (the two slant edges perpendicular at the apex), not a
- *   coincidence worth losing by picking a different round angle number.
  * - Grade 2 (standard): fixed at the base's own "all lateral faces
  *   equilateral" angle (`60` degrees always, since a unit-edge
  *   equilateral triangle's own apex angle is 60 regardless of which
  *   base shape it's attached to) so it reproduces whatever regular-
  *   faced pyramid already exists in the registry for that base (D4 for
  *   a triangular base, J1 for square, J2 for pentagonal).
- * - Grade 3 (tall): 40 degrees.
+ * - Grade 1 (low): "about half of grade 2's height" (direct user
+ *   description) — a statement about HEIGHT, not a fixed angle. The
+ *   angle achieving that height is genuinely DIFFERENT per base shape
+ *   (`gradeApexAngleDeg` below derives it via `apexAngleForHeight`),
+ *   NOT a single reusable number: for a triangular base it works out to
+ *   exactly 90 degrees (a clean milestone — the two slant edges
+ *   perpendicular at the apex), but reusing that literal 90 for a
+ *   SQUARE base is a real bug this project shipped and caught —
+ *   90 degrees is exactly the square base's own degenerate limit
+ *   (`360/4`), so it crashed outright rather than silently building a
+ *   slightly-wrong shape. Always compute this per base via
+ *   `gradeApexAngleDeg`, never hard-code an angle for grade 1.
+ * - Grade 3 (tall): 40 degrees (fixed, base-agnostic — verified below
+ *   to stay comfortably under every currently-supported base's own
+ *   degenerate limit, not merely assumed safe).
  * - Grade 4 (highest/sharpest): 20 degrees — a deliberately sharp,
  *   star-polyhedra-evoking angle, the user's own "sharp tall like star
- *   solids type" description.
+ *   solids type" description (same base-agnostic-but-verified status
+ *   as grade 3).
  */
-export const DEFAULT_GRADES: GradedPyramidGrade[] = [
-  { grade: 1, apexAngleDeg: 90 },
-  { grade: 2, apexAngleDeg: 60 },
-  { grade: 3, apexAngleDeg: 40 },
-  { grade: 4, apexAngleDeg: 20 },
-];
+const FIXED_GRADE_ANGLES: Record<number, number> = { 2: 60, 3: 40, 4: 20 };
+
+/**
+ * Resolves a grade's real apex angle for a specific base shape `n`.
+ * Grade 1 is DERIVED (half of grade 2's own height for this exact `n`,
+ * converted back to an angle) rather than looked up from a fixed table
+ * — see this file's own grading-scale comment for why a fixed number
+ * doesn't generalize across base shapes.
+ */
+export function gradeApexAngleDeg(n: number, grade: number): number {
+  if (grade === 1) {
+    const standardHeight = apexHeightForAngle(n, FIXED_GRADE_ANGLES[2]);
+    return apexAngleForHeight(n, standardHeight / 2);
+  }
+  const angle = FIXED_GRADE_ANGLES[grade];
+  if (angle === undefined) throw new Error(`gradeApexAngleDeg: unknown grade ${grade}`);
+  return angle;
+}
+
+export const GRADE_NUMBERS: number[] = [1, 2, 3, 4];
 
 /** The degenerate apex-angle limit (degrees) for a regular n-gon base, beyond which no real pyramid exists. */
 export function degenerateApexAngleDeg(n: number): number {
@@ -102,6 +118,25 @@ export function apexHeightForAngle(n: number, apexAngleDeg: number): number {
   const R = regularPolygonCircumradius(n);
   const L = 1 / (2 * Math.sin((apexAngleDeg * Math.PI) / 180 / 2));
   return Math.sqrt(L * L - R * R);
+}
+
+/**
+ * The inverse of `apexHeightForAngle`: the apex angle (degrees) that
+ * gives a regular n-gon (unit edge) base a specific target height.
+ * Needed because "grade 1 = about half of grade 2's height" (direct
+ * user description) is a statement about HEIGHT, not angle — and the
+ * angle that achieves a given height is genuinely different per base
+ * shape `n` (a real bug this project shipped and caught: reusing
+ * triangular base's own derived 90° angle directly as a fixed number
+ * for a SQUARE base crashed outright, because 90° is exactly the
+ * square base's own degenerate limit — `360/4` — not a coincidence
+ * worth losing by treating one base's derived angle as if it were a
+ * universal constant).
+ */
+export function apexAngleForHeight(n: number, height: number): number {
+  const R = regularPolygonCircumradius(n);
+  const L = Math.sqrt(height * height + R * R);
+  return (2 * Math.asin(1 / (2 * L)) * 180) / Math.PI;
 }
 
 /**

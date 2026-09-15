@@ -458,49 +458,76 @@ hold the 7 RVCMG adapter pieces once they're real solids, per the
 user's own framing — not a coincidence, a shared home for "attachable
 pieces that aren't one of the classical polyhedron families."
 
-**Prototyped and verified for a triangular base**
-(`app/lib/polyhedra/gradedPyramids.ts`, `npm run
-validate:graded-pyramids`): for a regular n-gon base of unit edge,
+**Done and registered for all three currently-supported bases**
+(triangular/square/pentagonal — `app/lib/polyhedra/gradedPyramids.ts`
+for the construction math, `app/lib/polyhedra/miscellaneous/pyramids.ts`
+for the 12 real registry entries, `npm run validate:graded-pyramids`,
+46 checks, all passing): for a regular n-gon base of unit edge,
 `apexHeightForAngle(n, angle)` derives the exact height via
 `L = 1/(2*sin(angle/2))` (slant edge length) then
 `h = sqrt(L^2 - R^2)` (R = the base's own circumradius) — real
-geometry, not a fitted curve. Grade values (1/2/3/4 → 90°/60°/40°/20°)
-are a documented, adjustable default, not a forced convention. Grade 2
-(60°) is fixed because that's the one apex angle that makes every
-lateral face equilateral, for ANY base shape. Grade 1 (90°) is not an
-arbitrary round number either — it was chosen to match the user's own
-"about half standard height" description exactly: half of grade 2's
-height, for a triangular base, works out to precisely 90° (confirmed
-computationally, not fitted), a clean milestone (the two slant edges
-literally perpendicular at the apex).
+geometry, not a fitted curve. Grade 2 (60°) is fixed because that's the
+one apex angle that makes every lateral face equilateral, for ANY base
+shape.
+
+**A real bug, caught only by actually building a second base shape, not
+by inspection**: grade 1 ("about half standard height," per the user)
+was first implemented as a single fixed angle (90°, derived correctly
+for a TRIANGULAR base only) reused verbatim for every base. For a
+SQUARE base, 90° is exactly that base's own degenerate limit
+(`360/4`) — construction crashed outright the moment a square-base
+grade 1 was actually built, rather than silently shipping a slightly
+wrong shape. Fixed by making grade 1 a real per-base DERIVATION
+(`gradeApexAngleDeg`/`apexAngleForHeight` in gradedPyramids.ts): compute
+grade 2's own height for that exact `n`, halve it, then convert back to
+an angle for that same `n` — 90° for triangular (unchanged, since that
+one really is correct for n=3), 78.463° for square, 68.331° for
+pentagonal. **General lesson**: a value derived FROM one specific
+instance of a parametrized construction is not automatically a
+constant that generalizes to other instances of the same construction
+— re-derive per instance, don't reuse the number.
 
 **Confirmed computationally, a genuinely useful side effect of building
 this**: a pyramid degenerates (`h -> 0`) exactly at apex angle
-`360/n` degrees — for a triangular base that's 120°, confirmed by
-direct construction; for a HEXAGONAL base it's exactly 60°, which is
-also the exact apex angle a unit-edge equilateral triangle needs. This
-is the actual reason no Johnson solid or convex deltahedron is a
-regular-faced hexagonal pyramid — it's not merely absent from the
+`360/n` degrees — for a triangular base that's 120°, for a square base
+exactly 90° (the bug above), and for a HEXAGONAL base exactly 60°,
+which is also the exact apex angle a unit-edge equilateral triangle
+needs. This is the actual reason no Johnson solid or convex deltahedron
+is a regular-faced hexagonal pyramid — it's not merely absent from the
 classification, it's geometrically impossible, confirmed directly
 (`apexHeightForAngle(6, 60)` correctly throws rather than returning a
 degenerate or fake height).
 
-Grade 2 (standard) on a triangular base was confirmed to exactly
-reproduce the existing `D4` (regular tetrahedron), vertex for vertex —
-a strong correctness check on the apex-angle formula itself, not just
-an isolated new construction.
+Grade 2 (standard) on each of the 3 bases was confirmed to exactly
+reproduce the existing `D4`/`J1_SQUARE_PYRAMID`/`J2_PENTAGONAL_PYRAMID`,
+vertex for vertex — a strong correctness check on the apex-angle
+formula itself, not just an isolated new construction.
 
-### Outstanding (graded pyramids)
+**The "Miscellaneous" registry family is now real**
+(`app/lib/polyhedra/miscellaneous/` — a directory, not a single file,
+since this family is expected to grow from more than one source; add a
+new sub-file per source and combine in `miscellaneous/index.ts`, the
+same pattern every other family file already follows one level up).
+Wired into `POLYHEDRA`/`POLYHEDRON_IDS` (`index.ts`) and `families.ts`
+(`FamilyKey.MISCELLANEOUS`, symbol `⌂`). The full exhaustive
+`verify:face-attach` (3,402,467 checks) and `verify:face-connectors`
+suites both pass clean with these 12 new shapes included, confirming
+the core face-matching machinery handles them correctly. **Not yet
+wired into the wheel's own navigation** (`PolyhedralWheel.tsx`'s
+`FAMILY_FACE_SLOTS` — currently `[]`, the same "claims no face"
+placeholder `FOURD` uses) — a real UI design decision, not done yet.
 
-- Square, pentagonal, and hexagonal REGULAR bases — same formula,
-  should be close to a parameter change (verify grade 2 reproduces J1/
-  J2 where those exist; hexagonal base has NO valid grade-2 by the
-  degenerate-limit finding above, needs its own decision for what
-  "standard" means there, if anything).
+### Outstanding (graded pyramids / Miscellaneous family)
+
+- Hexagonal REGULAR base — has NO valid grade 2 by the degenerate-limit
+  finding above (a regular-faced hexagonal pyramid is impossible),
+  needs its own decision for what "standard" means there, if anything.
 - IRREGULAR bases (golden rhombus, kite, the real hemi-RD hexagon) —
   a genuinely different problem: their lateral faces aren't congruent,
   so there's no single apex angle, only a per-edge one. Not yet
   designed.
-- The shared "Miscellaneous" registry family itself (`families.ts`) —
-  not yet created; both graded pyramids and the 7 RVCMG adapter pieces
-  are meant to eventually live there together.
+- The 7 RVCMG adapter pieces still need real 3D solid geometry before
+  they can join this family as actual registry entries (see the "3D
+  solid extrusion" note above) — the family directory structure is
+  ready for them, but they aren't there yet.
+- Wheel/browser UI navigation for the Miscellaneous family itself.

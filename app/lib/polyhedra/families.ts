@@ -22,6 +22,7 @@ import {
   JOHNSON_ADDITION_IDS,
   CATALAN_ADDITION_IDS,
   PRISM_ANTIPRISM_ADDITION_IDS,
+  MISCELLANEOUS_ADDITION_IDS,
   type PolyhedronSpec,
 } from './index';
 import { FOURD_CAPABLE_IDS } from './fourD';
@@ -34,7 +35,8 @@ export type FamilyKey =
   | 'CATALAN'
   | 'PRISMS'
   | 'ANTIPRISMS'
-  | 'FOURD';
+  | 'FOURD'
+  | 'MISCELLANEOUS';
 
 export const FAMILY_ORDER: FamilyKey[] = [
   'DELTAHEDRA',
@@ -45,6 +47,7 @@ export const FAMILY_ORDER: FamilyKey[] = [
   'PRISMS',
   'ANTIPRISMS',
   'FOURD',
+  'MISCELLANEOUS',
 ];
 
 // Single source of truth for both PolyhedralWheel and the ShapeBrowser
@@ -85,6 +88,13 @@ export const FAMILY_META: Record<FamilyKey, { label: string; symbol: string }> =
   // squares" evokes a tesseract's own classic projection, distinct from
   // every other symbol here.
   FOURD: { label: '4D-Capable', symbol: '⧉' },
+  // Graded pyramids and, eventually, the RVCMG adapter pieces (see
+  // docs/rvcmg-adapter-pieces-spec.md) -- irregular add-ons that don't
+  // belong to one of the classical families above. A house/roof
+  // pictograph reads as "a peaked shape sitting on a base," distinct
+  // from every base shape already claimed above (no outline triangle,
+  // pentagon, hexagon, diamond, or rectangle reused).
+  MISCELLANEOUS: { label: 'Miscellaneous', symbol: '⌂' },
 };
 
 // Base membership, derived (never hand-copied) from the registry's own
@@ -109,6 +119,7 @@ const BASE_IDS: Record<FamilyKey, string[]> = {
   // per-family data files -- this is the base membership itself, so it
   // belongs here, not there.
   FOURD: FOURD_CAPABLE_IDS,
+  MISCELLANEOUS: MISCELLANEOUS_ADDITION_IDS,
 };
 
 // Explicit, documented cross-family overlap patch -- encodes facts that
