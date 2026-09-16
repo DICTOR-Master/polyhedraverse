@@ -2,10 +2,14 @@ import { defineConfig, devices } from '@playwright/test';
 
 export default defineConfig({
   testDir: './tests/e2e',
-  globalSetup: './tests/e2e/global-setup.ts',
-  // Tests share one persisted assembly file (.data/assembly.json) via the
-  // real /api/assemblies route — run serially so parallel workers can't
-  // race on writing/reading it.
+  // Save/load now persists to each test's own isolated browser-context
+  // localStorage (see app/lib/assembly.ts's ASSEMBLY_STORAGE_KEY), not a
+  // shared server-side file, so cross-test state races are no longer the
+  // reason for serial execution -- but this Raspberry Pi dev environment
+  // has its own separate constraint (confirmed directly: concurrent
+  // `npx playwright test` invocations cause spurious ENOENT/timeout
+  // failures from real resource contention), so serial/single-worker
+  // stays the right setting regardless.
   fullyParallel: false,
   workers: 1,
   retries: 0,

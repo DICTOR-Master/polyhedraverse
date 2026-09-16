@@ -7,15 +7,15 @@ on a server. There are no accounts, no analytics, and no cookies.
 
 ## What data exists, and where
 
-- **Your assembly** (the shapes and connections you've built) is sent
-  to this app's own `/api/assemblies` route so a page reload can
-  restore it. Today that route stores it in a local file on whatever
-  machine is running the app — there is no multi-user database, no
-  identity attached to it, and no way for the app to distinguish one
-  visitor's assembly from another's beyond "whatever was last saved."
-  This is an interim development setup (see
-  `docs/vercel-deployment-plan.md`), not a finished multi-user product
-  — this policy will be revisited before that changes.
+- **Your assembly** (the shapes and connections you've built) is saved
+  entirely in your own browser's local storage when you click Save — it
+  is never sent to this app's server at all. There is no multi-user
+  database, no identity attached to it, and no way for anyone else
+  (including the people running this app) to see or access it: it lives
+  only on your own device, in that one browser, until you clear your
+  browser's site data. Real server-side, cross-device sync (see
+  `docs/vercel-deployment-plan.md`) is a possible future change — this
+  policy will be revisited before that happens.
 - **Standard web server logs.** Once deployed, the hosting provider
   (Vercel) may log ordinary access data (IP address, timestamp,
   requested file) as part of normal web hosting operation. The app

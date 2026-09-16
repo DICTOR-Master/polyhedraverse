@@ -15,7 +15,7 @@ import {
   MISCELLANEOUS_ADDITION_IDS,
 } from '../lib/polyhedra';
 import { DELTAHEDRA } from '../lib/polyhedra/deltahedra';
-import { emptyAssembly, isValidAssembly, type Assembly } from '../lib/assembly';
+import { emptyAssembly, isValidAssembly, ASSEMBLY_STORAGE_KEY, type Assembly } from '../lib/assembly';
 import { matchRewriteVertices, REWRITE_TARGET } from '../lib/polyhedra/rewrite';
 import { collectSubtree, findParentConnection, hasCycle } from '../lib/graph';
 import { FOURD_CAPABLE_IDS } from '../lib/polyhedra/fourD';
@@ -2249,16 +2249,16 @@ export default function ShapeViewer({
     // mutate it.
     const getAssembly = (): Assembly => graphRef.current;
 
+    // Async signature kept (matches ShapeViewerHandle's own `save():
+    // Promise<boolean>`) even though localStorage itself is synchronous --
+    // callers (page.tsx's handleSave) already await this, and keeping the
+    // interface unchanged means no caller needed touching for this swap.
     const saveAssembly = async (): Promise<boolean> => {
       try {
-        const res = await fetch('/api/assemblies', {
-          method: 'POST',
-          headers: { 'Content-Type': 'application/json' },
-          body: JSON.stringify(graphRef.current),
-        });
-        return res.ok;
+        localStorage.setItem(ASSEMBLY_STORAGE_KEY, JSON.stringify(graphRef.current));
+        return true;
       } catch {
-        return false;
+        return false; // e.g. private-browsing storage rejection, quota exceeded
       }
     };
 
@@ -2295,17 +2295,17 @@ export default function ShapeViewer({
     });
 
     let cancelled = false;
-    (async () => {
+    (() => {
       try {
-        const res = await fetch('/api/assemblies');
-        const data: unknown = await res.json();
+        const raw = localStorage.getItem(ASSEMBLY_STORAGE_KEY);
+        const data: unknown = raw === null ? null : JSON.parse(raw);
         if (cancelled) return;
         if (isValidAssembly(data) && data.nodes.length > 0) {
           loadAssembly(data);
           return;
         }
       } catch {
-        // no saved assembly (or the fetch failed) — fall through to the default shape
+        // no saved assembly (or it's corrupted/unreadable) — fall through to the default shape
       }
       if (!cancelled) placeRoot(initialShapeId);
     })();

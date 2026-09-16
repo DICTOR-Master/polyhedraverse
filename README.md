@@ -206,8 +206,8 @@ Since then:
   capacity, pick a shape to attach, drag to twist it around the one
   remaining rotational degree of freedom, then confirm or cancel.
 - **A real assembly graph** (`app/lib/assembly.ts`), built only from
-  user actions and persisted through an API route
-  (`app/api/assemblies/`) — reload restores exactly what you built.
+  user actions and persisted to your browser's own local storage —
+  reload restores exactly what you built.
 - **The D10↔D12 rewrite rule** — swap a placed node's shape in place;
   existing connections re-anchor to the most directionally-similar
   vertex on the new shape where one exists, or get flagged rather than
@@ -378,11 +378,10 @@ polyhedraverse/
         stateGraph.ts / morph.ts / verify.ts # traversal, smooth preview, Stage 7 transition verification
         adapters/          # the 7 shape-specific adapter pieces + shared.ts (assignTargetAngles/fitTargetPolygon)
         split-demos/       # heptagon/octagon -- real proof of the "multiply" (split) direction
-      assembly.ts        # the real {nodes, connections} graph + validation (vertex-, face-, and fold4-kind)
+      assembly.ts        # the real {nodes, connections} graph + validation (vertex-, face-, and fold4-kind); ASSEMBLY_STORAGE_KEY for localStorage save/load
       graph.ts           # subtree/cycle graph logic (pure, no three.js)
     components/
       ShapeViewer.tsx    # the whole Three.js scene: render, pick, attach/face-attach, twist, rewrite, delete, view modes
-    api/assemblies/      # GET/POST persistence route (local JSON for now; see docs)
     page.tsx             # UI shell around ShapeViewer
   scripts/               # validate-*, verify-attach/twist/rewrite/graph/face-* -- run outside the browser
   tests/e2e/             # permanent Playwright suite (npm run test:e2e)

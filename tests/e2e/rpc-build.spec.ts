@@ -1,5 +1,6 @@
 import { test, expect } from './fixtures';
-import { getCanvasCenter, resetTo } from './utils';
+import { getCanvasCenter, resetTo, getSavedAssembly, setSavedAssembly } from './utils';
+import type { Assembly } from '../../app/lib/assembly';
 
 /**
  * End-to-end coverage of RPC-build (radial-perspective click-to-build),
@@ -71,18 +72,18 @@ test('CUBE builds its tesseract one cell at a time, then shell-by-shell, with a 
 
   await page.getByRole('button', { name: 'Save', exact: true }).click();
   await expect(page.locator('text=Saved')).toBeVisible();
-  const fullAssembly = await page.evaluate(() => fetch('/api/assemblies').then((r) => r.json()));
+  const fullAssembly = await getSavedAssembly(page);
   expect(fullAssembly.nodes).toHaveLength(8); // 1 root + 6 shell-1 + 1 shell-2
   expect(fullAssembly.connections).toHaveLength(7);
-  expect(fullAssembly.connections.every((c: { kind: string }) => c.kind === 'rpc4d')).toBe(true);
-  expect(fullAssembly.nodes.find((n: { rpcPolytope?: unknown }) => n.rpcPolytope)).toBeTruthy();
+  expect(fullAssembly.connections.every((c) => c.kind === 'rpc4d')).toBe(true);
+  expect(fullAssembly.nodes.find((n) => n.rpcPolytope)).toBeTruthy();
 
   // Remove shell 2, save again, confirm back to 7 nodes.
   await page.getByRole('button', { name: 'Remove last shell' }).click();
   await page.waitForTimeout(200);
   await page.getByRole('button', { name: 'Save', exact: true }).click();
   await expect(page.locator('text=Saved')).toBeVisible();
-  const afterRemove = await page.evaluate(() => fetch('/api/assemblies').then((r) => r.json()));
+  const afterRemove = await getSavedAssembly(page);
   expect(afterRemove.nodes).toHaveLength(7);
   expect(afterRemove.connections).toHaveLength(6);
 
@@ -91,7 +92,7 @@ test('CUBE builds its tesseract one cell at a time, then shell-by-shell, with a 
   await page.reload();
   await page.waitForTimeout(500);
   await expect(page.getByRole('main').locator('canvas')).toBeVisible();
-  const reloaded = await page.evaluate(() => fetch('/api/assemblies').then((r) => r.json()));
+  const reloaded = await getSavedAssembly(page);
   expect(reloaded.nodes).toHaveLength(7);
 });
 
@@ -127,7 +128,7 @@ test('a non-4D-capable shape (RHOMBIC_DODECAHEDRON) never offers Build via RPC',
  * for data that predates this change.
  */
 test('an old saved fold4 assembly still loads and the fold slider still scrubs it', async ({ page }) => {
-  const assembly = {
+  const assembly: Assembly = {
     nodes: [
       { id: 'a', shape: 'DODECAHEDRON', transform: { position: [0, 0, 0], quaternion: [0, 0, 0, 1] } },
       { id: 'b', shape: 'DODECAHEDRON', transform: { position: [0, 0, 3], quaternion: [0, 0, 0, 1] } },
@@ -136,10 +137,7 @@ test('an old saved fold4 assembly still loads and the fold slider still scrubs i
   };
   await page.goto('/');
   await page.waitForTimeout(300);
-  await page.evaluate(
-    (a) => fetch('/api/assemblies', { method: 'POST', headers: { 'Content-Type': 'application/json' }, body: JSON.stringify(a) }),
-    assembly,
-  );
+  await setSavedAssembly(page, assembly);
   await page.reload();
   await page.waitForTimeout(500);
   await expect(page.getByRole('main').locator('canvas')).toBeVisible();

@@ -33,6 +33,7 @@ const VIEW_MODE_LABELS: Record<ViewMode, string> = {
 
 export default function Home() {
   const handleRef = useRef<ShapeViewerHandle | null>(null);
+  const saveStatusResetRef = useRef<ReturnType<typeof setTimeout> | null>(null);
   const [selection, setSelection] = useState<ShapeSelection | null>(null);
   const [pending, setPending] = useState<Pending | null>(null);
   const [nodeSelection, setNodeSelection] = useState<NodeSelection | null>(null);
@@ -175,10 +176,19 @@ export default function Home() {
   }
 
   const handleSave = async () => {
+    // A prior save's own "revert to idle after 2s" timer must not fire
+    // AFTER this call's own status update -- localStorage-backed save is
+    // fast enough that two Save clicks in quick succession (e.g. a real
+    // user re-saving right after Undo) could otherwise land inside that
+    // 2s window, and the stale timer would wrongly stomp this call's
+    // 'saved'/'error' status back to 'idle' out from under it. Caught via
+    // a real, reproducible e2e failure once save got fast enough to make
+    // this race actually land, not a hypothetical.
+    if (saveStatusResetRef.current) clearTimeout(saveStatusResetRef.current);
     setSaveStatus('saving');
     const ok = (await handleRef.current?.save()) ?? false;
     setSaveStatus(ok ? 'saved' : 'error');
-    setTimeout(() => setSaveStatus('idle'), 2000);
+    saveStatusResetRef.current = setTimeout(() => setSaveStatus('idle'), 2000);
   };
 
   const handleRewrite = () => {
@@ -217,10 +227,8 @@ export default function Home() {
   const handleExport = () => {
     const assembly = handleRef.current?.getAssembly();
     if (!assembly) return;
-    // Client-side only -- no server round-trip, unlike Save (which
-    // persists to /api/assemblies for reload-on-return). Same Assembly
-    // JSON shape either way, just handed to the browser's own download
-    // flow instead of POSTed.
+    // Same Assembly JSON shape Save writes to localStorage, just handed to
+    // the browser's own download flow instead.
     const blob = new Blob([JSON.stringify(assembly, null, 2)], { type: 'application/json' });
     const url = URL.createObjectURL(blob);
     const a = document.createElement('a');

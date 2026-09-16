@@ -122,6 +122,21 @@ export function emptyAssembly(): Assembly {
   return { nodes: [], connections: [] };
 }
 
+/**
+ * Save/load persists to the browser's own localStorage, not a server API.
+ * `/api/assemblies` (a local-JSON-file route) was removed 2026-09-16: it
+ * worked in local dev but Vercel's production serverless functions have a
+ * read-only filesystem outside `/tmp` — every POST there 500'd in
+ * production, confirmed live (`docs/vercel-deployment-plan.md`'s own
+ * "Known live issue" section). Real server-side storage (Vercel KV/Blob)
+ * remains the eventual fix for cross-device sync, but is out of scope for
+ * now — direct user decision, given it needs Vercel dashboard provisioning
+ * this session couldn't do (MCP access was blocked). localStorage means a
+ * saved assembly is tied to one browser, which matches this app's actual
+ * single-user, single-device usage today.
+ */
+export const ASSEMBLY_STORAGE_KEY = 'polyhedraverse:assembly';
+
 function isVec3(v: unknown): v is [number, number, number] {
   return Array.isArray(v) && v.length === 3 && v.every((n) => typeof n === 'number' && Number.isFinite(n));
 }

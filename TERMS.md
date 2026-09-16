@@ -18,16 +18,15 @@ saved via this app's own API route so a page reload restores it — see
 ## Use at your own risk
 
 The app is provided "as is," with no warranty of any kind, express or
-implied — including no guarantee of uptime or data durability. The
-current save/reload mechanism is an interim development setup (a local
-file, not a production database — see `docs/vercel-deployment-plan.md`)
-and is not guaranteed to be backed up or permanent.
+implied — including no guarantee of uptime or data durability. Save/
+reload persists to your own browser's local storage, not a server
+database — it isn't backed up anywhere, and clearing your browser's
+site data (or switching browsers/devices) loses it permanently.
 
 ## Acceptable use
 
 Don't attempt to disrupt, attack, scrape, or overload the hosting
-infrastructure or the `/api/assemblies` endpoint. Don't use the app for
-anything unlawful.
+infrastructure. Don't use the app for anything unlawful.
 
 ## Changes
 

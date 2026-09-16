@@ -149,6 +149,20 @@ don't start the next one until the current "Done when" passes.
   the persistence layer itself (the part that's actually new here) was
   exercised end-to-end over real HTTP.
 
+  **Editorial update, 2026-09-16**: the local-JSON-file `/api/assemblies`
+  route described above was removed entirely once the app was actually
+  live on Vercel and its POST was confirmed (via a direct `curl` against
+  production) to 500 every time — Vercel's serverless functions have a
+  read-only filesystem outside `/tmp`, so the local-file placeholder
+  never actually worked in production, only in local dev. Rather than
+  provisioning Vercel KV/Postgres (blocked this session by an MCP auth
+  scope issue, and needing dashboard setup regardless), save/load now
+  persists directly to the browser's own localStorage
+  (`app/lib/assembly.ts`'s `ASSEMBLY_STORAGE_KEY`) — a direct user
+  decision, given this app's actual usage is single-user/single-device
+  today. Real cross-device sync via a real backend remains a possible
+  future migration, not this one.
+
 - [x] **Stage 7 — D10↔D12 rewrite rule** ✅ done
   - `app/lib/rewrite.ts`: `matchRewriteVertices(oldSpecId, newSpecId,
     oldVertexIndices)` — a pure, `three`-free function (plain number

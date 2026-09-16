@@ -16,15 +16,18 @@ You should get an acknowledgment within a few days.
 
 ## Scope
 
-Polyhedraverse has no accounts, no analytics, and (currently) no real
-production backend. The one API route, `app/api/assemblies/`, reads and
-writes a local JSON file (`.data/assembly.json`, gitignored) as an
-interim stand-in for the Vercel KV/Postgres named in
-`docs/vercel-deployment-plan.md` — it's an explicit placeholder, not
-yet hardened for a public multi-user deployment. Reports touching that
-route's input validation (`app/lib/assembly.ts`'s `isValidAssembly`) or
-the persistence layer are in scope, as is anything client-side — this
-is a WebGL/Three.js app rendering user-driven state, so raycasting or
+Polyhedraverse has no accounts, no analytics, and no server-side
+backend at all as of 2026-09-16 — a prior local-JSON-file API route
+(`/api/assemblies`) was removed after it turned out to 500 on Vercel's
+read-only production filesystem; save/load now persists entirely to
+the browser's own localStorage (see `app/lib/assembly.ts`'s
+`ASSEMBLY_STORAGE_KEY`). Real server-side, cross-device sync (Vercel
+KV/Postgres, per `docs/vercel-deployment-plan.md`) remains a possible
+future direction, not yet built. Reports touching the localStorage
+data's own validation on load (`app/lib/assembly.ts`'s
+`isValidAssembly`, which guards against corrupted or hand-edited
+browser storage) are in scope, as is anything client-side — this is a
+WebGL/Three.js app rendering user-driven state, so raycasting or
 scene-construction bugs matter even without an obvious "security" label.
 
 ## Supported versions

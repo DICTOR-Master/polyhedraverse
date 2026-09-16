@@ -1,5 +1,6 @@
 import { test, expect } from './fixtures';
-import { getCanvasCenter, resetTo } from './utils';
+import { getCanvasCenter, resetTo, setSavedAssembly } from './utils';
+import type { Assembly } from '../../app/lib/assembly';
 
 test.beforeEach(async ({ page }) => {
   await page.goto('/');
@@ -15,7 +16,7 @@ test.beforeEach(async ({ page }) => {
  * point is genuinely gone, and that the underlying load/scrub machinery
  * (kept intentionally, so an already-saved assembly with a real fold4
  * connection isn't silently broken) still works when reached directly
- * through the persistence API rather than the removed button.
+ * through localStorage rather than the removed button.
  */
 test('the removed "Attach via 4D fold…" button never appears, even where it used to', async ({ page }) => {
   await resetTo(page, 'DODECAHEDRON');
@@ -33,20 +34,17 @@ test('the removed "Attach via 4D fold…" button never appears, even where it us
 
 test('an already-saved fold4 connection still loads and its slider still scrubs (backward compatibility)', async ({ page }) => {
   // Build a real, valid 2-node fold4 assembly directly through the same
-  // persistence API "Save" uses, exactly the shape a pre-existing save
+  // localStorage key "Save" uses, exactly the shape a pre-existing save
   // from before the button's removal would have -- isValidAssembly is
   // the actual, only gate, unaffected by this UI change.
-  const assembly = {
+  const assembly: Assembly = {
     nodes: [
       { id: 'a', shape: 'DODECAHEDRON', transform: { position: [0, 0, 0], quaternion: [0, 0, 0, 1] } },
       { id: 'b', shape: 'DODECAHEDRON', transform: { position: [0, 0, 2.5], quaternion: [0, 0, 0, 1] } },
     ],
     connections: [{ nodeA: 'a', vertexA: 0, nodeB: 'b', vertexB: 0, kind: 'face', fold4: true }],
   };
-  await page.evaluate(
-    (a) => fetch('/api/assemblies', { method: 'POST', headers: { 'Content-Type': 'application/json' }, body: JSON.stringify(a) }),
-    assembly,
-  );
+  await setSavedAssembly(page, assembly);
   await page.reload();
   await page.waitForTimeout(500);
 

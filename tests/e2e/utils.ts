@@ -1,5 +1,25 @@
 import type { Page } from '@playwright/test';
 import { FAMILY_ORDER, FAMILY_META, familyIds } from '../../app/lib/polyhedra/families';
+import { ASSEMBLY_STORAGE_KEY, type Assembly } from '../../app/lib/assembly';
+
+/**
+ * Save/load moved from a server API route to browser localStorage
+ * 2026-09-16 (the route 500'd in production -- Vercel's serverless
+ * filesystem is read-only outside /tmp; see app/lib/assembly.ts's own
+ * ASSEMBLY_STORAGE_KEY doc comment). These replace every test's own
+ * `fetch('/api/assemblies')` call with the same localStorage read/write
+ * the app itself now does, importing the real key so tests can't drift
+ * from it.
+ */
+export async function getSavedAssembly(page: Page): Promise<Assembly> {
+  const raw = await page.evaluate((key) => localStorage.getItem(key), ASSEMBLY_STORAGE_KEY);
+  if (raw === null) throw new Error(`getSavedAssembly: nothing saved at localStorage key "${ASSEMBLY_STORAGE_KEY}" -- did the test Save first?`);
+  return JSON.parse(raw);
+}
+
+export async function setSavedAssembly(page: Page, assembly: Assembly): Promise<void> {
+  await page.evaluate(([key, value]) => localStorage.setItem(key, value), [ASSEMBLY_STORAGE_KEY, JSON.stringify(assembly)] as const);
+}
 
 export async function getCanvasCenter(page: Page): Promise<{ cx: number; cy: number }> {
   // Scoped to <main> specifically -- CornerHudWheel mounts its own small

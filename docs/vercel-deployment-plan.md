@@ -109,17 +109,26 @@ failure noted above.
    a separate shared package/repo now, since there's no common monorepo
    root to hang it off — not needed today, note only for if it comes up.
 
-## Known live issue: `/api/assemblies` storage doesn't persist in production
+## Fixed, 2026-09-16: `/api/assemblies` storage didn't persist in production
 
-`app/api/assemblies/route.ts` persists to a local JSON file under
-`.data/` (see the comment in that file) as a deliberate placeholder for
-local dev. That's now live at https://polyhedraverse.vercel.app, and as
-expected, Vercel's serverless functions have an ephemeral/read-only
-filesystem in production — writes there don't persist across requests
-(each POST appears to succeed, but a subsequent GET, possibly on a
-different function instance, won't see it). Not yet fixed; the route's
-own comment already flags the intended fix (swap in Vercel KV or
-Postgres) as a same-shape migration whenever someone picks this up.
+`app/api/assemblies/route.ts` persisted to a local JSON file under
+`.data/` as a deliberate local-dev placeholder. Once live at
+https://polyhedraverse.vercel.app, this was confirmed broken exactly as
+expected — Vercel's serverless functions have an ephemeral/read-only
+filesystem in production, so every `POST /api/assemblies` there
+actually returned a real HTTP 500 (confirmed directly via `curl`
+against production, not just inferred) rather than the "appears to
+succeed silently" behavior originally guessed at here.
+
+**Fix**: the route is removed entirely. Save/load now persists directly
+to the browser's own `localStorage` (`app/lib/assembly.ts`'s
+`ASSEMBLY_STORAGE_KEY`) — no server round-trip at all. Provisioning
+real Vercel KV/Postgres for cross-device sync was considered instead,
+but needs Vercel dashboard setup this session's blocked MCP access
+couldn't do, and is out of scope for what's actually a single-user,
+single-device app today — a direct user decision, not a default
+technical necessity. Revisit if/when cross-device sync is actually
+wanted.
 
 ## Why not the other options
 

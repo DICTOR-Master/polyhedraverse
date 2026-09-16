@@ -1,5 +1,5 @@
 import { test, expect } from './fixtures';
-import { getCanvasCenter, resetTo, readTooltipAt, clickWheelLabel, openBrowserWheel, exactLabel, findOnCanvas } from './utils';
+import { getCanvasCenter, resetTo, readTooltipAt, clickWheelLabel, openBrowserWheel, exactLabel, findOnCanvas, getSavedAssembly, setSavedAssembly } from './utils';
 
 test.beforeEach(async ({ page }) => {
   await page.goto('/');
@@ -48,11 +48,11 @@ test('selecting a CUBE face offers a matching face-attach, and confirming attach
   // glued face's normal, so it now correctly occludes the root at that
   // exact pixel (real 3D occlusion, not a bug) -- hovering there next finds
   // the *new* cube's own free far face, not the root's now-occupied one.
-  // Verify the actual graph instead, via the real persistence API.
+  // Verify the actual graph instead, via the real saved localStorage state.
   await page.getByRole('button', { name: 'Save', exact: true }).click();
   await expect(page.locator('text=Saved')).toBeVisible();
 
-  const assembly = await page.evaluate(() => fetch('/api/assemblies').then((r) => r.json()));
+  const assembly = await getSavedAssembly(page);
   expect(assembly.nodes, 'expected two CUBE nodes after the face-attach').toHaveLength(2);
   expect(assembly.nodes.every((n: { shape: string }) => n.shape === 'CUBE')).toBe(true);
   expect(assembly.connections, 'expected exactly one connection').toHaveLength(1);
@@ -190,18 +190,12 @@ test('Miscellaneous pyramid: pointed lateral face offers no attach at all, regul
   // PYRAMID_SQUARE_G1 ("low" grade) isn't on the wheel yet (Miscellaneous
   // has no wheel face -- FAMILY_FACE_SLOTS.MISCELLANEOUS is still []), so
   // it can't be reached via resetTo()'s normal wheel navigation. Seed it
-  // directly through the same persistence API Save/Load already use, then
+  // directly through the same localStorage key Save/Load already use, then
   // reload -- the app has no other UI path to this shape today.
-  await page.evaluate(() =>
-    fetch('/api/assemblies', {
-      method: 'POST',
-      headers: { 'Content-Type': 'application/json' },
-      body: JSON.stringify({
-        nodes: [{ id: 'a', shape: 'PYRAMID_SQUARE_G1', transform: { position: [0, 0, 0], quaternion: [0, 0, 0, 1] } }],
-        connections: [],
-      }),
-    }),
-  );
+  await setSavedAssembly(page, {
+    nodes: [{ id: 'a', shape: 'PYRAMID_SQUARE_G1', transform: { position: [0, 0, 0], quaternion: [0, 0, 0, 1] } }],
+    connections: [],
+  });
   await page.reload();
   await page.waitForTimeout(500);
 

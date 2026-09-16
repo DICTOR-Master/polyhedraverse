@@ -1,5 +1,6 @@
 import { test, expect } from './fixtures';
-import { getCanvasCenter, resetTo, readTooltipAt, openBrowserWheel, clickWheelLabel, exactLabel } from './utils';
+import { getCanvasCenter, resetTo, readTooltipAt, openBrowserWheel, clickWheelLabel, exactLabel, getSavedAssembly, setSavedAssembly } from './utils';
+import type { Assembly } from '../../app/lib/assembly';
 
 test.beforeEach(async ({ page }) => {
   await page.goto('/');
@@ -45,7 +46,7 @@ test('a DODECAHEDRON face offers Duoprism self-attach with no picker step, and p
 
   await page.getByRole('button', { name: 'Save', exact: true }).click();
   await expect(page.locator('text=Saved')).toBeVisible();
-  const assembly = await page.evaluate(() => fetch('/api/assemblies').then((r) => r.json()));
+  const assembly = await getSavedAssembly(page);
   expect(assembly.nodes).toHaveLength(2);
   expect(assembly.nodes.every((n: { shape: string }) => n.shape === 'DODECAHEDRON')).toBe(true);
   expect(assembly.connections).toHaveLength(1);
@@ -53,12 +54,12 @@ test('a DODECAHEDRON face offers Duoprism self-attach with no picker step, and p
   expect(assembly.connections[0].vertexA).toBe(assembly.connections[0].vertexB);
 
   // Undo removes it cleanly (no leftover wall-prism mesh/orphaned state) --
-  // re-save to check the in-memory graph via the real persistence API,
+  // re-save to check the in-memory graph via the real saved localStorage state,
   // since undo itself doesn't auto-save.
   await page.getByRole('button', { name: 'Undo' }).click();
   await page.getByRole('button', { name: 'Save', exact: true }).click();
   await expect(page.locator('text=Saved')).toBeVisible();
-  const savedAfterUndo = await page.evaluate(() => fetch('/api/assemblies').then((r) => r.json()));
+  const savedAfterUndo = await getSavedAssembly(page);
   expect(savedAfterUndo.nodes).toHaveLength(1);
   expect(savedAfterUndo.connections).toHaveLength(0);
 });
@@ -80,17 +81,14 @@ test('three faces of one parent sharing a single duoprism far copy survive a sav
   const pageErrors: string[] = [];
   page.on('pageerror', (err) => pageErrors.push(String(err)));
 
-  const assembly = {
+  const assembly: Assembly = {
     nodes: [
       { id: 'a', shape: 'DODECAHEDRON', transform: { position: [0, 0, 0], quaternion: [0, 0, 0, 1] } },
       { id: 'b', shape: 'DODECAHEDRON', transform: { position: [0, 0, 3], quaternion: [0, 0, 0, 1] } },
     ],
     connections: [{ nodeA: 'a', vertexA: 0, nodeB: 'b', vertexB: 0, kind: 'duoprism', duoprismExtraFaces: [1, 2] }],
   };
-  await page.evaluate(
-    (a) => fetch('/api/assemblies', { method: 'POST', headers: { 'Content-Type': 'application/json' }, body: JSON.stringify(a) }),
-    assembly,
-  );
+  await setSavedAssembly(page, assembly);
   await page.reload();
   await page.waitForTimeout(500);
 
@@ -106,7 +104,7 @@ test('three faces of one parent sharing a single duoprism far copy survive a sav
   // node per face on the way through load/save.
   await page.getByRole('button', { name: 'Save', exact: true }).click();
   await expect(page.locator('text=Saved')).toBeVisible();
-  const roundTripped = await page.evaluate(() => fetch('/api/assemblies').then((r) => r.json()));
+  const roundTripped = await getSavedAssembly(page);
   expect(roundTripped.nodes).toHaveLength(2);
   expect(roundTripped.connections).toHaveLength(1);
   expect(roundTripped.connections[0].kind).toBe('duoprism');
