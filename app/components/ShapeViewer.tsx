@@ -534,6 +534,30 @@ function applyViewMode(placed: PlacedShape, mode: ViewMode) {
   material.needsUpdate = true;
 }
 
+// Per-shell falloff for RPC-build cells -- direct user feedback: without
+// this, several closures (the octahedron -> 24-cell in particular) pile
+// shell-1 cells almost exactly on top of the seed and each other under
+// "4D"'s real perspective projection, so clicking "Add next cell" reads
+// as "nothing is happening" even though it genuinely is. Geometric decay
+// per shell (shell 0 = the seed, always fully at the current view mode's
+// own opacity) keeps the root visible through however many outer shells
+// are built, rather than only helping the specific closures that happen
+// to still look separated. Floored so outer shells stay faintly visible
+// rather than vanishing.
+const RPC_SHELL_OPACITY_FACTOR = 0.75;
+const RPC_SHELL_OPACITY_FLOOR = 0.12;
+
+function applyRpcShellOpacity(placed: PlacedShape, shell: number) {
+  if (shell <= 0) return;
+  const material = placed.mesh.material as THREE.MeshStandardMaterial;
+  const scaled = material.opacity * Math.pow(RPC_SHELL_OPACITY_FACTOR, shell);
+  material.opacity = Math.max(scaled, RPC_SHELL_OPACITY_FLOOR);
+  material.transparent = true;
+  material.depthWrite = false;
+  material.side = THREE.DoubleSide;
+  material.needsUpdate = true;
+}
+
 export default function ShapeViewer({
   initialShapeId,
   onSelectionChange,
@@ -761,6 +785,22 @@ export default function ShapeViewer({
 
     const findPlaced = (nodeId: string) =>
       placedRef.current.find((p) => (p.object.userData as ShapeObjectUserData).nodeId === nodeId);
+
+    /** This node's own RPC-build shell (0 = an RPC root, 1+ = a built rpc4d child at that shell), or null if it isn't part of an RPC build at all. Derived live from the graph, never cached, so it can't drift as cells are added/removed/undone. */
+    const rpcShellOf = (nodeId: string): number | null => {
+      const node = graphRef.current.nodes.find((n) => n.id === nodeId);
+      if (node?.rpcPolytope) return 0;
+      const conn = graphRef.current.connections.find((c) => !c.orphaned && c.kind === 'rpc4d' && c.nodeB === nodeId);
+      return conn?.shell ?? null;
+    };
+
+    /** applyViewMode plus the RPC-build per-shell opacity falloff (applyRpcShellOpacity's own doc comment) for whichever node `placed` belongs to -- the one wrapper every call site below should use instead of calling applyViewMode directly, so no creation/reload path has to remember the extra step. */
+    const applyViewModeToPlaced = (placed: PlacedShape, mode: ViewMode) => {
+      applyViewMode(placed, mode);
+      const { nodeId } = placed.object.userData as ShapeObjectUserData;
+      const shell = rpcShellOf(nodeId);
+      if (shell !== null) applyRpcShellOpacity(placed, shell);
+    };
 
     const placedOwningVertexSphere = (sphere: THREE.Mesh): PlacedShape | undefined => {
       const object = sphere.parent!.parent as THREE.Group;
@@ -1063,7 +1103,7 @@ export default function ShapeViewer({
       const replacement = buildPlacedShape(spec, nodeId);
       replacement.object.position.copy(oldPosition);
       replacement.object.quaternion.copy(oldQuaternion);
-      applyViewMode(replacement, viewModeRef.current);
+      applyViewModeToPlaced(replacement, viewModeRef.current);
       applyRpcSeedColor(replacement);
       scene.add(replacement.object);
 
@@ -1136,7 +1176,6 @@ export default function ShapeViewer({
       const childPlaced = buildPlacedShape(derived.spec, childNodeId);
       childPlaced.object.position.copy(derived.position);
       childPlaced.object.quaternion.copy(derived.quaternion);
-      applyViewMode(childPlaced, viewModeRef.current);
       scene.add(childPlaced.object);
       applyNodeAppearance(childPlaced, false);
       placedRef.current.push(childPlaced);
@@ -1158,6 +1197,10 @@ export default function ShapeViewer({
         cellId,
         shell: 1,
       });
+      // Applied AFTER the connection is registered -- rpcShellOf (which
+      // applyViewModeToPlaced reads) resolves this cell's own shell from
+      // the graph, not a parameter, so the connection must already exist.
+      applyViewModeToPlaced(childPlaced, viewModeRef.current);
 
       reportCageStatus();
       publishNodeSelection(placed);
@@ -1224,7 +1267,6 @@ export default function ShapeViewer({
         // on this same "root's transform + synthetic vertices" split).
         childPlaced.object.position.copy(placed.object.position);
         childPlaced.object.quaternion.copy(placed.object.quaternion);
-        applyViewMode(childPlaced, viewModeRef.current);
         scene.add(childPlaced.object);
         applyNodeAppearance(childPlaced, false);
         placedRef.current.push(childPlaced);
@@ -1246,6 +1288,8 @@ export default function ShapeViewer({
           cellId: cell.id,
           shell: nextShell,
         });
+        // After the connection is registered -- see buildNextRpcCell's own comment.
+        applyViewModeToPlaced(childPlaced, viewModeRef.current);
       }
 
       reportCageStatus();
@@ -1328,7 +1372,7 @@ export default function ShapeViewer({
         const replacement = buildPlacedShape(derived.spec, conn.nodeB);
         replacement.object.position.copy(derived.position);
         replacement.object.quaternion.copy(derived.quaternion);
-        applyViewMode(replacement, viewModeRef.current);
+        applyViewModeToPlaced(replacement, viewModeRef.current);
         scene.add(replacement.object);
 
         const index = placedRef.current.indexOf(oldPlaced);
@@ -1544,7 +1588,7 @@ export default function ShapeViewer({
       const nodeId = crypto.randomUUID();
       const placed = buildPlacedShape(spec, nodeId);
       applyNodeAppearance(placed, false);
-      applyViewMode(placed, viewModeRef.current);
+      applyViewModeToPlaced(placed, viewModeRef.current);
       scene.add(placed.object);
       placedRef.current.push(placed);
       graphRef.current = {
@@ -1618,7 +1662,15 @@ export default function ShapeViewer({
         const placed = buildPlacedShape(spec, node.id);
         placed.object.position.fromArray(node.transform.position);
         placed.object.quaternion.fromArray(node.transform.quaternion);
+        // applyViewModeToPlaced's own graph lookup can't be used here --
+        // graphRef.current isn't repopulated with THIS assembly's data
+        // until after this whole loop (see graphRef.current = assembly
+        // below), so it would see the old/empty graph. The shell is
+        // already known locally (node.rpcPolytope for a root, rpcConn's
+        // own shell for a child), so apply it directly instead.
         applyViewMode(placed, viewModeRef.current);
+        const shell = node.rpcPolytope ? 0 : (rpcConn?.shell ?? null);
+        if (shell !== null) applyRpcShellOpacity(placed, shell);
         if (node.rpcPolytope) applyRpcSeedColor(placed);
         scene.add(placed.object);
         placedRef.current.push(placed);
@@ -1730,7 +1782,7 @@ export default function ShapeViewer({
       const rotatedAttachVertex = new THREE.Vector3(...attachVertex).applyQuaternion(baseQuaternion);
       placed.object.position.copy(targetWorldPos).sub(rotatedAttachVertex);
 
-      applyViewMode(placed, viewModeRef.current);
+      applyViewModeToPlaced(placed, viewModeRef.current);
       scene.add(placed.object);
       applyNodeAppearance(placed, false);
 
@@ -1850,7 +1902,7 @@ export default function ShapeViewer({
       const placed = buildPlacedShape(spec, nodeId);
       placed.object.quaternion.copy(registrationBaseQuat);
       placed.object.position.copy(position);
-      applyViewMode(placed, viewModeRef.current);
+      applyViewModeToPlaced(placed, viewModeRef.current);
 
       scene.add(placed.object);
       applyNodeAppearance(placed, false);
@@ -1988,7 +2040,7 @@ export default function ShapeViewer({
         // discrete rotational choice to make.
         newPlaced.object.quaternion.copy(targetWorldQuat);
         newPlaced.object.position.copy(targetOriginWorld).add(offsetWorld);
-        applyViewMode(newPlaced, viewModeRef.current);
+        applyViewModeToPlaced(newPlaced, viewModeRef.current);
         scene.add(newPlaced.object);
         applyNodeAppearance(newPlaced, false);
         placed = newPlaced;
@@ -2204,7 +2256,7 @@ export default function ShapeViewer({
       const replacement = buildPlacedShape(newSpec, nodeId);
       replacement.object.position.copy(oldPosition);
       replacement.object.quaternion.copy(oldQuaternion);
-      applyViewMode(replacement, viewModeRef.current);
+      applyViewModeToPlaced(replacement, viewModeRef.current);
       scene.add(replacement.object);
 
       const index = placedRef.current.indexOf(node);
@@ -2411,8 +2463,8 @@ export default function ShapeViewer({
 
     const setViewMode = (mode: ViewMode) => {
       viewModeRef.current = mode;
-      for (const placed of placedRef.current) applyViewMode(placed, mode);
-      if (pendingRef.current) applyViewMode(pendingRef.current.placed, mode);
+      for (const placed of placedRef.current) applyViewModeToPlaced(placed, mode);
+      if (pendingRef.current) applyViewModeToPlaced(pendingRef.current.placed, mode);
     };
 
     const setFoldAmount = (t: number) => {
