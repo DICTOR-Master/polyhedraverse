@@ -33,15 +33,20 @@ test('renders the canvas and every shape across all 7 wheel families (8 Deltahed
 
   await page.getByRole('button', { name: /^Start over with/ }).click();
   await openBrowserWheel(page);
-  // FOURD (4D-Capable) deliberately claims no wheel face (direct user
-  // decision, app/lib/polyhedra/families.ts's own FAMILY_FACE_SLOTS
-  // comment) -- it's real and reachable via Full Catalog/search, just
-  // not a wheel-navigable family the way the other 7 are, so it's
-  // excluded from this specific "every family is a wheel face" check.
-  // Its own 4 members (D4/D8/CUBE/DODECAHEDRON) are still exercised here
-  // under their original family (Deltahedra/Platonic), so no shape's
-  // own wheel-reachability coverage is lost by skipping it.
-  for (const family of WHEEL_FAMILIES.filter((f) => f.label !== '4D-Capable')) {
+  // FOURD (4D-Capable) and MISCELLANEOUS both deliberately claim no wheel
+  // face yet (direct user decision, PolyhedralWheel.tsx's own
+  // FAMILY_FACE_SLOTS comment: "same 'claims no face' placeholder as
+  // FOURD until that design work happens") -- both are real and
+  // reachable via Full Catalog/search, just not wheel-navigable the way
+  // the other families are, so both are excluded from this specific
+  // "every family is a wheel face" check. FOURD's own 4 members are
+  // still exercised here under whichever family they ALSO belong to
+  // (Deltahedra/Platonic), so no coverage is lost by skipping it.
+  // Miscellaneous's shapes have no such overlap and genuinely aren't
+  // wheel-reachable yet -- skipping the family here doesn't lose
+  // coverage this test could otherwise provide, since there's no wheel
+  // path to them to check.
+  for (const family of WHEEL_FAMILIES.filter((f) => f.label !== '4D-Capable' && f.label !== 'Miscellaneous')) {
     // Exact match, not substring -- "Prisms" is a substring of "Antiprisms"
     // now that both are separate families, so a plain hasText: family.label
     // would match both faces' labels at once. See exactLabel()'s doc comment.
