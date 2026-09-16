@@ -1,6 +1,6 @@
 /**
- * Verifies the RPC-build (radial-perspective click-to-build) bridge
- * (app/lib/polyhedra/rpcBuild.ts) directly against real closures for a
+ * Verifies the RCP-C2B (Radial Cell Projection, click-to-build) bridge
+ * (app/lib/polyhedra/rcpBuild.ts) directly against real closures for a
  * few seeds and a couple of shells each: every synthetic PolyhedronSpec
  * `buildSyntheticCellSpec` produces must be a genuinely valid closed
  * solid -- Euler's formula (V - E + F = 2) and every face's own
@@ -11,7 +11,7 @@
  */
 import { POLYHEDRA } from '../app/lib/polyhedra';
 import { triangulateFace, type Vec3 } from '../app/lib/polyhedra/core';
-import { buildRpcComplex, buildSyntheticCellSpec, effectiveSeedSpec, cellsAtShell, maxShell } from '../app/lib/polyhedra/rpcBuild';
+import { buildRcpComplex, buildSyntheticCellSpec, effectiveSeedSpec, cellsAtShell, maxShell } from '../app/lib/polyhedra/rcpBuild';
 
 let failures = 0;
 function check(label: string, condition: boolean) {
@@ -84,7 +84,7 @@ const CASES: Case[] = [
 ];
 
 for (const { label, seedSpecId, target, shellsToCheck } of CASES) {
-  const complex = buildRpcComplex(seedSpecId, target);
+  const complex = buildRcpComplex(seedSpecId, target);
   check(`${label}: complex has a real seedSpecId/targetName`, complex.seedSpecId.length > 0 && complex.targetName === target);
   check(`${label}: at least one cell beyond the seed exists (real shells to check)`, maxShell(complex) >= 1);
 
@@ -109,7 +109,7 @@ for (const { label, seedSpecId, target, shellsToCheck } of CASES) {
 
       // Connectors must be rebuilt against the WARPED positions, not
       // copied from the seed (Connector.pos === the vertex's own
-      // position -- see rpcBuild.ts's own doc comment on why this can't
+      // position -- see rcpBuild.ts's own doc comment on why this can't
       // just be copied).
       check(
         `${label} shell ${shell} cell ${cell.id}: connectors rebuilt at the warped positions, not the seed's original ones`,
@@ -130,7 +130,7 @@ for (const { label, seedSpecId, target, shellsToCheck } of CASES) {
 // a pure uniform scale of the real registry shape, not a skew.
 //
 // Real bug found live (2026-09-16): that constant scale factor is NOT
-// automatically 1 (buildRpcComplex's own viewDistance/viewMargin
+// automatically 1 (buildRcpComplex's own viewDistance/viewMargin
 // convention is arbitrary), while ShapeViewer.tsx's own integration
 // places the ACTUAL rendered root using the real, unscaled registry
 // spec directly -- so every OTHER cell (computed relative to the
@@ -140,12 +140,12 @@ for (const { label, seedSpecId, target, shellsToCheck } of CASES) {
 // vertices (a reflection fixes points on its own mirror plane), but
 // were nowhere near the REAL root's own face vertices, rendering as
 // small, disconnected shards near a correctly-sized root instead of
-// genuinely sharing a face with it. `projectAll` (rpcBuild.ts) now
+// genuinely sharing a face with it. `projectAll` (rcpBuild.ts) now
 // rescales the WHOLE complex by one uniform factor so cell 0 exactly
 // equals the real registry seed -- checked here as k==1 exactly, not
 // merely "some constant k" as before the fix.
 {
-  const complex = buildRpcComplex('CUBE', 'tesseract');
+  const complex = buildRcpComplex('CUBE', 'tesseract');
   const cellSpec = POLYHEDRA[complex.seedSpecId];
   const cell0 = complex.cells.find((c) => c.id === 0)!;
   const seedVerts = cellSpec.vertices;
@@ -168,13 +168,13 @@ for (const { label, seedSpecId, target, shellsToCheck } of CASES) {
 // definition of "the 4D structure closes" this whole feature exists to
 // show. For 5 of 6 closures, "the real root" is the plain registry
 // seed (cell 0 already exactly equals it). For the 600-cell, there IS
-// no real seed to match -- effectiveSeedSpec (rpcBuild.ts) is checked
+// no real seed to match -- effectiveSeedSpec (rcpBuild.ts) is checked
 // against instead, since THAT's what ShapeViewer.tsx actually places
 // as the root for this one closure (see its own doc comment for why:
 // the 120-cell's own vertex-transitivity means every dual cell,
 // including whichever gets labeled "0", is equally non-regular).
 for (const { label, seedSpecId, target } of CASES) {
-  const complex = buildRpcComplex(seedSpecId, target);
+  const complex = buildRcpComplex(seedSpecId, target);
   const rootSpec = target === '600-cell' ? effectiveSeedSpec(complex) : POLYHEDRA[seedSpecId];
   const shell1 = cellsAtShell(complex, 1);
   if (shell1.length === 0) continue;
@@ -202,7 +202,7 @@ for (const { label, seedSpecId, target } of CASES) {
 // checks already applied to every other cell above, applied here to
 // effectiveSeedSpec's own output specifically.
 {
-  const complex = buildRpcComplex('D4', '600-cell');
+  const complex = buildRcpComplex('D4', '600-cell');
   const rootSpec = effectiveSeedSpec(complex);
   check('D4 -> 600-cell: effectiveSeedSpec root has the same vertex count as a tetrahedron', rootSpec.vertices.length === 4);
   check('D4 -> 600-cell: effectiveSeedSpec root is Euler-valid (V - E + F = 2)', eulerFormulaHolds(rootSpec.vertices.length, rootSpec.edges.length, rootSpec.faces.length));

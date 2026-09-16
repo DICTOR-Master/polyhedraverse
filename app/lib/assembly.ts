@@ -16,10 +16,10 @@ export interface AssemblyNode {
     position: [number, number, number];
     quaternion: [number, number, number, number]; // x, y, z, w
   };
-  // RPC-build (radial-perspective click-to-build): set ONLY on a true
-  // RPC-build root (the node an 'rpc4d' connection's nodeA points at,
+  // RCP-C2B (Radial Cell Projection, click-to-build): set ONLY on a true
+  // RCP-C2B root (the node an 'rcp4d' connection's nodeA points at,
   // i.e. cell 0 of some 4-polytope closure) — every other node
-  // (including every rpc4d CHILD cell) leaves this unset. `seedSpecId`
+  // (including every rcp4d CHILD cell) leaves this unset. `seedSpecId`
   // is the real registry id whose closures apply (e.g. 'D4'); `target`
   // is which of that seed's (up to 3) closures this root is building
   // (e.g. '16-cell', '5-cell', '600-cell' — see
@@ -27,7 +27,7 @@ export interface AssemblyNode {
   // The root's own `shape`/`transform` are already ordinary — this is
   // the only extra bookkeeping a root needs; every child cell's own
   // geometry is fully re-derived from this field + its own connection's
-  // `cellId` on load, never stored directly (see rpcBuild.ts).
+  // `cellId` on load, never stored directly (see rcpBuild.ts).
   // `view3D`: shell-1 cells only (shell 2+ always shows the real
   // projected geometry, no alternative view). `true` shows shell-1
   // cells at their ordinary, undistorted flush-attached position
@@ -38,7 +38,7 @@ export interface AssemblyNode {
   // stored fact (not a transient in-memory ref), specifically so the
   // chosen view survives save/reload — unlike the superseded
   // rigid-rotation open/closed toggle this replaces.
-  rpcPolytope?: { seedSpecId: string; target: string; view3D?: boolean };
+  rcpPolytope?: { seedSpecId: string; target: string; view3D?: boolean };
 }
 
 export interface AssemblyConnection {
@@ -61,10 +61,10 @@ export interface AssemblyConnection {
   // fields keeps exactly one pair of "which connector on each side"
   // fields, disambiguated by this tag, instead of two pairs where only
   // one is ever meaningful at a time.
-  // 'rpc4d': nodeA is an RPC-build root (see AssemblyNode.rpcPolytope),
+  // 'rcp4d': nodeA is an RCP-C2B root (see AssemblyNode.rcpPolytope),
   // nodeB is one specific cell of that root's own 4-polytope closure —
   // see the cellId/shell fields below.
-  kind?: 'vertex' | 'face' | 'duoprism' | 'rpc4d';
+  kind?: 'vertex' | 'face' | 'duoprism' | 'rcp4d';
   // Set by Stage 7's rewrite rule when a node's shape changes and no
   // compatible vertex exists on the new shape for this connection's side.
   // vertexA/vertexB then keep their last-known (possibly now out-of-range
@@ -106,9 +106,9 @@ export interface AssemblyConnection {
   // index on the SAME shape as `vertexA`/`vertexB` (never repeating
   // vertexA itself or any other entry).
   duoprismExtraFaces?: number[];
-  // RPC-build only (kind === 'rpc4d'). `cellId` is which cell of the
+  // RCP-C2B only (kind === 'rcp4d'). `cellId` is which cell of the
   // root's own deterministic complex nodeB represents (re-derive its
-  // geometry via app/lib/polyhedra/rpcBuild.ts's buildRpcComplex, never
+  // geometry via app/lib/polyhedra/rcpBuild.ts's buildRcpComplex, never
   // stored). `shell` is that cell's own BFS ring distance from the
   // root — technically redundant with cellId+a recomputed complex, but
   // cheap to store and avoids recomputing the whole complex just to
@@ -147,6 +147,40 @@ export function emptyAssembly(): Assembly {
  */
 export const ASSEMBLY_STORAGE_KEY = 'polyhedraverse:assembly';
 
+/**
+ * Rewrites two pre-rename spellings (the feature was called "RPC-build"
+ * before being renamed RCP-C2B) to today's, in place, on raw parsed
+ * JSON — BEFORE `isValidAssembly` ever sees it, since that guard only
+ * recognizes the current names and would otherwise either reject an
+ * already-saved assembly outright (the `'rpc4d'` connection kind) or
+ * silently drop its root's own build state (a node's `rpcPolytope`
+ * field, now `rcpPolytope`, is just an unrecognized extra property to
+ * every check here, not a validation failure — so without this it would
+ * load as a plain, no-longer-a-build-root node instead of erroring).
+ * Deliberately permissive about the shape of `v` (only ever called on
+ * freshly `JSON.parse`d data of unknown shape) — anything not shaped
+ * like `{ nodes: [...], connections: [...] }` is returned untouched, and
+ * isValidAssembly is still the real authority on whether the result is
+ * actually valid.
+ */
+export function migrateLegacyRcp4d(v: unknown): unknown {
+  if (typeof v !== 'object' || v === null) return v;
+  const out: Record<string, unknown> = { ...v };
+  if (Array.isArray(out.connections)) {
+    out.connections = out.connections.map((c) =>
+      typeof c === 'object' && c !== null && (c as { kind?: unknown }).kind === 'rpc4d' ? { ...c, kind: 'rcp4d' } : c,
+    );
+  }
+  if (Array.isArray(out.nodes)) {
+    out.nodes = out.nodes.map((n) => {
+      if (typeof n !== 'object' || n === null || !('rpcPolytope' in n)) return n;
+      const { rpcPolytope, ...rest } = n as Record<string, unknown>;
+      return { ...rest, rcpPolytope: rpcPolytope };
+    });
+  }
+  return out;
+}
+
 function isVec3(v: unknown): v is [number, number, number] {
   return Array.isArray(v) && v.length === 3 && v.every((n) => typeof n === 'number' && Number.isFinite(n));
 }
@@ -162,9 +196,9 @@ function isNode(v: unknown): v is AssemblyNode {
   if (typeof n.transform !== 'object' || n.transform === null) return false;
   const t = n.transform as Record<string, unknown>;
   if (!isVec3(t.position) || !isQuat(t.quaternion)) return false;
-  if (n.rpcPolytope !== undefined) {
-    if (typeof n.rpcPolytope !== 'object' || n.rpcPolytope === null) return false;
-    const rp = n.rpcPolytope as Record<string, unknown>;
+  if (n.rcpPolytope !== undefined) {
+    if (typeof n.rcpPolytope !== 'object' || n.rcpPolytope === null) return false;
+    const rp = n.rcpPolytope as Record<string, unknown>;
     if (typeof rp.seedSpecId !== 'string' || typeof rp.target !== 'string') return false;
     if (rp.view3D !== undefined && typeof rp.view3D !== 'boolean') return false;
   }
@@ -182,7 +216,7 @@ function isConnection(v: unknown): v is AssemblyConnection {
   ) {
     return false;
   }
-  if (c.kind !== undefined && c.kind !== 'vertex' && c.kind !== 'face' && c.kind !== 'duoprism' && c.kind !== 'rpc4d') return false;
+  if (c.kind !== undefined && c.kind !== 'vertex' && c.kind !== 'face' && c.kind !== 'duoprism' && c.kind !== 'rcp4d') return false;
   if (c.orphaned !== undefined && typeof c.orphaned !== 'boolean') return false;
   // Structural check only (no node/shape cross-reference here -- that
   // needs isValidAssembly below, which has nodeById available): fold4
@@ -193,11 +227,11 @@ function isConnection(v: unknown): v is AssemblyConnection {
     if (!Array.isArray(c.duoprismExtraFaces) || !c.duoprismExtraFaces.every((f) => typeof f === 'number' && Number.isInteger(f) && f >= 0)) return false;
   }
   if (c.cellId !== undefined || c.shell !== undefined) {
-    if (c.kind !== 'rpc4d') return false;
+    if (c.kind !== 'rcp4d') return false;
     if (typeof c.cellId !== 'number' || !Number.isInteger(c.cellId) || c.cellId < 0) return false;
     if (typeof c.shell !== 'number' || !Number.isInteger(c.shell) || c.shell < 0) return false;
-  } else if (c.kind === 'rpc4d') {
-    return false; // rpc4d always carries cellId + shell
+  } else if (c.kind === 'rcp4d') {
+    return false; // rcp4d always carries cellId + shell
   }
   return true;
 }
@@ -258,14 +292,14 @@ export function isValidAssembly(v: unknown): v is Assembly {
       if (uniqueFaces.size !== allFaces.length) return false; // no duplicate/repeated face indices
       if (extras.some((f) => f < 0 || f >= faceCount)) return false;
     }
-    // RPC-build: nodeA must be a real root (rpcPolytope set, pointing at
+    // RCP-C2B: nodeA must be a real root (rcpPolytope set, pointing at
     // a real closure of a real seed), cellId must be a real cell of that
     // closure, and nodeB's own shape must match whichever seed that
     // closure's cells actually are (the 600-cell's own cells are always
     // tetrahedra, i.e. 'D4', regardless of which D4-congruent shape the
-    // root itself used — see rpcBuild.ts's buildRpcComplex doc comment).
-    if (conn.kind === 'rpc4d') {
-      const rp = a.rpcPolytope;
+    // root itself used — see rcpBuild.ts's buildRcpComplex doc comment).
+    if (conn.kind === 'rcp4d') {
+      const rp = a.rcpPolytope;
       if (!rp || !(rp.seedSpecId in POLYHEDRA)) return false;
       const cellCount = closureCellCount(rp.seedSpecId, rp.target);
       if (cellCount === undefined) return false;
@@ -274,10 +308,10 @@ export function isValidAssembly(v: unknown): v is Assembly {
       if (b.shape !== cellShapeId) return false;
     }
   }
-  // No duplicate cellId under the same rpc4d root.
+  // No duplicate cellId under the same rcp4d root.
   const cellIdsByRoot = new Map<string, Set<number>>();
   for (const conn of v.connections) {
-    if (conn.orphaned || conn.kind !== 'rpc4d' || conn.cellId === undefined) continue;
+    if (conn.orphaned || conn.kind !== 'rcp4d' || conn.cellId === undefined) continue;
     const seen = cellIdsByRoot.get(conn.nodeA) ?? new Set<number>();
     if (seen.has(conn.cellId)) return false;
     seen.add(conn.cellId);
@@ -286,7 +320,7 @@ export function isValidAssembly(v: unknown): v is Assembly {
   return true;
 }
 
-/** The real cell count of `target` (one of an rpc4d root's real closures for `seedSpecId`), or undefined if it's not a real closure of that seed. Reuses radialProjection.ts's own resolveParamsKey (the exact congruence check buildCellComplex itself uses, e.g. for PYRAMID_TRI_G2 resolving to D4's params) rather than duplicating it. The 600-cell isn't in FOUR_D_SHAPE_PARAMS (it's built via dualize(), not a direct theta) so its cell count (600, the standard, independently-verified 600-cell count — see docs/radial-cell-projection.md section 21.3) is hardcoded here, gated on seedSpecId actually being D4-congruent. */
+/** The real cell count of `target` (one of an rcp4d root's real closures for `seedSpecId`), or undefined if it's not a real closure of that seed. Reuses radialProjection.ts's own resolveParamsKey (the exact congruence check buildCellComplex itself uses, e.g. for PYRAMID_TRI_G2 resolving to D4's params) rather than duplicating it. The 600-cell isn't in FOUR_D_SHAPE_PARAMS (it's built via dualize(), not a direct theta) so its cell count (600, the standard, independently-verified 600-cell count — see docs/radial-cell-projection.md section 21.3) is hardcoded here, gated on seedSpecId actually being D4-congruent. */
 function closureCellCount(seedSpecId: string, target: string): number | undefined {
   const seed = POLYHEDRA[seedSpecId];
   if (!seed) return undefined;

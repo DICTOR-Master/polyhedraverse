@@ -1,5 +1,5 @@
 /**
- * RPC-build (radial-perspective click-to-build) — Stage 8's bridge from
+ * RCP-C2B (Radial Cell Projection, click-to-build) — Stage 8's bridge from
  * the pure 4D engine (radialProjection.ts) to real, placeable
  * ShapeViewer.tsx nodes. See docs/radial-cell-projection.md section 21
  * and the approved plan for the full derivation of the 6 verified
@@ -28,7 +28,7 @@ import {
   type Vec4,
 } from './radialProjection';
 
-export interface RpcComplex {
+export interface RcpComplex {
   seedSpecId: string;
   targetName: string;
   viewDistance: number;
@@ -45,7 +45,7 @@ export interface RpcComplex {
 // rather than each cell separately normalized.
 const VIEW_MARGIN = 5;
 
-function projectAll(seedSpecId: string, targetName: string, cellsWithVerts: { id: number; shell: number; verts4D: Vec4[] }[], adjacency: [number, number][]): RpcComplex {
+function projectAll(seedSpecId: string, targetName: string, cellsWithVerts: { id: number; shell: number; verts4D: Vec4[] }[], adjacency: [number, number][]): RcpComplex {
   const allVerts = cellsWithVerts.flatMap((c) => c.verts4D);
   const maxAbsW = Math.max(...allVerts.map((v) => Math.abs(v[3])), 1e-6);
   const viewDistance = maxAbsW * VIEW_MARGIN;
@@ -144,13 +144,13 @@ function projectAll(seedSpecId: string, targetName: string, cellsWithVerts: { id
   return { seedSpecId, targetName, viewDistance, cells, adjacency };
 }
 
-function fromFourDCellComplex(complex: FourDCellComplex): RpcComplex {
+function fromFourDCellComplex(complex: FourDCellComplex): RcpComplex {
   const cellsWithVerts = complex.cells.map((cell) => ({ id: cell.id, shell: cell.shell, verts4D: cellVertices(complex, cell) }));
   const adjacency: [number, number][] = complex.adjacency.map(([a, b]) => [a, b]);
   return projectAll(complex.seedSpecId, complex.targetName, cellsWithVerts, adjacency);
 }
 
-function fromCellLikeComplex(complex: CellLikeComplex): RpcComplex {
+function fromCellLikeComplex(complex: CellLikeComplex): RcpComplex {
   const cellsWithVerts = complex.cells.map((cell) => ({ id: cell.id, shell: cell.shell, verts4D: cell.vertices4D }));
   return projectAll(complex.seedSpecId, complex.targetName, cellsWithVerts, complex.adjacency);
 }
@@ -166,12 +166,12 @@ function fromCellLikeComplex(complex: CellLikeComplex): RpcComplex {
  * perspective frame plus the shell/adjacency bookkeeping the shell-build
  * feature needs.
  */
-export function buildRpcComplex(seedSpecId: string, targetName: string): RpcComplex {
+export function buildRcpComplex(seedSpecId: string, targetName: string): RcpComplex {
   if (targetName === '600-cell') {
     return fromCellLikeComplex(build600CellFromDodecahedron());
   }
   const seedSpec = POLYHEDRA[seedSpecId];
-  if (!seedSpec) throw new Error(`buildRpcComplex: unknown seed id ${seedSpecId}`);
+  if (!seedSpec) throw new Error(`buildRcpComplex: unknown seed id ${seedSpecId}`);
   return fromFourDCellComplex(buildCellComplex(seedSpec, targetName));
 }
 
@@ -190,8 +190,8 @@ export function buildSyntheticCellSpec(seedSpec: PolyhedronSpec, cellId: number,
     throw new Error(`buildSyntheticCellSpec: ${seedSpec.id} has ${seedSpec.vertices.length} vertices, got ${vertices.length} projected positions`);
   }
   return {
-    id: `${seedSpec.id}::rpc:${cellId}`,
-    name: `${seedSpec.name} (RPC cell ${cellId})`,
+    id: `${seedSpec.id}::rcp:${cellId}`,
+    name: `${seedSpec.name} (RCP-C2B cell ${cellId})`,
     faceCount: seedSpec.faceCount,
     vertices,
     edges: seedSpec.edges,
@@ -201,7 +201,7 @@ export function buildSyntheticCellSpec(seedSpec: PolyhedronSpec, cellId: number,
 }
 
 /**
- * The EFFECTIVE seed spec for RPC-build's own root-placement and
+ * The EFFECTIVE seed spec for RCP-C2B's own root-placement and
  * ordinary-self-attach ("3D view") purposes. For 5 of the 6 closures
  * this is simply the real registry seed unchanged -- their own cell 0
  * already exactly equals it (see projectAll's own rescale). For the
@@ -221,7 +221,7 @@ export function buildSyntheticCellSpec(seedSpec: PolyhedronSpec, cellId: number,
  * cells relative to each other, only recenters cell 0 on its own
  * centroid) rather than correct-looking-but-actually-inconsistent.
  */
-export function effectiveSeedSpec(complex: RpcComplex): PolyhedronSpec {
+export function effectiveSeedSpec(complex: RcpComplex): PolyhedronSpec {
   const registrySpec = POLYHEDRA[complex.seedSpecId];
   if (complex.targetName !== '600-cell') return registrySpec;
   // projectAll has already recentered the WHOLE complex (not just cell
@@ -232,11 +232,11 @@ export function effectiveSeedSpec(complex: RpcComplex): PolyhedronSpec {
 }
 
 /** Every cell at exactly `shell` in `complex`. */
-export function cellsAtShell(complex: RpcComplex, shell: number): RpcComplex['cells'] {
+export function cellsAtShell(complex: RcpComplex, shell: number): RcpComplex['cells'] {
   return complex.cells.filter((c) => c.shell === shell);
 }
 
 /** The highest shell present in `complex` — the shell-build feature's own "fully closed" check is `currentMaxBuiltShell === maxShell(complex)`. */
-export function maxShell(complex: RpcComplex): number {
+export function maxShell(complex: RcpComplex): number {
   return Math.max(...complex.cells.map((c) => c.shell));
 }

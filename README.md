@@ -19,7 +19,7 @@ your browser, nothing to install.
 A browser-based construction kit spanning all 137 convex polyhedra
 across 7 families (Platonic, Archimedean, Johnson, Catalan, prisms,
 antiprisms, and the original Deltahedra set this project started from),
-plus a genuine interactive path into the fourth dimension: **RPC-build
+plus a genuine interactive path into the fourth dimension: **RCP-C2B
 (Radial-perspective Click-to-build)** lets you construct a real regular
 4-polytope — the 5-cell, tesseract, 16-cell, 24-cell, or 120-cell — one
 3D cell at a time, built from the actual Wythoff/Coxeter reflection
@@ -288,7 +288,7 @@ Since then:
   4-polytope duality as a generic operation (the 600-cell is reached
   this way, dualizing the already-verified 120-cell, reproducing all 600
   tetrahedral cells exactly).
-- **RPC-build (Radial-perspective click-to-build)** — the real 4D system
+- **RCP-C2B (Radial Cell Projection, click-to-build)** — the real 4D system
   above, made interactive: pick any 4D-Capable shape and build its
   actual regular 4-polytope one cell at a time, right in the main scene,
   not just as a passive reference view. The first ring of cells (every
@@ -403,8 +403,8 @@ polyhedraverse/
         rewrite.ts       # D10<->D12 vertex-matching (pure function, no three.js)
         fourD.ts         # dihedral-angle-defect classifier -- which shapes are 4D-Capable, and their real closures
         radialProjection.ts # the real 4D system: generic Wythoff/Coxeter reflection engine + dualize() -- 6 verified closures
-        rpcBuild.ts      # RPC-build: bridges radialProjection.ts to real, placeable scene nodes, one cell/shell at a time
-        fold4.ts         # superseded by RPC-build as the live construction method; kept only for backward-compat load/render of old saves
+        rcpBuild.ts      # RCP-C2B: bridges radialProjection.ts to real, placeable scene nodes, one cell/shell at a time
+        fold4.ts         # superseded by RCP-C2B as the live construction method; kept only for backward-compat load/render of old saves
         duoprism.ts      # the 4D Prism (duoprism) construction -- always-exact, any shape, any chaining depth
         gradedPyramids.ts # apex-angle-driven pyramid construction, shared by every graded-pyramid base
         miscellaneous/   # the "Miscellaneous" family (symbol: house glyph) -- irregular/graded add-ons
@@ -487,7 +487,7 @@ by hand.
 `docs/radial-cell-projection.md` is the normative write-up of the real
 4D method (author James Baker), extended with a full verification
 record for the two closures found after the original four (the 5-cell
-and 600-cell) and the shell/BFS bookkeeping RPC-build's click-to-build
+and 600-cell) and the shell/BFS bookkeeping RCP-C2B's click-to-build
 feature hangs off — editorial additions, not a rewrite of the original.
 `docs/vercel-deployment-plan.md` records the intended repo/Vercel
 layout for when this deploys alongside Rhombiverse, and the persistence

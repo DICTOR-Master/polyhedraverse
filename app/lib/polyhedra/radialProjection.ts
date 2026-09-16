@@ -461,7 +461,7 @@ export function dualize(complex: FourDCellComplex): DualCellComplex {
   return { cells: dualCells, adjacency };
 }
 
-/** A cell as consumed by the shell-build feature -- deliberately the same shape for both build paths (direct `buildCellComplex` and `dualize`-derived), so downstream code (Step 2+ of the RPC-build plan) doesn't need to know which path produced a given closure. */
+/** A cell as consumed by the shell-build feature -- deliberately the same shape for both build paths (direct `buildCellComplex` and `dualize`-derived), so downstream code (Step 2+ of the RCP-C2B plan) doesn't need to know which path produced a given closure. */
 export interface CellLikeCell {
   id: number;
   vertices4D: Vec4[];
@@ -533,7 +533,7 @@ export function dualToCellLikeComplex(dual: DualCellComplex, seedSpecId: string,
  * (D4 has no direct-theta closure into the 600-cell -- see
  * docs/radial-cell-projection.md section 21.3). `seedSpecId` is 'D4'
  * (not 'DODECAHEDRON') because the resulting cells are tetrahedra, and
- * downstream synthetic-spec construction (RPC-build plan Step 3) needs
+ * downstream synthetic-spec construction (RCP-C2B plan Step 3) needs
  * to know which seed's topology to copy for THOSE cells, not the
  * dodecahedron used only as an intermediate.
  */

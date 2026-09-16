@@ -102,17 +102,17 @@ export default function Home() {
   // 4D themselves -- matches ShapeViewer's own foldAmountRef default.
   const [hasFoldConnections, setHasFoldConnections] = useState(false);
   const [foldPercent, setFoldPercent] = useState(0);
-  // RPC-build (radial-perspective click-to-build), replacing fold4 as
-  // the live 4D folding-construction feature: rpcPickerOpen shows the
+  // RCP-C2B (Radial Cell Projection, click-to-build), replacing fold4 as
+  // the live 4D folding-construction feature: rcpPickerOpen shows the
   // small inline "which closure?" choice for a seed with more than one
   // real target (only D4/PYRAMID_TRI_G2 today) -- reset whenever the
   // selection changes to a different node (below). The 3D/4D view
   // choice itself is NOT separate page-level state (unlike the old
   // superseded open/closed toggle) -- it's a real, persisted fact on
-  // the root (`rpcPolytope.view3D`) reported back via
-  // `nodeSelection.rpcRoot.view3D`, so the buttons below read directly
+  // the root (`rcpPolytope.view3D`) reported back via
+  // `nodeSelection.rcpRoot.view3D`, so the buttons below read directly
   // off that instead of mirroring it in a second place that could drift.
-  const [rpcPickerOpen, setRpcPickerOpen] = useState(false);
+  const [rcpPickerOpen, setRcpPickerOpen] = useState(false);
   const [changelogOpen, setChangelogOpen] = useState(false);
   // Real user request: "a little x in the corner so you can clear the
   // space" -- the default-state instruction pill has no way to dismiss
@@ -169,10 +169,10 @@ export default function Home() {
   // Adjusted during render (React's own recommended pattern for resetting
   // state when a prop changes), not in an effect -- avoids the extra
   // render-then-effect-then-render cascade a useEffect version would cause.
-  const [rpcSelectionTrackedId, setRpcSelectionTrackedId] = useState<string | null>(null);
-  if ((nodeSelection?.nodeId ?? null) !== rpcSelectionTrackedId) {
-    setRpcSelectionTrackedId(nodeSelection?.nodeId ?? null);
-    setRpcPickerOpen(false);
+  const [rcpSelectionTrackedId, setRcpSelectionTrackedId] = useState<string | null>(null);
+  if ((nodeSelection?.nodeId ?? null) !== rcpSelectionTrackedId) {
+    setRcpSelectionTrackedId(nodeSelection?.nodeId ?? null);
+    setRcpPickerOpen(false);
   }
 
   const handleSave = async () => {
@@ -465,7 +465,7 @@ export default function Home() {
                 Attach via Duoprism…
               </button>
             )}
-            {/* RPC-build (radial-perspective click-to-build): replaces
+            {/* RCP-C2B (Radial Cell Projection, click-to-build): replaces
                 fold4 as the live 4D folding-construction feature (fold4's
                 own slider above stays only for already-saved fold4
                 connections — no new UI path creates one). Violet accent,
@@ -473,19 +473,19 @@ export default function Home() {
                 teal (duoprism)/red (delete) — a genuinely new family so
                 it reads as its own construction mode, not a variant of
                 an existing one. */}
-            {nodeSelection.rpcBuildEligible && !nodeSelection.rpcRoot && (
-              rpcPickerOpen && nodeSelection.rpcClosureOptions.length > 1 ? (
+            {nodeSelection.rcpBuildEligible && !nodeSelection.rcpRoot && (
+              rcpPickerOpen && nodeSelection.rcpClosureOptions.length > 1 ? (
                 <>
                   <span className="text-xs uppercase tracking-wide" style={{ color: '#b388ff' }}>
                     Build which 4-polytope?
                   </span>
-                  {nodeSelection.rpcClosureOptions.map((target) => (
+                  {nodeSelection.rcpClosureOptions.map((target) => (
                     <button
                       key={target}
                       type="button"
                       onClick={() => {
-                        handleRef.current?.beginRpcBuild(nodeSelection.specId, target);
-                        setRpcPickerOpen(false);
+                        handleRef.current?.beginRcpBuild(nodeSelection.specId, target);
+                        setRcpPickerOpen(false);
                       }}
                       className="rounded-full px-4 py-1.5 text-sm font-medium text-white transition-colors"
                       style={{ background: '#8a3ffc' }}
@@ -495,7 +495,7 @@ export default function Home() {
                   ))}
                   <button
                     type="button"
-                    onClick={() => setRpcPickerOpen(false)}
+                    onClick={() => setRcpPickerOpen(false)}
                     className="rounded-full bg-zinc-800 px-4 py-1.5 text-sm font-medium text-zinc-300 transition-colors hover:bg-zinc-700"
                   >
                     Cancel
@@ -505,43 +505,43 @@ export default function Home() {
                 <button
                   type="button"
                   onClick={() => {
-                    if (nodeSelection.rpcClosureOptions.length > 1) setRpcPickerOpen(true);
-                    else handleRef.current?.beginRpcBuild(nodeSelection.specId, nodeSelection.rpcClosureOptions[0]);
+                    if (nodeSelection.rcpClosureOptions.length > 1) setRcpPickerOpen(true);
+                    else handleRef.current?.beginRcpBuild(nodeSelection.specId, nodeSelection.rcpClosureOptions[0]);
                   }}
-                  title="Build the real 4-polytope this shape closes into, one cell at a time — the radial-perspective click-to-build (RPC) construction"
+                  title="Build the real 4-polytope this shape closes into, one cell at a time — the Radial Cell Projection click-to-build (RCP-C2B) construction"
                   className="rounded-full px-4 py-1.5 text-sm font-medium text-white transition-colors"
                   style={{ background: '#8a3ffc' }}
                 >
-                  Build via RPC…
+                  Build via RCP-C2B…
                 </button>
               )
             )}
-            {nodeSelection.rpcRoot && (
+            {nodeSelection.rcpRoot && (
               // Running cell count, always visible across the whole build
               // (shell 1's one-at-a-time phase and every shell-batch
               // phase after it) -- direct user feedback: without this the
               // only way to tell progress was counting cells by eye.
               // +1 for the root/seed cell itself, which `builtCount` (an
-              // rpc4d CONNECTION count) never includes.
+              // rcp4d CONNECTION count) never includes.
               <span className="text-xs font-medium" style={{ color: '#b388ff' }}>
-                Cells: {nodeSelection.rpcRoot.builtCount + 1} / {nodeSelection.rpcRoot.totalCells}
+                Cells: {nodeSelection.rcpRoot.builtCount + 1} / {nodeSelection.rcpRoot.totalCells}
               </span>
             )}
-            {nodeSelection.rpcRoot && !nodeSelection.rpcRoot.shell1Complete && (
+            {nodeSelection.rcpRoot && !nodeSelection.rcpRoot.shell1Complete && (
               <button
                 type="button"
-                onClick={() => handleRef.current?.buildNextRpcCell()}
+                onClick={() => handleRef.current?.buildNextRcpCell()}
                 title="Add one more shell-1 cell (a direct face-neighbor of the seed) — click through all of them one at a time"
                 className="rounded-full px-4 py-1.5 text-sm font-medium text-white transition-colors"
                 style={{ background: '#8a3ffc' }}
               >
-                Add next cell ({nodeSelection.rpcRoot.builtCount} / {nodeSelection.rpcRoot.shell1Size})
+                Add next cell ({nodeSelection.rcpRoot.builtCount} / {nodeSelection.rcpRoot.shell1Size})
               </button>
             )}
-            {nodeSelection.rpcRoot && nodeSelection.rpcRoot.builtCount > 0 && !nodeSelection.rpcRoot.shell1Complete && (
+            {nodeSelection.rcpRoot && nodeSelection.rcpRoot.builtCount > 0 && !nodeSelection.rcpRoot.shell1Complete && (
               <button
                 type="button"
-                onClick={() => handleRef.current?.removeLastRpcCell()}
+                onClick={() => handleRef.current?.removeLastRcpCell()}
                 title="Remove the most recently added shell-1 cell"
                 className="rounded-full px-4 py-1.5 text-sm font-medium transition-colors"
                 style={{ background: 'none', border: '1px solid #b388ff', color: '#b388ff' }}
@@ -549,12 +549,12 @@ export default function Home() {
                 Remove last cell
               </button>
             )}
-            {nodeSelection.rpcRoot?.shell1Complete && (
+            {nodeSelection.rcpRoot?.shell1Complete && (
               <>
                 <button
                   type="button"
-                  onClick={() => handleRef.current?.buildNextRpcShell()}
-                  disabled={nodeSelection.rpcRoot.maxBuiltShell >= nodeSelection.rpcRoot.complexMaxShell}
+                  onClick={() => handleRef.current?.buildNextRcpShell()}
+                  disabled={nodeSelection.rcpRoot.maxBuiltShell >= nodeSelection.rcpRoot.complexMaxShell}
                   className="rounded-full px-4 py-1.5 text-sm font-medium text-white transition-colors disabled:opacity-50"
                   style={{ background: '#8a3ffc' }}
                 >
@@ -562,8 +562,8 @@ export default function Home() {
                 </button>
                 <button
                   type="button"
-                  onClick={() => handleRef.current?.removeLastRpcShell()}
-                  disabled={nodeSelection.rpcRoot.maxBuiltShell <= 1}
+                  onClick={() => handleRef.current?.removeLastRcpShell()}
+                  disabled={nodeSelection.rcpRoot.maxBuiltShell <= 1}
                   className="rounded-full px-4 py-1.5 text-sm font-medium transition-colors disabled:opacity-50"
                   style={{ background: 'none', border: '1px solid #b388ff', color: '#b388ff' }}
                 >
@@ -571,25 +571,31 @@ export default function Home() {
                 </button>
               </>
             )}
-            {nodeSelection.rpcRoot?.viewToggleAvailable && (
+            {nodeSelection.rcpRoot?.viewToggleAvailable && (
               <div
                 className="flex items-center gap-1 rounded-full px-3 py-1 text-xs font-medium"
-                style={{ background: '#0e1209', border: '1px solid #b388ff' }}
-                title="3D: every built cell shown as an ordinary, undistorted copy of the seed, flush-attached. 4D: the same cells at their real, warped position in the closed 4-polytope — the same look shell 2+ already uses."
+                style={{ background: '#0e1209', border: '1px solid #b388ff', opacity: nodeSelection.rcpRoot.viewToggleLocked ? 0.5 : 1 }}
+                title={
+                  nodeSelection.rcpRoot.viewToggleLocked
+                    ? 'Locked to 4D: shell 2+ is permanently anchored to shell 1’s real 4D position, so switching shell 1 to 3D here would disconnect the two. Remove shell 2 to unlock.'
+                    : '3D: every built cell shown as an ordinary, undistorted copy of the seed, flush-attached. 4D: the same cells at their real, warped position in the closed 4-polytope — the same look shell 2+ already uses.'
+                }
               >
                 <button
                   type="button"
-                  onClick={() => handleRef.current?.setRpcView3D(true)}
-                  className="rounded-full px-2 py-0.5 transition-colors"
-                  style={{ background: nodeSelection.rpcRoot.view3D ? '#8a3ffc' : 'transparent', color: nodeSelection.rpcRoot.view3D ? '#fff' : '#b388ff' }}
+                  onClick={() => handleRef.current?.setRcpView3D(true)}
+                  disabled={nodeSelection.rcpRoot.viewToggleLocked}
+                  className="rounded-full px-2 py-0.5 transition-colors disabled:cursor-not-allowed"
+                  style={{ background: nodeSelection.rcpRoot.view3D ? '#8a3ffc' : 'transparent', color: nodeSelection.rcpRoot.view3D ? '#fff' : '#b388ff' }}
                 >
                   3D
                 </button>
                 <button
                   type="button"
-                  onClick={() => handleRef.current?.setRpcView3D(false)}
-                  className="rounded-full px-2 py-0.5 transition-colors"
-                  style={{ background: !nodeSelection.rpcRoot.view3D ? '#8a3ffc' : 'transparent', color: !nodeSelection.rpcRoot.view3D ? '#fff' : '#b388ff' }}
+                  onClick={() => handleRef.current?.setRcpView3D(false)}
+                  disabled={nodeSelection.rcpRoot.viewToggleLocked}
+                  className="rounded-full px-2 py-0.5 transition-colors disabled:cursor-not-allowed"
+                  style={{ background: !nodeSelection.rcpRoot.view3D ? '#8a3ffc' : 'transparent', color: !nodeSelection.rcpRoot.view3D ? '#fff' : '#b388ff' }}
                 >
                   4D
                 </button>
