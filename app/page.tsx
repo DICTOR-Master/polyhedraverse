@@ -105,13 +105,14 @@ export default function Home() {
   // RPC-build (radial-perspective click-to-build), replacing fold4 as
   // the live 4D folding-construction feature: rpcPickerOpen shows the
   // small inline "which closure?" choice for a seed with more than one
-  // real target (only D4/PYRAMID_TRI_G2 today); rpcOpen mirrors the
-  // 3D/4D toggle's own current state so its two buttons can be styled
-  // as pressed/unpressed (ShapeViewer never reports this back on its
-  // own — it's pure page-level UI state, same as foldPercent). Both
-  // reset whenever the selection changes to a different node (below).
+  // real target (only D4/PYRAMID_TRI_G2 today) -- reset whenever the
+  // selection changes to a different node (below). The 3D/4D view
+  // choice itself is NOT separate page-level state (unlike the old
+  // superseded open/closed toggle) -- it's a real, persisted fact on
+  // the root (`rpcPolytope.view3D`) reported back via
+  // `nodeSelection.rpcRoot.view3D`, so the buttons below read directly
+  // off that instead of mirroring it in a second place that could drift.
   const [rpcPickerOpen, setRpcPickerOpen] = useState(false);
-  const [rpcOpen, setRpcOpen] = useState(true);
   const [changelogOpen, setChangelogOpen] = useState(false);
   // Real user request: "a little x in the corner so you can clear the
   // space" -- the default-state instruction pill has no way to dismiss
@@ -172,7 +173,6 @@ export default function Home() {
   if ((nodeSelection?.nodeId ?? null) !== rpcSelectionTrackedId) {
     setRpcSelectionTrackedId(nodeSelection?.nodeId ?? null);
     setRpcPickerOpen(false);
-    setRpcOpen(true);
   }
 
   const handleSave = async () => {
@@ -549,33 +549,27 @@ export default function Home() {
                 </button>
               </>
             )}
-            {nodeSelection.rpcRoot?.toggleAvailable && (
+            {nodeSelection.rpcRoot?.viewToggleAvailable && (
               <div
                 className="flex items-center gap-1 rounded-full px-3 py-1 text-xs font-medium"
                 style={{ background: '#0e1209', border: '1px solid #b388ff' }}
-                title="3D: the ordinary flush dihedral fan, real gap visible if it doesn't close evenly. 4D: the same 2 cells with that gap closed exactly."
+                title="3D: every built cell shown as an ordinary, undistorted copy of the seed, flush-attached. 4D: the same cells at their real, warped position in the closed 4-polytope — the same look shell 2+ already uses."
               >
                 <button
                   type="button"
-                  onClick={() => {
-                    setRpcOpen(true);
-                    handleRef.current?.setRpcOpen(true);
-                  }}
+                  onClick={() => handleRef.current?.setRpcView3D(true)}
                   className="rounded-full px-2 py-0.5 transition-colors"
-                  style={{ background: rpcOpen ? '#8a3ffc' : 'transparent', color: rpcOpen ? '#fff' : '#b388ff' }}
+                  style={{ background: nodeSelection.rpcRoot.view3D ? '#8a3ffc' : 'transparent', color: nodeSelection.rpcRoot.view3D ? '#fff' : '#b388ff' }}
                 >
-                  3D open
+                  3D
                 </button>
                 <button
                   type="button"
-                  onClick={() => {
-                    setRpcOpen(false);
-                    handleRef.current?.setRpcOpen(false);
-                  }}
+                  onClick={() => handleRef.current?.setRpcView3D(false)}
                   className="rounded-full px-2 py-0.5 transition-colors"
-                  style={{ background: !rpcOpen ? '#8a3ffc' : 'transparent', color: !rpcOpen ? '#fff' : '#b388ff' }}
+                  style={{ background: !nodeSelection.rpcRoot.view3D ? '#8a3ffc' : 'transparent', color: !nodeSelection.rpcRoot.view3D ? '#fff' : '#b388ff' }}
                 >
-                  4D closed
+                  4D
                 </button>
               </div>
             )}

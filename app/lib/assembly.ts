@@ -28,7 +28,17 @@ export interface AssemblyNode {
   // the only extra bookkeeping a root needs; every child cell's own
   // geometry is fully re-derived from this field + its own connection's
   // `cellId` on load, never stored directly (see rpcBuild.ts).
-  rpcPolytope?: { seedSpecId: string; target: string };
+  // `view3D`: shell-1 cells only (shell 2+ always shows the real
+  // projected geometry, no alternative view). `true` shows shell-1
+  // cells at their ordinary, undistorted flush-attached position
+  // (ShapeViewer.tsx's `computeSelfAttachTransform`); undefined/`false`
+  // (the default) shows them at their real, warped `projectVec4ToVec3`
+  // position — the same technique shell 2+ already uses, so both
+  // shells look visually consistent by default. A real, root-level
+  // stored fact (not a transient in-memory ref), specifically so the
+  // chosen view survives save/reload — unlike the superseded
+  // rigid-rotation open/closed toggle this replaces.
+  rpcPolytope?: { seedSpecId: string; target: string; view3D?: boolean };
 }
 
 export interface AssemblyConnection {
@@ -156,6 +166,7 @@ function isNode(v: unknown): v is AssemblyNode {
     if (typeof n.rpcPolytope !== 'object' || n.rpcPolytope === null) return false;
     const rp = n.rpcPolytope as Record<string, unknown>;
     if (typeof rp.seedSpecId !== 'string' || typeof rp.target !== 'string') return false;
+    if (rp.view3D !== undefined && typeof rp.view3D !== 'boolean') return false;
   }
   return true;
 }

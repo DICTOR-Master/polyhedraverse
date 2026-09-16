@@ -10,10 +10,8 @@
  * verify script.
  */
 import { POLYHEDRA } from '../app/lib/polyhedra';
-import { buildFaceConnectors, triangulateFace, type Vec3 } from '../app/lib/polyhedra/core';
-import { closureClass, dihedralAngleDeg } from '../app/lib/polyhedra/fourD';
-import { edgeClosingCorrection, edgeClosingCorrectionForK, siblingClosingHalfAngleRad, siblingClosingShareRad } from '../app/lib/polyhedra/fold4';
-import { buildRpcComplex, buildSyntheticCellSpec, cellsAtShell, maxShell, closureRingSize } from '../app/lib/polyhedra/rpcBuild';
+import { triangulateFace, type Vec3 } from '../app/lib/polyhedra/core';
+import { buildRpcComplex, buildSyntheticCellSpec, cellsAtShell, maxShell } from '../app/lib/polyhedra/rpcBuild';
 
 let failures = 0;
 function check(label: string, condition: boolean) {
@@ -152,116 +150,6 @@ for (const { label, seedSpecId, target, shellsToCheck } of CASES) {
     ...cell0.vertices3D.map((v, i) => Math.hypot(v[0] - seedVerts[i][0] * k, v[1] - seedVerts[i][1] * k, v[2] - seedVerts[i][2] * k)),
   );
   check(`CUBE -> tesseract cell 0 (the seed) matches the real registry CUBE exactly up to that one uniform scale k=${k.toFixed(6)} (worst deviation ${worstDeviation.toExponential(2)})`, worstDeviation < 1e-9);
-}
-
-// --- Shell-1 open/closed fan math (RPC-build UI plan, "Design decision"
-// section): fold4.ts's edgeClosingCorrectionForK/siblingClosingShareRad,
-// generalizing edgeClosingCorrection/siblingClosingHalfAngleRad beyond
-// fold4's own hardcoded k=3. Mirrors scripts/verify-fold4.ts's own (a)/(b)
-// checks exactly, parametrized by k instead of assuming 3.
-
-// (a) siblingClosingShareRad reduces EXACTLY to siblingClosingHalfAngleRad at k=3.
-for (const id of ['DODECAHEDRON', 'CUBE', 'D8', 'D4']) {
-  const spec = POLYHEDRA[id];
-  const half = siblingClosingHalfAngleRad(spec);
-  const share3 = siblingClosingShareRad(spec, 3);
-  check(`${id}: siblingClosingShareRad(spec,3) === siblingClosingHalfAngleRad(spec) exactly (${share3} vs ${half})`, half !== null && share3 !== null && Math.abs(share3 - half) < 1e-12);
-}
-
-function findAdjacentFacePair(spec: (typeof POLYHEDRA)[string]): [number, number] {
-  const [i, j] = spec.edges[0];
-  const sharing = spec.faces.map((f, idx) => ({ f, idx })).filter(({ f }) => f.some((_, k) => f[k] === i && f[(k + 1) % f.length] === j || f[k] === j && f[(k + 1) % f.length] === i));
-  return [sharing[0].idx, sharing[1].idx];
-}
-
-const rSub = (a: Vec3, b: Vec3): Vec3 => [a[0] - b[0], a[1] - b[1], a[2] - b[2]];
-const rScale = (a: Vec3, s: number): Vec3 => [a[0] * s, a[1] * s, a[2] * s];
-const rDot = (a: Vec3, b: Vec3): number => a[0] * b[0] + a[1] * b[1] + a[2] * b[2];
-const rCross = (a: Vec3, b: Vec3): Vec3 => [a[1] * b[2] - a[2] * b[1], a[2] * b[0] - a[0] * b[2], a[0] * b[1] - a[1] * b[0]];
-const rNorm = (a: Vec3): Vec3 => rScale(a, 1 / Math.hypot(...a));
-function rotateAround(v: Vec3, axis: Vec3, theta: number): Vec3 {
-  const c = Math.cos(theta);
-  const s = Math.sin(theta);
-  return [
-    v[0] * c + rCross(axis, v)[0] * s + axis[0] * rDot(axis, v) * (1 - c),
-    v[1] * c + rCross(axis, v)[1] * s + axis[1] * rDot(axis, v) * (1 - c),
-    v[2] * c + rCross(axis, v)[2] * s + axis[2] * rDot(axis, v) * (1 - c),
-  ];
-}
-
-// (b) For each (seed, real k): the RAW (uncorrected, "3D open") 3-cell
-// far-side gap (root + 2 direct siblings, exactly the same measurement
-// scripts/verify-fold4.ts's own (b) check uses) is CONSTANT across every
-// target for a given seed -- it's always k=3's OWN defectDeg (three
-// flush-attached cells is a fact about the SEED alone, unrelated to
-// which target closure the correction is generalized for; this is
-// exactly WHY shell-1's "3D open" state is target-independent, matching
-// the RPC-build UI plan's own design). Applying edgeClosingCorrectionForK's
-// FULL correction to both sides leaves a residual of `(k-3) *
-// (share+dihedralAngle)` -- derived and cross-checked numerically before
-// writing this assertion, not assumed: 0 (a real, exact flush closure,
-// matching fold4's own unmodified k=3 behavior) exactly when k=3, and a
-// real, correctly-scaled PARTIAL closing for k>3 (shell-1 alone can only
-// ever supply 2 of the k-1 siblings a full ring needs -- see
-// rpcBuild.ts's own closureRingSize doc comment and the RPC-build UI
-// plan's "Design decision" section).
-const K_CASES: { seedId: string; target: string }[] = [
-  { seedId: 'DODECAHEDRON', target: '120-cell' },
-  { seedId: 'CUBE', target: 'tesseract' },
-  { seedId: 'D8', target: '24-cell' },
-  { seedId: 'D4', target: '5-cell' },
-  { seedId: 'D4', target: '16-cell' },
-  { seedId: 'D4', target: '600-cell' },
-];
-for (const { seedId, target } of K_CASES) {
-  const spec = POLYHEDRA[seedId];
-  const k = closureRingSize(target)!;
-  const [faceA, faceB] = findAdjacentFacePair(spec);
-  const corrA = edgeClosingCorrectionForK(spec, faceA, faceB, k)!;
-  const corrB = edgeClosingCorrectionForK(spec, faceB, faceA, k)!;
-  check(`${seedId}->${target} (k=${k}): edgeClosingCorrectionForK succeeds for a real adjacent face pair`, corrA !== null && corrB !== null);
-  check(`${seedId}->${target} (k=${k}): both sides agree on the same pivot`, Math.hypot(...rSub(corrA.pivot, corrB.pivot)) < 1e-9);
-  check(`${seedId}->${target} (k=${k}): the two sides' corrections are equal-and-opposite`, Math.abs(corrA.angleRad + corrB.angleRad) < 1e-9);
-
-  const fc = buildFaceConnectors(spec);
-  const perpOf = (p: Vec3): Vec3 => {
-    const rel = rSub(p, corrA.pivot);
-    const along = rDot(rel, corrA.axis);
-    return rNorm(rSub(rel, rScale(corrA.axis, along)));
-  };
-  const rA = perpOf(fc[faceA].pos);
-  const rB = perpOf(fc[faceB].pos);
-  const dihedralMeasuredDeg = (Math.acos(Math.min(1, Math.max(-1, rDot(rA, rB)))) * 180) / Math.PI;
-  const thetaAB = Math.atan2(rDot(corrA.axis, rCross(rA, rB)), rDot(rA, rB));
-  const dihedralRad = (dihedralMeasuredDeg * Math.PI) / 180;
-  const rFarA = rotateAround(rA, corrA.axis, -Math.sign(thetaAB) * dihedralRad);
-  const rFarB = rotateAround(rB, corrA.axis, Math.sign(thetaAB) * dihedralRad);
-  const rawGapDeg = (Math.acos(Math.min(1, Math.max(-1, rDot(rFarA, rFarB)))) * 180) / Math.PI;
-  const k3defect = closureClass(spec).find((c) => c.k === 3)!;
-  check(
-    `${seedId}->${target} (k=${k}): raw (open) 3-cell far-side gap matches the SEED's own k=3 defectDeg (target-independent -- ${rawGapDeg.toFixed(4)} vs ${k3defect.defectDeg.toFixed(4)})`,
-    Math.abs(rawGapDeg - k3defect.defectDeg) < 1e-6,
-  );
-
-  const rFarAClosed = rotateAround(rFarA, corrA.axis, corrA.angleRad);
-  const rFarBClosed = rotateAround(rFarB, corrB.axis, corrB.angleRad);
-  const closedGapDeg = (Math.acos(Math.min(1, Math.max(-1, rDot(rFarAClosed, rFarBClosed)))) * 180) / Math.PI;
-  const shareDeg = (siblingClosingShareRad(spec, k)! * 180) / Math.PI;
-  const dihedralDeg = dihedralAngleDeg(spec)!;
-  const expectedResidualDeg = (k - 3) * (shareDeg + dihedralDeg);
-  check(
-    `${seedId}->${target} (k=${k}): full correction leaves exactly the expected residual gap (${closedGapDeg.toFixed(4)} vs ${expectedResidualDeg.toFixed(4)}, 0 means a real exact closure)`,
-    Math.abs(closedGapDeg - expectedResidualDeg) < 1e-4,
-  );
-}
-
-// (c) k=3 sanity: edgeClosingCorrectionForK(...,3) agrees with the plain edgeClosingCorrection exactly (not just siblingClosingShareRad in isolation).
-{
-  const spec = POLYHEDRA.DODECAHEDRON;
-  const [faceA, faceB] = findAdjacentFacePair(spec);
-  const plain = edgeClosingCorrection(spec, faceA, faceB)!;
-  const general = edgeClosingCorrectionForK(spec, faceA, faceB, 3)!;
-  check('DODECAHEDRON: edgeClosingCorrectionForK(...,3) matches plain edgeClosingCorrection exactly', Math.abs(plain.angleRad - general.angleRad) < 1e-12 && Math.hypot(...rSub(plain.pivot, general.pivot)) < 1e-12);
 }
 
 console.log(failures === 0 ? '\nAll checks passed.' : `\n${failures} FAILURE(S).`);

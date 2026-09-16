@@ -91,8 +91,7 @@ export interface EdgeClosingCorrection {
 }
 
 /**
- * The shared geometry `edgeClosingCorrection` and its RPC-build
- * generalization (`edgeClosingCorrectionForK`) both need: the edge
+ * The shared geometry `edgeClosingCorrection` needs: the edge
  * `faceIndexA`/`faceIndexB` share (`null` if they don't), its own
  * pivot/axis, and the signed rotation sense that moves the faceIndexA
  * cell's far side TOWARD faceIndexB's side (verified empirically, not
@@ -156,42 +155,4 @@ export function edgeClosingCorrection(spec: PolyhedronSpec, faceIndexA: number, 
   const frame = edgeFrame(spec, faceIndexA, faceIndexB);
   if (!frame) return null;
   return { pivot: frame.pivot, axis: frame.axis, angleRad: frame.sign * halfAngle };
-}
-
-/**
- * Generalizes `siblingClosingHalfAngleRad` beyond fold4's own hardcoded
- * `k=3` (parent + 2 siblings is always `k=3` in THAT feature -- see this
- * file's header) for RPC-build's shell-1 open/closed toggle, where the
- * real `k` (fourD.ts's own `closureClass`) can be 3, 4, or 5 depending on
- * seed+target (e.g. D4: `k=3` for the 5-cell, `k=4` for the 16-cell,
- * `k=5` for the 600-cell). Splits the FULL defect evenly across `k-1`
- * possible movable siblings around a shared edge -- reduces to fold4's
- * own `/2` exactly when `k=3`. For `k>3`, only 2 of those `k-1` siblings
- * can ever be shell-1 cells (a shared SEED edge only borders 2 of the
- * seed's own faces), so applying this to shell-1's own 2 direct siblings
- * shows a real, correctly-scaled PARTIAL closing (2 of the `k-1` needed
- * steps), not a full flush closure -- full closure for a `k>3` seed
- * genuinely needs a shell-2 cell at that same edge, out of scope for the
- * shell-1-only toggle (see the RPC-build UI plan's own "Design decision"
- * section for this exact tradeoff, made deliberately rather than
- * attempting the general n-simultaneous-partner closure fold4's own
- * header already documents as unsolved).
- */
-export function siblingClosingShareRad(spec: PolyhedronSpec, k: number): number | null {
-  if (k < 3) return null;
-  const angleDeg = dihedralAngleDeg(spec);
-  if (angleDeg === null) return null;
-  const defectDeg = 360 - k * angleDeg;
-  if (defectDeg <= 0) return null; // not a real 4D closure at this k (flat-tiles or non-closing)
-  return (defectDeg * Math.PI) / 180 / (k - 1);
-}
-
-/** Generalizes `edgeClosingCorrection` beyond `k=3` -- same edge/pivot/axis/sign-finding (`edgeFrame`), generalized magnitude (`siblingClosingShareRad`). */
-export function edgeClosingCorrectionForK(spec: PolyhedronSpec, faceIndexA: number, faceIndexB: number, k: number): EdgeClosingCorrection | null {
-  if (faceIndexA === faceIndexB) return null;
-  const share = siblingClosingShareRad(spec, k);
-  if (share === null) return null;
-  const frame = edgeFrame(spec, faceIndexA, faceIndexB);
-  if (!frame) return null;
-  return { pivot: frame.pivot, axis: frame.axis, angleRad: frame.sign * share };
 }

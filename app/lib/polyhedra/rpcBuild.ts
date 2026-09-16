@@ -122,33 +122,3 @@ export function cellsAtShell(complex: RpcComplex, shell: number): RpcComplex['ce
 export function maxShell(complex: RpcComplex): number {
   return Math.max(...complex.cells.map((c) => c.shell));
 }
-
-/**
- * The real "k" -- how many cells of the true 4-polytope meet at one
- * shared EDGE (fourD.ts's own closureClass) -- for each of the 6
- * verified closures. Not derivable from FOUR_D_SHAPE_PARAMS directly
- * (`thetaDeg` there is the 4D reflection half-angle, a different
- * quantity from k); this is the standard Schläfli symbol's own last
- * entry for each regular 4-polytope, cross-checked against this
- * session's own angle-defect table (docs/radial-cell-projection.md
- * section 21.1): 5-cell {3,3,3} k=3, 16-cell {3,3,4} k=4, 600-cell
- * {3,3,5} k=5, tesseract {4,3,3} k=3, 24-cell {3,4,3} k=3, 120-cell
- * {5,3,3} k=3. Used by the shell-1 3D/4D open/closed toggle (RPC-build
- * UI plan) to pick the right generalized gap-closing correction
- * (fold4.ts's edgeClosingCorrectionForK).
- */
-export function closureRingSize(target: string): number | undefined {
-  switch (target) {
-    case '5-cell':
-    case 'tesseract':
-    case '24-cell':
-    case '120-cell':
-      return 3;
-    case '16-cell':
-      return 4;
-    case '600-cell':
-      return 5;
-    default:
-      return undefined;
-  }
-}

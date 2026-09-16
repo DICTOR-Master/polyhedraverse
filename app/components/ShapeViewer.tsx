@@ -7,6 +7,7 @@ import {
   POLYHEDRA,
   POLYHEDRON_IDS,
   type PolyhedronSpec,
+  type Vec3,
   triangulateFace,
   buildFaceConnectors,
   facesCongruent,
@@ -19,9 +20,9 @@ import { emptyAssembly, isValidAssembly, ASSEMBLY_STORAGE_KEY, type Assembly } f
 import { matchRewriteVertices, REWRITE_TARGET } from '../lib/polyhedra/rewrite';
 import { collectSubtree, findParentConnection, hasCycle } from '../lib/graph';
 import { FOURD_CAPABLE_IDS } from '../lib/polyhedra/fourD';
-import { edgeClosingCorrection, edgeClosingCorrectionForK } from '../lib/polyhedra/fold4';
+import { edgeClosingCorrection } from '../lib/polyhedra/fold4';
 import { buildWallPrism, duoprismBuildDepth } from '../lib/polyhedra/duoprism';
-import { buildRpcComplex, buildSyntheticCellSpec, cellsAtShell, maxShell, closureRingSize, type RpcComplex } from '../lib/polyhedra/rpcBuild';
+import { buildRpcComplex, buildSyntheticCellSpec, cellsAtShell, maxShell, type RpcComplex } from '../lib/polyhedra/rpcBuild';
 import { resolveParamsKey, FOUR_D_SHAPE_PARAMS } from '../lib/polyhedra/radialProjection';
 
 /**
@@ -237,15 +238,17 @@ export interface ShapeViewerHandle {
   /** The inverse of buildNextRpcShell: removes every node at the current max shell in one batch. No-op if only the root (or an incomplete shell 1) remains. */
   removeLastRpcShell(): void;
   /**
-   * The 3D/4D open/closed toggle for the selected RPC-build root's
-   * shell-1 reference sibling pair (see rpcBuild's own toggle design
-   * note): `open=true` is the ordinary, uncorrected flush position
-   * (ShapeViewer's own real self-attach registration); `open=false`
-   * applies the generalized gap-closing correction
-   * (fold4.ts's edgeClosingCorrectionForK). No-op if the reference pair
-   * doesn't exist yet (fewer than 2 adjacent shell-1 cells built).
+   * The 3D/4D view for the selected RPC-build root's own shell-1 cells
+   * (shell 2+ has no alternative view -- it always shows the real
+   * projected geometry). `view3D=true` shows every currently-built
+   * shell-1 cell at its ordinary, undistorted flush-attached position
+   * (the same real self-attach registration `beginFaceAttach` uses);
+   * `view3D=false` (the default once a cell exists) shows them at their
+   * real, warped `projectVec4ToVec3` position -- the same technique
+   * shell 2+ already uses. Persisted on the root (`rpcPolytope.view3D`),
+   * so it survives save/reload. No-op if no shell-1 cells exist yet.
    */
-  setRpcOpen(open: boolean): void;
+  setRpcView3D(view3D: boolean): void;
 }
 
 export interface ShapeSelection {
@@ -318,8 +321,10 @@ export interface NodeSelection {
     totalCells: number;
     maxBuiltShell: number;
     complexMaxShell: number;
-    /** Whether the 3D/4D open/closed toggle has anything to show yet (the reference sibling pair exists). */
-    toggleAvailable: boolean;
+    /** Whether the 3D/4D view toggle has anything to show yet (at least one shell-1 cell is built). */
+    viewToggleAvailable: boolean;
+    /** The root's own current view choice (`rpcPolytope.view3D`, defaulting to false/4D). */
+    view3D: boolean;
   } | null;
 }
 
@@ -591,27 +596,6 @@ export default function ShapeViewer({
   // multiple independent RPC roots sharing the same seed+target) never
   // recomputes the whole 4-polytope complex from scratch each time.
   const rpcComplexCacheRef = useRef<Map<string, RpcComplex>>(new Map());
-  // RPC-build's 3D/4D open/closed toggle: the reference sibling pair (2
-  // adjacent shell-1 cells) its per-root gap demo is keyed off, plus the
-  // seed/face/k needed to recompute the correction, and which state is
-  // currently applied. One entry per RPC-build root that has reached 2
-  // built shell-1 siblings; a root with fewer never gets an entry (no
-  // pair to show a gap between yet -- see NodeSelection's own
-  // toggleAvailable field).
-  const rpcTogglePairRef = useRef<
-    Map<
-      string,
-      {
-        seedSpecId: string;
-        faceIndexA: number;
-        faceIndexB: number;
-        nodeIdA: string;
-        nodeIdB: string;
-        k: number;
-        open: boolean;
-      }
-    >
-  >(new Map());
   const onFoldConnectionsChangeRef = useRef(onFoldConnectionsChange);
   const onSelectionChangeRef = useRef(onSelectionChange);
   const onPendingChangeRef = useRef(onPendingChange);
@@ -925,30 +909,24 @@ export default function ShapeViewer({
       return complex;
     };
 
-    /** Every OTHER face of `spec` sharing an edge with `faceIndex`, via otherFaceAcrossEdge. */
-    const facesAdjacentTo = (spec: PolyhedronSpec, faceIndex: number): number[] => {
-      const face = spec.faces[faceIndex];
-      const out: number[] = [];
-      for (let k = 0; k < face.length; k++) {
-        const other = otherFaceAcrossEdge(spec, faceIndex, face[k], face[(k + 1) % face.length]);
-        if (other !== null) out.push(other);
-      }
-      return out;
-    };
-
     /**
-     * RPC-build's shell-1 placement: the REAL ordinary flush self-attach
-     * ShapeViewer.tsx's own beginFaceAttach already computes for any
-     * attach (rotation-only -- no mirror/reflection anywhere in this
-     * app's real attach mechanic), specialized to a SELF-attach (spec
-     * attached to itself at `targetFaceIndex`) against `rootPlaced`'s
-     * OWN current world pose. Reads `rootPlaced.object.matrixWorld`
-     * directly rather than `foldGroup.matrixWorld` -- correct here
-     * because an RPC-build root never has an incoming fold4 connection
-     * (fold4 and rpc4d are mutually exclusive connection kinds), so
-     * `foldGroup`'s own local matrix is always identity for it.
+     * RPC-build's shell-1 "3D view" placement: the REAL ordinary flush
+     * self-attach ShapeViewer.tsx's own beginFaceAttach already computes
+     * for any attach (rotation-only -- no mirror/reflection anywhere in
+     * this app's real attach mechanic), specialized to a SELF-attach
+     * (spec attached to itself at `targetFaceIndex`) against the root's
+     * OWN world pose. Takes `rootWorldMatrix` directly (not a live
+     * `PlacedShape`) so it can be called during `loadAssembly` too,
+     * before every node is necessarily already a placed live object --
+     * a live root's `.object.matrixWorld` and a freshly-composed
+     * `Matrix4` from its own stored `transform.position/quaternion` are
+     * equally valid inputs. Correct to use the root's own matrix
+     * directly (never `foldGroup.matrixWorld`) because an RPC-build root
+     * never has an incoming fold4 connection (fold4 and rpc4d are
+     * mutually exclusive connection kinds), so `foldGroup`'s own local
+     * matrix is always identity for it.
      */
-    const computeSelfAttachTransform = (rootPlaced: PlacedShape, spec: PolyhedronSpec, targetFaceIndex: number): { position: THREE.Vector3; quaternion: THREE.Quaternion } | null => {
+    const computeSelfAttachTransform = (rootWorldMatrix: THREE.Matrix4, spec: PolyhedronSpec, targetFaceIndex: number): { position: THREE.Vector3; quaternion: THREE.Quaternion } | null => {
       const targetFace = spec.faces[targetFaceIndex];
       // Same congruent-face search beginFaceAttach itself does for a
       // same-shape self-attach -- the FIRST congruent (here: same-size,
@@ -963,9 +941,8 @@ export default function ShapeViewer({
       const targetFaceConnector = faceConnectors[targetFaceIndex];
       const incomingFaceConnector = faceConnectors[incomingFaceIndex];
 
-      const targetWorldPos = new THREE.Vector3(...targetFaceConnector.pos).applyMatrix4(rootPlaced.object.matrixWorld);
-      const targetWorldQuat = new THREE.Quaternion();
-      rootPlaced.object.getWorldQuaternion(targetWorldQuat);
+      const targetWorldPos = new THREE.Vector3(...targetFaceConnector.pos).applyMatrix4(rootWorldMatrix);
+      const targetWorldQuat = new THREE.Quaternion().setFromRotationMatrix(rootWorldMatrix);
       const targetWorldNormal = new THREE.Vector3(...targetFaceConnector.normal).applyQuaternion(targetWorldQuat).normalize();
 
       const Cg = new THREE.Vector3(...incomingFaceConnector.pos);
@@ -974,7 +951,7 @@ export default function ShapeViewer({
       const baseQuat = new THREE.Quaternion().setFromUnitVectors(Ng, desiredWorldDir);
 
       const targetFaceVertexIndices = spec.faces[targetFaceIndex];
-      const targetV0World = new THREE.Vector3(...spec.vertices[targetFaceVertexIndices[0]]).applyMatrix4(rootPlaced.object.matrixWorld);
+      const targetV0World = new THREE.Vector3(...spec.vertices[targetFaceVertexIndices[0]]).applyMatrix4(rootWorldMatrix);
       const dTargetWorld = targetV0World.clone().sub(targetWorldPos).normalize();
       const dTargetLocal = dTargetWorld.clone().applyQuaternion(baseQuat.clone().invert());
 
@@ -993,60 +970,86 @@ export default function ShapeViewer({
     };
 
     /**
-     * Applies (or clears) the generalized gap-closing correction to the
-     * toggle pair tracked for `rootId`, if it has one yet -- called both
-     * from setRpcOpen and whenever a new shell-1 cell might complete the
-     * pair. Mutates the two nodes' OWN object.position/quaternion
-     * directly (not a foldGroup overlay -- these are discrete two-state
-     * button toggles, not the continuous fold4 slider, so there's no
-     * need for that machinery here).
+     * The one real placement decision for a shell-1 cell -- shared by
+     * buildNextRpcCell (first build), setRpcView3D (switching an
+     * already-built cell's view), and loadAssembly (re-deriving on load)
+     * so all three agree exactly. `view3D=false` (the default) returns
+     * the same kind of geometry shell 2+ already uses: a SYNTHETIC,
+     * non-registry spec whose vertices are this cell's own real
+     * `projectVec4ToVec3`-projected position, placed at the root's own
+     * position/quaternion unchanged (the synthetic vertices already
+     * encode the cell's full position in the root's own local frame).
+     * `view3D=true` returns the ordinary REGISTRY spec (undistorted),
+     * positioned via `computeSelfAttachTransform` against the root's own
+     * current world matrix -- a real, ordinary flush self-attach,
+     * identical in kind to what any other face-attach in this app
+     * produces. `null` if the cell/face data doesn't resolve (shouldn't
+     * happen for a real, already-verified closure).
      */
-    const applyRpcToggle = (rootId: string) => {
-      const pair = rpcTogglePairRef.current.get(rootId);
-      if (!pair) return;
-      const spec = POLYHEDRA[pair.seedSpecId];
-      const placedA = findPlaced(pair.nodeIdA);
-      const placedB = findPlaced(pair.nodeIdB);
-      const nodeA = graphRef.current.nodes.find((n) => n.id === pair.nodeIdA);
-      const nodeB = graphRef.current.nodes.find((n) => n.id === pair.nodeIdB);
-      if (!placedA || !placedB || !nodeA || !nodeB) return;
+    const deriveShell1Cell = (
+      seedSpecId: string,
+      target: string,
+      cellId: number,
+      faceIndex: number,
+      view3D: boolean,
+      rootWorldMatrix: THREE.Matrix4,
+      rootPosition: THREE.Vector3,
+      rootQuaternion: THREE.Quaternion,
+    ): { spec: PolyhedronSpec; position: THREE.Vector3; quaternion: THREE.Quaternion } | null => {
+      const seedSpec = POLYHEDRA[seedSpecId];
+      if (view3D) {
+        const registrySpec = POLYHEDRA[cellShapeIdFor(seedSpecId, target)];
+        const transform = computeSelfAttachTransform(rootWorldMatrix, seedSpec, faceIndex);
+        if (!transform) return null;
+        return { spec: registrySpec, position: transform.position, quaternion: transform.quaternion };
+      }
+      const complex = getRpcComplex(seedSpecId, target);
+      const cell = complex.cells.find((c) => c.id === cellId);
+      if (!cell) return null;
+      const cellSpec = POLYHEDRA[cellShapeIdFor(seedSpecId, target)];
 
-      // Always start from each node's own stored (uncorrected, ordinary
-      // flush) transform -- the correction is applied ON TOP of that,
-      // never accumulated across repeated toggles.
-      placedA.object.position.fromArray(nodeA.transform.position);
-      placedA.object.quaternion.fromArray(nodeA.transform.quaternion);
-      placedB.object.position.fromArray(nodeB.transform.position);
-      placedB.object.quaternion.fromArray(nodeB.transform.quaternion);
-
-      if (!pair.open) {
-        const corrA = edgeClosingCorrectionForK(spec, pair.faceIndexA, pair.faceIndexB, pair.k);
-        const corrB = edgeClosingCorrectionForK(spec, pair.faceIndexB, pair.faceIndexA, pair.k);
-        // The root's own object.matrixWorld == its local matrix here
-        // (every placed node is added directly to `scene`, never nested
-        // under another node -- see loadAssembly/placeRoot) and the root
-        // never moves during this operation, so reading it once before
-        // rotating A/B is safe regardless of update order below.
-        scene.updateMatrixWorld(true);
-        const rootPlaced = findPlaced(rootId)!;
-        const rootWorld = rootPlaced.object.matrixWorld;
-        for (const [placed, corr] of [
-          [placedA, corrA],
-          [placedB, corrB],
-        ] as const) {
-          if (!corr) continue;
-          const pivotWorld = new THREE.Vector3(...corr.pivot).applyMatrix4(rootWorld);
-          const axisWorld = new THREE.Vector3(...corr.axis).transformDirection(rootWorld).normalize();
-          const rotationQuat = new THREE.Quaternion().setFromAxisAngle(axisWorld, corr.angleRad);
-          // Rotate the whole rigid node around the external pivot: every
-          // point p (including the node's own origin) maps to
-          // pivot + rotationQuat * (p - pivot); the node's own
-          // orientation is likewise pre-multiplied by the same rotation.
-          placed.object.position.sub(pivotWorld).applyQuaternion(rotationQuat).add(pivotWorld);
-          placed.object.quaternion.premultiply(rotationQuat);
+      // Real bug found live (2026-09-16): `buildRpcComplex`'s own
+      // perspective projection is calibrated (via `viewDistance`) for the
+      // WHOLE eventual closed complex, including shells this root hasn't
+      // built yet -- so a shell-1 cell, viewed in isolation before shell
+      // 2+ exists, sits very close to the root AND to its own siblings
+      // (all 6 of a cube's shell-1 cells within ~0.2 units of the origin,
+      // each with a ~0.36-unit extent -- badly overlapping, not a
+      // legible cross). The cell's own SHAPE distortion (vertex offsets
+      // from its own centroid) is the real, correct 4D warp and is left
+      // completely untouched; only its CENTROID is rescaled to sit at
+      // the same real distance from the root the ordinary flush
+      // self-attach uses (computed via computeSelfAttachTransform against
+      // an identity matrix, i.e. purely in the seed's own local frame,
+      // never world space) -- so the 6 shell-1 cells land where a viewer
+      // actually expects a face-neighbor to sit, while every one of them
+      // still visibly reads as a warped, non-cube shape up close. Once
+      // shell 2+ also exists there'd be a real outer reference point and
+      // this rescale wouldn't be needed -- but shell-1's own default
+      // view must be legible on its own, before any shell 2 exists.
+      const rawVerts = cell.vertices3D;
+      const rawCentroid: Vec3 = [0, 0, 0];
+      for (const v of rawVerts) {
+        rawCentroid[0] += v[0] / rawVerts.length;
+        rawCentroid[1] += v[1] / rawVerts.length;
+        rawCentroid[2] += v[2] / rawVerts.length;
+      }
+      const rawCentroidLen = Math.hypot(...rawCentroid);
+      let vertices = rawVerts;
+      if (rawCentroidLen > 1e-9) {
+        const selfAttach = computeSelfAttachTransform(new THREE.Matrix4(), seedSpec, faceIndex);
+        if (selfAttach) {
+          const targetDist = selfAttach.position.length();
+          const scale = targetDist / rawCentroidLen;
+          vertices = rawVerts.map((v) => [
+            rawCentroid[0] * scale + (v[0] - rawCentroid[0]),
+            rawCentroid[1] * scale + (v[1] - rawCentroid[1]),
+            rawCentroid[2] * scale + (v[2] - rawCentroid[2]),
+          ] as Vec3);
         }
       }
-      scene.updateMatrixWorld(true);
+      const syntheticSpec = buildSyntheticCellSpec(cellSpec, cell.id, vertices);
+      return { spec: syntheticSpec, position: rootPosition.clone(), quaternion: rootQuaternion.clone() };
     };
 
     /** The registry id an rpc4d child's own `node.shape` (and, for shell-1, its own placed geometry) must use -- matches assembly.ts's isValidAssembly exactly: always 'D4' for the 600-cell (its cells are tetrahedra regardless of which D4-congruent seed built it), the root's own seedSpecId otherwise. */
@@ -1075,24 +1078,25 @@ export default function ShapeViewer({
       const { nodeId } = placed.object.userData as ShapeObjectUserData;
       const node = graphRef.current.nodes.find((n) => n.id === nodeId);
       if (!node?.rpcPolytope) return;
-      const { seedSpecId, target } = node.rpcPolytope;
+      const { seedSpecId, target, view3D } = node.rpcPolytope;
       const spec = POLYHEDRA[seedSpecId];
       const shell1Conns = graphRef.current.connections.filter((c) => !c.orphaned && c.kind === 'rpc4d' && c.nodeA === nodeId && c.shell === 1);
       const builtCount = shell1Conns.length;
       if (builtCount >= spec.faces.length) return; // shell 1 already complete
 
-      const transform = computeSelfAttachTransform(placed, spec, builtCount);
-      if (!transform) return;
       const complex = getRpcComplex(seedSpecId, target);
       const shell1Cells = cellsAtShell(complex, 1).slice().sort((a, b) => a.id - b.id);
       const cellId = shell1Cells[builtCount]?.id;
       if (cellId === undefined) return; // shouldn't happen -- shell1Cells.length should equal spec.faces.length
 
+      scene.updateMatrixWorld(true);
+      const derived = deriveShell1Cell(seedSpecId, target, cellId, builtCount, view3D === true, placed.object.matrixWorld, placed.object.position, placed.object.quaternion);
+      if (!derived) return;
+
       const childNodeId = crypto.randomUUID();
-      const childSpec = POLYHEDRA[cellShapeIdFor(seedSpecId, target)];
-      const childPlaced = buildPlacedShape(childSpec, childNodeId);
-      childPlaced.object.position.copy(transform.position);
-      childPlaced.object.quaternion.copy(transform.quaternion);
+      const childPlaced = buildPlacedShape(derived.spec, childNodeId);
+      childPlaced.object.position.copy(derived.position);
+      childPlaced.object.quaternion.copy(derived.quaternion);
       applyViewMode(childPlaced, viewModeRef.current);
       scene.add(childPlaced.object);
       applyNodeAppearance(childPlaced, false);
@@ -1115,30 +1119,6 @@ export default function ShapeViewer({
         cellId,
         shell: 1,
       });
-
-      // Reference toggle pair (see the RPC-build UI plan's own "Design
-      // decision" section): face 0's own child is always built first
-      // (builtCount===0 here); once a SECOND shell-1 cell adjacent to
-      // face 0 exists, that pair is what this root's 3D/4D toggle
-      // demonstrates. Only ever the FIRST such pair found -- every other
-      // shell-1 cell stays at its ordinary flush position always,
-      // deliberately not attempting fold4's own documented-unsolved
-      // n-simultaneous-partner closure.
-      if (builtCount > 0 && !rpcTogglePairRef.current.has(nodeId) && facesAdjacentTo(spec, 0).includes(builtCount)) {
-        const face0NodeId = shell1Conns[0]?.nodeB;
-        const k = closureRingSize(target);
-        if (face0NodeId && k !== undefined) {
-          rpcTogglePairRef.current.set(nodeId, {
-            seedSpecId,
-            faceIndexA: 0,
-            faceIndexB: builtCount,
-            nodeIdA: face0NodeId,
-            nodeIdB: childNodeId,
-            k,
-            open: true,
-          });
-        }
-      }
 
       reportCageStatus();
       publishNodeSelection(placed);
@@ -1232,14 +1212,76 @@ export default function ShapeViewer({
       publishNodeSelection(placed);
     };
 
-    const setRpcOpen = (open: boolean) => {
-      const placed = selectedNodeRef.current;
-      if (!placed) return;
-      const { nodeId } = placed.object.userData as ShapeObjectUserData;
-      const pair = rpcTogglePairRef.current.get(nodeId);
-      if (!pair) return;
-      pair.open = open;
-      applyRpcToggle(nodeId);
+    /**
+     * Switches EVERY currently-built shell-1 cell of the selected RPC-build
+     * root between its ordinary flush ("3D") position and its real
+     * projected ("4D", the default) position -- a full mesh swap per cell
+     * (dispose the old geometry, build the new one via deriveShell1Cell,
+     * same in-place-replacement pattern rewriteSelectedNode already uses
+     * for an ordinary shape swap), not a position-only tweak, since the
+     * two views use genuinely different specs (the ordinary registry
+     * shape vs. a synthetic warped one). Persists `view3D` on the root so
+     * the choice survives save/reload (loadAssembly re-derives every
+     * shell-1 child's geometry from this same flag via deriveShell1Cell).
+     */
+    const setRpcView3D = (view3D: boolean) => {
+      const rootPlaced = selectedNodeRef.current;
+      if (!rootPlaced) return;
+      const { nodeId: rootId } = rootPlaced.object.userData as ShapeObjectUserData;
+      const rootNode = graphRef.current.nodes.find((n) => n.id === rootId);
+      if (!rootNode?.rpcPolytope) return;
+      const { seedSpecId, target } = rootNode.rpcPolytope;
+      const shell1Conns = graphRef.current.connections.filter((c) => !c.orphaned && c.kind === 'rpc4d' && c.nodeA === rootId && c.shell === 1);
+      if (shell1Conns.length === 0) return;
+
+      const complex = getRpcComplex(seedSpecId, target);
+      const shell1Cells = cellsAtShell(complex, 1).slice().sort((a, b) => a.id - b.id);
+
+      rootNode.rpcPolytope.view3D = view3D;
+      scene.updateMatrixWorld(true);
+
+      for (const conn of shell1Conns) {
+        const oldPlaced = findPlaced(conn.nodeB);
+        const childNode = graphRef.current.nodes.find((n) => n.id === conn.nodeB);
+        if (!oldPlaced || !childNode || conn.cellId === undefined) continue;
+        const faceIndex = shell1Cells.findIndex((c) => c.id === conn.cellId);
+        if (faceIndex === -1) continue;
+
+        const derived = deriveShell1Cell(seedSpecId, target, conn.cellId, faceIndex, view3D, rootPlaced.object.matrixWorld, rootPlaced.object.position, rootPlaced.object.quaternion);
+        if (!derived) continue;
+
+        scene.remove(oldPlaced.object);
+        disposePlacedShape(oldPlaced);
+        const replacement = buildPlacedShape(derived.spec, conn.nodeB);
+        replacement.object.position.copy(derived.position);
+        replacement.object.quaternion.copy(derived.quaternion);
+        applyViewMode(replacement, viewModeRef.current);
+        scene.add(replacement.object);
+
+        const index = placedRef.current.indexOf(oldPlaced);
+        if (index !== -1) placedRef.current[index] = replacement;
+        else placedRef.current.push(replacement);
+
+        // The selected node throughout this whole operation is always the
+        // ROOT, never one of its shell-1 children -- unlike
+        // rewriteSelectedNode's own swap (which replaces the SELECTED
+        // node itself), so selectedNodeRef never needs reassigning here.
+        if (hoveredRef.current && (hoveredRef.current.parent as THREE.Group | null)?.parent === oldPlaced.object) {
+          hoveredRef.current = null;
+        }
+        if (selectedRef.current && (selectedRef.current.parent as THREE.Group | null)?.parent === oldPlaced.object) {
+          selectedRef.current = null;
+        }
+
+        childNode.shape = cellShapeIdFor(seedSpecId, target); // unchanged in practice, kept explicit for clarity
+        childNode.transform = {
+          position: replacement.object.position.toArray() as [number, number, number],
+          quaternion: replacement.object.quaternion.toArray() as [number, number, number, number],
+        };
+      }
+
+      scene.updateMatrixWorld(true);
+      publishNodeSelection(rootPlaced);
     };
 
     /**
@@ -1314,7 +1356,8 @@ export default function ShapeViewer({
           totalCells: complex.cells.length,
           maxBuiltShell: rootConns.length > 0 ? Math.max(...rootConns.map((c) => c.shell!)) : 0,
           complexMaxShell: maxShell(complex),
-          toggleAvailable: rpcTogglePairRef.current.has(nodeId),
+          viewToggleAvailable: shell1BuiltCount > 0,
+          view3D: node.rpcPolytope.view3D === true,
         };
       }
 
@@ -1435,23 +1478,26 @@ export default function ShapeViewer({
       resetScene();
       const byNodeId = new Map<string, PlacedShape>();
       const nodeById = new Map(assembly.nodes.map((n) => [n.id, n]));
-      // Shell-2+ rpc4d children need their own warped synthetic geometry
-      // re-derived from the root's rpcPolytope + this connection's own
-      // cellId -- never the plain registry shape their `shape` field
-      // names (see AssemblyNode.rpcPolytope's own doc comment: "fully
-      // re-derive geometry from rpcPolytope+cellId on load"). Indexed by
-      // child node id before the placement loop below, since connections
-      // are otherwise only processed AFTER every node is already placed.
-      // Shell-1 children are deliberately EXCLUDED here: they're real,
-      // RIGID (undistorted) self-attach copies of the seed, not warped
-      // projections (see the RPC-build UI plan's own "Design decision"
-      // section for why) -- their own real, already-computed transform
-      // is stored directly on the node like any ordinary node, so they
-      // fall through to the plain `POLYHEDRA[node.shape]` branch below
-      // unchanged, same as a vertex/face/duoprism child.
+      // rpc4d children need their own geometry re-derived from the root's
+      // rpcPolytope + this connection's own cellId, never the plain
+      // registry shape their `shape` field names (see
+      // AssemblyNode.rpcPolytope's own doc comment: "fully re-derive
+      // geometry from rpcPolytope+cellId on load"). Shell 2+ always uses
+      // the real warped/projected geometry; shell-1 cells use it too
+      // UNLESS the root's own `view3D` is set, in which case they fall
+      // through to an ordinary self-attach instead (deriveShell1Cell
+      // handles both cases identically to the live-build/toggle paths).
+      // Indexed by child node id before the placement loop below, since
+      // connections are otherwise only processed AFTER every node is
+      // already placed.
       const rpc4dParentByNode = new Map<string, Assembly['connections'][number]>();
       for (const c of assembly.connections) {
-        if (!c.orphaned && c.kind === 'rpc4d' && c.shell !== 1) rpc4dParentByNode.set(c.nodeB, c);
+        if (c.orphaned || c.kind !== 'rpc4d') continue;
+        if (c.shell === 1) {
+          const rootNode = nodeById.get(c.nodeA);
+          if (rootNode?.rpcPolytope?.view3D === true) continue; // falls through to the ordinary registry-spec branch below
+        }
+        rpc4dParentByNode.set(c.nodeB, c);
       }
 
       for (const node of assembly.nodes) {
@@ -1462,7 +1508,7 @@ export default function ShapeViewer({
           if (rootNode?.rpcPolytope && rpcConn.cellId !== undefined) {
             const complex = getRpcComplex(rootNode.rpcPolytope.seedSpecId, rootNode.rpcPolytope.target);
             const cell = complex.cells.find((c) => c.id === rpcConn.cellId);
-            const cellSpec = POLYHEDRA[complex.seedSpecId];
+            const cellSpec = POLYHEDRA[cellShapeIdFor(rootNode.rpcPolytope.seedSpecId, rootNode.rpcPolytope.target)];
             if (cell && cellSpec) spec = buildSyntheticCellSpec(cellSpec, cell.id, cell.vertices3D);
           }
         } else {
@@ -2291,7 +2337,7 @@ export default function ShapeViewer({
       buildNextRpcCell,
       buildNextRpcShell,
       removeLastRpcShell,
-      setRpcOpen,
+      setRpcView3D,
     });
 
     let cancelled = false;
