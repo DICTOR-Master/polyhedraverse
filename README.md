@@ -6,21 +6,42 @@
 
 **Open-source spatial geometry environment**
 
+**[Try it live](https://polyhedraverse.vercel.app)** — runs entirely in
+your browser, nothing to install.
+
 ### Spatial Editing Suite
 *Construct • Transform • Connect • Explore*
 
 > An open-source spatial geometry environment for constructing,
-> transforming, and interconnecting polyhedral forms in three dimensions.
+> transforming, and interconnecting polyhedral forms in three dimensions
+> — and, uniquely, in four.
 
-A browser-based construction kit for convex polyhedra. Two ways to
-connect pieces: click a free vertex and snap on a new piece with a free
-rotational joint (molecular-model-kit style — started with the 8 convex
-deltahedra specifically because they don't tile space and their dihedral
-angles are incompatible across types), or click a free face and glue on
-a shape with a matching face size for a real shared-face join (a cube
-onto a cube, say), with a discrete rotational registration instead of a
-free twist. A view toggle (Solid / Translucent / Inside view) lets you
-see through a structure once pieces start nesting.
+A browser-based construction kit spanning all 137 convex polyhedra
+across 7 families (Platonic, Archimedean, Johnson, Catalan, prisms,
+antiprisms, and the original Deltahedra set this project started from),
+plus a genuine interactive path into the fourth dimension: **RPC-build
+(Radial-perspective Click-to-build)** lets you construct a real regular
+4-polytope — the 5-cell, tesseract, 16-cell, 24-cell, 120-cell, or
+600-cell — one 3D cell at a time, built from the actual Wythoff/Coxeter
+reflection
+construction mathematicians use to define these objects, not an
+animation or approximation. A one-click "3D / 4D" toggle shows the same
+cell either as an ordinary undistorted shape or at its real, warped
+position in the closed 4D structure, so the difference between a
+3-dimensional and a 4-dimensional object is something you can actually
+see change in front of you, not just read about. See
+**[Radial Cell Projection](docs/radial-cell-projection.md)** for the
+full mathematical method this is built on.
+
+Two ways to connect ordinary 3D pieces: click a free vertex and snap on
+a new piece with a free rotational joint (molecular-model-kit style —
+started with the 8 convex deltahedra specifically because they don't
+tile space and their dihedral angles are incompatible across types), or
+click a free face and glue on a shape with a matching face size for a
+real shared-face join (a cube onto a cube, say), with a discrete
+rotational registration instead of a free twist. A view toggle (Solid /
+Translucent / Inside view) lets you see through a structure once pieces
+start nesting.
 
 The intention is for this to grow into a sibling of
 [Rhombiverse](https://github.com/DICTOR-Master/rhombiverse) — a general
@@ -241,36 +262,47 @@ Since then:
   Spherical/X-Ray view modes are still deferred — see
   `docs/build-plan.md`'s own sections for the full design record.
 - **4D radial cell projection** (`app/lib/polyhedra/fourD.ts`,
-  `app/lib/polyhedra/radialProjection.ts`) — the real 4D system.
-  `fourD.ts` classifies which shapes can be a "cell" of a convex
-  4-polytope via dihedral-angle-defect math (`k` copies meeting at a
-  shared edge close into 4D when `k × dihedralAngle < 360°`); checked
-  against the real, known classification of the six regular 4-polytopes,
-  not just internal consistency, exactly 4 of the 137 registered shapes
-  qualify — tetrahedron, octahedron, cube, and dodecahedron — gathered
-  into a 4D-Capable family with a distinct gold "4D" badge on their
-  cards. `radialProjection.ts` then builds each one's *actual* regular
-  4-polytope (tesseract, 16-cell, 24-cell, 120-cell) via the real
-  Wythoff/Coxeter construction: a BFS of hyperplane reflections in true
-  4D coordinates, not a per-pair 3D correction — reflections in a finite
-  Coxeter group compose exactly and the orbit is *guaranteed* to close,
-  unlike an earlier per-pair-rotation approach (`fold4.ts`, still loaded
-  for backward compatibility with old saves but no longer reachable from
-  the UI) which could only ever handle an isolated pair before
-  oscillating. Verified against the app's own real, normalized
-  polyhedron data for all 4 shapes: exact cell counts (8/16/24/120),
-  exact adjacency degrees, exact cell-to-cell angles, and — the decisive
-  check — that adjacent cells' shared faces coincide vertex-for-vertex,
-  not just share the right angle. `dualize()` additionally implements
-  4-polytope duality as a generic operation (checked on 120-cell →
-  600-cell, reproducing all 600 tetrahedral cells exactly). Deliberately
-  reference-view-only, not scene-buildable: past the first cell, a real
-  4D→3D perspective projection renders every other cell as a visibly
-  skewed, non-regular copy of the seed (correct and expected — that's
-  what a true 4D projection looks like — but not a good building block
-  the way an undistorted duoprism piece is), and the point of this view
-  is to reveal one complete, closed 4-polytope at once rather than
-  assemble it fragment by fragment.
+  `app/lib/polyhedra/radialProjection.ts`, full method write-up at
+  `docs/radial-cell-projection.md`) — the real 4D system. `fourD.ts`
+  classifies which shapes can be a "cell" of a convex 4-polytope via
+  dihedral-angle-defect math (`k` copies meeting at a shared edge close
+  into 4D when `k × dihedralAngle < 360°`); checked against the real,
+  known classification of the regular 4-polytopes, not just internal
+  consistency. Five of the 137 registered shapes qualify — tetrahedron,
+  octahedron, cube, dodecahedron, and a geometrically-tetrahedral
+  graded-pyramid duplicate — gathered into a 4D-Capable family with a
+  distinct gold "4D" badge on their cards, resolving to **six verified
+  closures** in total (the tetrahedron alone genuinely closes three
+  different ways). `radialProjection.ts` builds each one's *actual*
+  regular 4-polytope (5-cell, tesseract, 16-cell, 24-cell, 120-cell, or
+  600-cell) via the real Wythoff/Coxeter construction: a BFS of
+  hyperplane reflections in true 4D coordinates, not a per-pair 3D
+  correction — reflections in a finite Coxeter group compose exactly and
+  the orbit is *guaranteed* to close, unlike an earlier per-pair-rotation
+  approach (`fold4.ts`, still loaded for backward compatibility with old
+  saves but superseded as the live construction method) which could only
+  ever handle an isolated pair before oscillating. Verified against the
+  app's own real, normalized polyhedron data: exact cell counts, exact
+  adjacency degrees, exact cell-to-cell angles, and — the decisive check
+  — that adjacent cells' shared faces coincide vertex-for-vertex, not
+  just share the right angle. `dualize()` additionally implements
+  4-polytope duality as a generic operation (the 600-cell is reached
+  this way, dualizing the already-verified 120-cell, reproducing all 600
+  tetrahedral cells exactly).
+- **RPC-build (Radial-perspective click-to-build)** — the real 4D system
+  above, made interactive: pick any 4D-Capable shape and build its
+  actual regular 4-polytope one cell at a time, right in the main scene,
+  not just as a passive reference view. The first ring of cells (every
+  direct face-neighbor of the seed) builds one click at a time; once
+  that ring is complete, further rings build a whole shell per click. A
+  per-root **3D / 4D toggle** switches every built cell between an
+  ordinary, undistorted flush-attached copy of the seed ("3D") and its
+  real, warped position in the closed 4-polytope ("4D", the same true
+  perspective-projected geometry the reference view uses) — letting you
+  watch the actual difference between a 3-dimensional and a
+  4-dimensional structure, not just take it on faith. The choice
+  persists with the rest of the scene, so reloading a saved build keeps
+  the view you left it in.
 - **The 4D Prism (duoprism) construction** (`app/lib/polyhedra/duoprism.ts`)
   — a structurally different, always-exact 4D construction: literally
   "shape × interval" (a tesseract is *also* describable as a cube
@@ -307,10 +339,13 @@ Since then:
   dedicated Stage 7 transition-checker across every piece, plus two
   from-scratch heptagon/octagon constructions proving the split
   ("multiply") direction directly rather than just asserting divide has
-  an inverse. Adapter pieces are still flat cross-section math today —
-  real, closed, placeable 3D solids (a tapered wall connecting the two
-  cross-sections) are the next stage, not yet built. These 7 connector
-  shapes have no external precedent — unlike every other family in this
+  an inverse. Every piece is now a real, closed, placeable 3D solid — a
+  tapered, convex wall connecting the hex interface to the target
+  face — including a genuine bare "RD-Hemi" dome piece (an actual half
+  of a rhombic dodecahedron, derived directly from this project's own
+  registered `RHOMBIC_DODECAHEDRON`, not a flat disk) that the 7
+  adapters all plug into. These 7 connector shapes have no external
+  precedent — unlike every other family in this
   registry (Platonic, Archimedean, Johnson, Catalan, prisms/antiprisms,
   the Kepler-Poinsot star polyhedra), which all reproduce a known,
   published classification, RVCMG's adapter pieces are an original
@@ -362,15 +397,16 @@ polyhedraverse/
         johnson.ts       # all 92 Johnson solids -- complete
         catalan.ts       # all 13 of 13 Catalan solids -- complete
         rewrite.ts       # D10<->D12 vertex-matching (pure function, no three.js)
-        fourD.ts         # dihedral-angle-defect classifier -- which shapes are 4D-Capable
-        radialProjection.ts # the real 4D system: generic Wythoff/Coxeter reflection engine + dualize()
-        fold4.ts         # superseded by radialProjection.ts; kept only for backward-compat load/render of old saves
+        fourD.ts         # dihedral-angle-defect classifier -- which shapes are 4D-Capable, and their real closures
+        radialProjection.ts # the real 4D system: generic Wythoff/Coxeter reflection engine + dualize() -- 6 verified closures
+        rpcBuild.ts      # RPC-build: bridges radialProjection.ts to real, placeable scene nodes, one cell/shell at a time
+        fold4.ts         # superseded by RPC-build as the live construction method; kept only for backward-compat load/render of old saves
         duoprism.ts      # the 4D Prism (duoprism) construction -- always-exact, any shape, any chaining depth
         gradedPyramids.ts # apex-angle-driven pyramid construction, shared by every graded-pyramid base
         miscellaneous/   # the "Miscellaneous" family (symbol: house glyph) -- irregular/graded add-ons
           index.ts         # combines the two sub-groups below into MISCELLANEOUS_ADDITIONS
           pyramids/        # graded pyramids -- 3 bases x 4 grades, done
-          rvcmg-connectors/ # reserved scaffold for the 7 RVCMG adapter pieces (no solid geometry yet)
+          rvcmg-connectors/ # the 7 RVCMG adapter pieces + the bare RD-Hemi dome -- real 3D solids, done
         index.ts         # combined POLYHEDRA / POLYHEDRON_IDS across every family
       rvcmg/             # Reversible Vertex-Coalescence Morphing Geometry -- see docs/RVCMG.md
         hemiRdInterface.ts # the shared RD-hemi hex joint, derived from POLYHEDRA.RHOMBIC_DODECAHEDRON
@@ -444,15 +480,22 @@ companion, `data/johnson-solids-hard-constructions.json` — every field
 in it cross-checked against this registry's own live `POLYHEDRA` data
 before being recorded, not transcribed from the narrative postmortems
 by hand.
+`docs/radial-cell-projection.md` is the normative write-up of the real
+4D method (author James Baker), extended with a full verification
+record for the two closures found after the original four (the 5-cell
+and 600-cell) and the shell/BFS bookkeeping RPC-build's click-to-build
+feature hangs off — editorial additions, not a rewrite of the original.
 `docs/vercel-deployment-plan.md` records the intended repo/Vercel
-layout for when this deploys alongside Rhombiverse.
+layout for when this deploys alongside Rhombiverse, and the persistence
+architecture's own history (a local-file API route that worked in dev
+but never in production, replaced by browser localStorage).
 `docs/RVCMG.md` is the normative RVCMG spec (author James Baker),
 updated in place once the described system was actually built.
 `docs/rvcmg-adapter-pieces-spec.md` is the working record of building
-it: the hemi-RD hex interface, all 7 adapter pieces, the heptagon/
-octagon split-direction proofs, the Miscellaneous family (graded
-pyramids + the reserved rvcmg-connectors scaffold), and the two
-face-attach UX/eligibility fixes above.
+it: the hemi-RD hex interface, all 7 adapter pieces plus the bare
+RD-Hemi dome as real, closed, placeable 3D solids, the heptagon/octagon
+split-direction proofs, the Miscellaneous family (graded pyramids +
+RVCMG connectors), and the two face-attach UX/eligibility fixes above.
 
 ## Contributing
 

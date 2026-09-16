@@ -15,6 +15,16 @@ export interface ChangelogDay {
 
 export const CHANGELOG: ChangelogDay[] = [
   {
+    date: '2026-09-16',
+    entries: [
+      'Added RPC-build (Radial-perspective click-to-build): construct a real regular 4-polytope — a tesseract, 24-cell, 120-cell, 5-cell, or 600-cell — one cell at a time, directly in the main scene. Select any 4D-Capable shape, build its first ring of cells one click at a time, then add further rings a whole shell per click, using the same genuine Wythoff/Coxeter reflection construction (not an animation or approximation) that already powered the reference-only 4D preview.',
+      'Added a one-click 3D / 4D toggle to RPC-build: switch every cell you\'ve placed between an ordinary undistorted copy of the seed shape and its real, warped position inside the closed 4-polytope — watch the actual difference between a 3-dimensional and a 4-dimensional object change in front of you. The chosen view is saved with the rest of your scene.',
+      'The tetrahedron now unlocks all 3 of its real 4D closures — the 5-cell and 600-cell, alongside the already-known 16-cell — picked from a small menu when you start building. Every regular 4-polytope this project set out to reach (5-cell, tesseract, 16-cell, 24-cell, 120-cell, 600-cell) is now real, verified, and buildable.',
+      'Save/load now runs entirely in your own browser (no server round-trip) — your assembly is private to your device and restores instantly on reload.',
+      'Adjusted the Square-to-RD-H connector piece so its longest edges line up parallel with the square face it adapts to.',
+    ],
+  },
+  {
     date: '2026-09-15',
     entries: [
       'Added RVCMG (Reversible Vertex-Coalescence Morphing Geometry): a universal RD-hemi hexagonal joint plus 7 shape-specific physical adapter pieces (triangle, square, pentagon, golden-rhombus, both Catalan kite shapes, and regular-hexagon), each built by a real, verified vertex-coalescence morph from the shared hex interface -- reversible both ways, confirmed by building real heptagon/octagon shapes via the inverse "split" operation, not just asserting the divide direction has an inverse. Unlike every other family in this registry, these 7 connector shapes have no external precedent -- they are an original construction of this project, not a reproduction of a published classification.',
