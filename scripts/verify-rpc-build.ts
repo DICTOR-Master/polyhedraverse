@@ -127,16 +127,23 @@ for (const { label, seedSpecId, target, shellsToCheck } of CASES) {
 // seed-embedding vertices all share one constant w=depth (see
 // buildCellComplex), so the shared perspective-projection formula
 // divides every one of its coordinates by the exact same denominator --
-// a pure uniform scale of the real registry shape, not a skew. (It's
-// NOT literal coordinate equality with the raw seed -- that constant
-// scale factor is real and expected, which is exactly why
-// ShapeViewer.tsx's own integration never routes cell 0 through this
-// synthetic/projected path at all: the root reuses the already-placed
-// real node directly, at whatever scale/pose it already has, and only
-// shells 1+ ever go through buildSyntheticCellSpec.) Checked here as
-// "uniform scale, not distortion": one constant k with
-// cell0.vertices3D[i] == seedVerts[i] * k for every i, not vertex-by-
-// vertex independent skew.
+// a pure uniform scale of the real registry shape, not a skew.
+//
+// Real bug found live (2026-09-16): that constant scale factor is NOT
+// automatically 1 (buildRpcComplex's own viewDistance/viewMargin
+// convention is arbitrary), while ShapeViewer.tsx's own integration
+// places the ACTUAL rendered root using the real, unscaled registry
+// spec directly -- so every OTHER cell (computed relative to the
+// complex's own, differently-scaled internal frame) was, before the
+// fix, at the WRONG scale/distance relative to that real root: shell-1
+// cells' own shared-face vertices exactly matched cell 0's own INTERNAL
+// vertices (a reflection fixes points on its own mirror plane), but
+// were nowhere near the REAL root's own face vertices, rendering as
+// small, disconnected shards near a correctly-sized root instead of
+// genuinely sharing a face with it. `projectAll` (rpcBuild.ts) now
+// rescales the WHOLE complex by one uniform factor so cell 0 exactly
+// equals the real registry seed -- checked here as k==1 exactly, not
+// merely "some constant k" as before the fix.
 {
   const complex = buildRpcComplex('CUBE', 'tesseract');
   const cellSpec = POLYHEDRA[complex.seedSpecId];
@@ -146,10 +153,49 @@ for (const { label, seedSpecId, target, shellsToCheck } of CASES) {
   const k = ratios[0];
   const ratioSpread = Math.max(...ratios) - Math.min(...ratios);
   check(`CUBE -> tesseract cell 0 (the seed) is a uniform scale of the real registry CUBE, not a skew (scale-ratio spread across vertices ${ratioSpread.toExponential(2)})`, ratioSpread < 1e-9);
+  check(`CUBE -> tesseract cell 0's own uniform scale is now exactly 1 (matches the real registry seed exactly, not just proportionally): k=${k.toFixed(9)}`, Math.abs(k - 1) < 1e-9);
   const worstDeviation = Math.max(
     ...cell0.vertices3D.map((v, i) => Math.hypot(v[0] - seedVerts[i][0] * k, v[1] - seedVerts[i][1] * k, v[2] - seedVerts[i][2] * k)),
   );
   check(`CUBE -> tesseract cell 0 (the seed) matches the real registry CUBE exactly up to that one uniform scale k=${k.toFixed(6)} (worst deviation ${worstDeviation.toExponential(2)})`, worstDeviation < 1e-9);
+}
+
+// The real point of the fix above, checked directly: a shell-1 cell's
+// own shared-face vertices must now coincide with the REAL rendered
+// root's own real face vertices (not just cell 0's internal ones) --
+// this is the exact scenario reported live ("a big tetrahedron with
+// four mini flat tetrahedrons orbiting it") and is the actual
+// definition of "the 4D structure closes" this whole feature exists to
+// show. Checked across every seed/target pair EXCEPT 600-cell: its own
+// "cell 0" (build600CellFromDodecahedron's dual-derived tetrahedron) is
+// not all-equal-edge-length -- a genuinely warped shape, not a uniform
+// scale of the real seed the way every other closure's cell 0 is -- so
+// there is no undistorted reference to align the real root against yet.
+// RPC-build itself deliberately excludes 600-cell from its own closure
+// picker for exactly this reason (ShapeViewer.tsx); this is a known,
+// intentionally deferred gap, not a silently-skipped failure.
+for (const { label, seedSpecId, target } of CASES) {
+  if (target === '600-cell') continue;
+  const spec = POLYHEDRA[seedSpecId];
+  const complex = buildRpcComplex(seedSpecId, target);
+  const shell1 = cellsAtShell(complex, 1);
+  if (shell1.length === 0) continue;
+  const cell = shell1[0];
+  // The shared face is whichever real face of the seed this cell sits
+  // across from -- rather than assuming face 0, find the face whose
+  // real vertex SET has the closest match among this cell's own
+  // vertices (robust to which face buildCellComplex happened to use).
+  let bestFace = -1;
+  let bestScore = Infinity;
+  for (let fi = 0; fi < spec.faces.length; fi++) {
+    const faceVerts = spec.faces[fi].map((i) => spec.vertices[i]);
+    const score = faceVerts.reduce((s, fv) => s + Math.min(...cell.vertices3D.map((cv) => Math.hypot(cv[0] - fv[0], cv[1] - fv[1], cv[2] - fv[2]))), 0);
+    if (score < bestScore) {
+      bestScore = score;
+      bestFace = fi;
+    }
+  }
+  check(`${label}: shell-1 cell ${cell.id} shares its real face (index ${bestFace}) with the ACTUAL rendered root's own vertices (total nearest-vertex error ${bestScore.toExponential(2)})`, bestScore < 1e-6);
 }
 
 console.log(failures === 0 ? '\nAll checks passed.' : `\n${failures} FAILURE(S).`);

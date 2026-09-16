@@ -7,7 +7,6 @@ import {
   POLYHEDRA,
   POLYHEDRON_IDS,
   type PolyhedronSpec,
-  type Vec3,
   triangulateFace,
   buildFaceConnectors,
   facesCongruent,
@@ -1007,48 +1006,12 @@ export default function ShapeViewer({
       const cell = complex.cells.find((c) => c.id === cellId);
       if (!cell) return null;
       const cellSpec = POLYHEDRA[cellShapeIdFor(seedSpecId, target)];
-
-      // Real bug found live (2026-09-16): `buildRpcComplex`'s own
-      // perspective projection is calibrated (via `viewDistance`) for the
-      // WHOLE eventual closed complex, including shells this root hasn't
-      // built yet -- so a shell-1 cell, viewed in isolation before shell
-      // 2+ exists, sits very close to the root AND to its own siblings
-      // (all 6 of a cube's shell-1 cells within ~0.2 units of the origin,
-      // each with a ~0.36-unit extent -- badly overlapping, not a
-      // legible cross). The cell's own SHAPE distortion (vertex offsets
-      // from its own centroid) is the real, correct 4D warp and is left
-      // completely untouched; only its CENTROID is rescaled to sit at
-      // the same real distance from the root the ordinary flush
-      // self-attach uses (computed via computeSelfAttachTransform against
-      // an identity matrix, i.e. purely in the seed's own local frame,
-      // never world space) -- so the 6 shell-1 cells land where a viewer
-      // actually expects a face-neighbor to sit, while every one of them
-      // still visibly reads as a warped, non-cube shape up close. Once
-      // shell 2+ also exists there'd be a real outer reference point and
-      // this rescale wouldn't be needed -- but shell-1's own default
-      // view must be legible on its own, before any shell 2 exists.
-      const rawVerts = cell.vertices3D;
-      const rawCentroid: Vec3 = [0, 0, 0];
-      for (const v of rawVerts) {
-        rawCentroid[0] += v[0] / rawVerts.length;
-        rawCentroid[1] += v[1] / rawVerts.length;
-        rawCentroid[2] += v[2] / rawVerts.length;
-      }
-      const rawCentroidLen = Math.hypot(...rawCentroid);
-      let vertices = rawVerts;
-      if (rawCentroidLen > 1e-9) {
-        const selfAttach = computeSelfAttachTransform(new THREE.Matrix4(), seedSpec, faceIndex);
-        if (selfAttach) {
-          const targetDist = selfAttach.position.length();
-          const scale = targetDist / rawCentroidLen;
-          vertices = rawVerts.map((v) => [
-            rawCentroid[0] * scale + (v[0] - rawCentroid[0]),
-            rawCentroid[1] * scale + (v[1] - rawCentroid[1]),
-            rawCentroid[2] * scale + (v[2] - rawCentroid[2]),
-          ] as Vec3);
-        }
-      }
-      const syntheticSpec = buildSyntheticCellSpec(cellSpec, cell.id, vertices);
+      // buildRpcComplex's own vertices3D are already rescaled (once, for
+      // the whole complex) so cell 0 exactly matches the real registry
+      // seed -- see its own doc comment. No per-cell adjustment needed
+      // here: every cell, including this one, is already correctly
+      // registered against the ACTUAL rendered root's real scale/frame.
+      const syntheticSpec = buildSyntheticCellSpec(cellSpec, cell.id, cell.vertices3D);
       return { spec: syntheticSpec, position: rootPosition.clone(), quaternion: rootQuaternion.clone() };
     };
 
@@ -1335,7 +1298,19 @@ export default function ShapeViewer({
       // doc comment.
       const rpcParamsKey = resolveParamsKey(POLYHEDRA[specId]);
       const hasNoIncoming = !findParentConnection(graphRef.current.connections, nodeId);
-      const rpcClosureOptions = rpcParamsKey ? [...(FOUR_D_SHAPE_PARAMS[rpcParamsKey] ?? []).map((o) => o.name), ...(rpcParamsKey === 'D4' ? ['600-cell'] : [])] : [];
+      // 600-cell deliberately excluded from RPC-build (2026-09-16, real
+      // bug found live): it's verified correct at the pure math level
+      // (dualize() on the 120-cell, docs/radial-cell-projection.md
+      // section 21.3), but build600CellFromDodecahedron's own "cell 0"
+      // is a genuinely WARPED tetrahedron (not all edges equal length),
+      // unlike every other closure's cell 0 (the literal embedded seed,
+      // always a pure uniform scale of the real registry shape) -- there
+      // is no undistorted reference cell in the dualize-derived complex
+      // to align the actual placed root against, so every other cell's
+      // real face-sharing with the root breaks. Needs a real fix (a
+      // proper anchor-cell selection/alignment for the dual complex),
+      // not a quick patch -- re-enable once that exists.
+      const rpcClosureOptions = rpcParamsKey ? FOUR_D_SHAPE_PARAMS[rpcParamsKey]?.map((o) => o.name) ?? [] : [];
       const rpcBuildEligible = hasNoIncoming && rpcClosureOptions.length > 0;
 
       const node = graphRef.current.nodes.find((n) => n.id === nodeId);

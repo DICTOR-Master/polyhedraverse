@@ -125,7 +125,7 @@ test('CUBE builds its tesseract one cell at a time, then shell-by-shell, with a 
   expect(reloaded.nodes.find((n) => n.rpcPolytope)?.rpcPolytope?.view3D).not.toBe(true);
 });
 
-test('a shape with more than one real closure (D4) offers a picker', async ({ page }) => {
+test('a shape with more than one real closure (D4) offers a picker (600-cell deliberately excluded)', async ({ page }) => {
   await resetTo(page, 'D4');
   const { cx, cy } = await getCanvasCenter(page);
   await page.mouse.click(cx, cy);
@@ -135,7 +135,13 @@ test('a shape with more than one real closure (D4) offers a picker', async ({ pa
   await expect(page.locator('text=/Build which 4-polytope/')).toBeVisible();
   await expect(page.getByRole('button', { name: '5-cell' })).toBeVisible();
   await expect(page.getByRole('button', { name: '16-cell' })).toBeVisible();
-  await expect(page.getByRole('button', { name: '600-cell' })).toBeVisible();
+  // 600-cell is excluded from RPC-build (real bug found live, 2026-09-16):
+  // its own "cell 0" is a genuinely warped tetrahedron (dual-derived, not
+  // all-equal-edge-length), unlike every other closure's cell 0 (the
+  // literal embedded seed, a pure uniform scale of the real registry
+  // shape) -- there's no undistorted reference to align the real placed
+  // root against yet. See scripts/verify-rpc-build.ts's own note.
+  await expect(page.getByRole('button', { name: '600-cell' })).toHaveCount(0);
 
   // Pick the smallest (5-cell, k=3 -- 5 total cells) for a fast full-closure check.
   await page.getByRole('button', { name: '5-cell' }).click();

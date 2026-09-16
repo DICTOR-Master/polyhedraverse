@@ -21,9 +21,8 @@ across 7 families (Platonic, Archimedean, Johnson, Catalan, prisms,
 antiprisms, and the original Deltahedra set this project started from),
 plus a genuine interactive path into the fourth dimension: **RPC-build
 (Radial-perspective Click-to-build)** lets you construct a real regular
-4-polytope — the 5-cell, tesseract, 16-cell, 24-cell, 120-cell, or
-600-cell — one 3D cell at a time, built from the actual Wythoff/Coxeter
-reflection
+4-polytope — the 5-cell, tesseract, 16-cell, 24-cell, or 120-cell — one
+3D cell at a time, built from the actual Wythoff/Coxeter reflection
 construction mathematicians use to define these objects, not an
 animation or approximation. A one-click "3D / 4D" toggle shows the same
 cell either as an ordinary undistorted shape or at its real, warped
@@ -302,7 +301,12 @@ Since then:
   watch the actual difference between a 3-dimensional and a
   4-dimensional structure, not just take it on faith. The choice
   persists with the rest of the scene, so reloading a saved build keeps
-  the view you left it in.
+  the view you left it in. Covers 5 of the 6 verified closures (5-cell,
+  tesseract, 16-cell, 24-cell, 120-cell); the 600-cell is verified
+  correct at the pure-math level above but not yet interactively
+  buildable — reached only via `dualize()` rather than a direct
+  reflection, its own reference cell needs a proper alignment fix before
+  it can be placed against a real, already-placed root.
 - **The 4D Prism (duoprism) construction** (`app/lib/polyhedra/duoprism.ts`)
   — a structurally different, always-exact 4D construction: literally
   "shape × interval" (a tesseract is *also* describable as a cube

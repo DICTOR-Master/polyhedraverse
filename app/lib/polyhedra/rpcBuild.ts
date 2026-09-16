@@ -54,6 +54,44 @@ function projectAll(seedSpecId: string, targetName: string, cellsWithVerts: { id
     shell: c.shell,
     vertices3D: c.verts4D.map((v) => projectVec4ToVec3(v, viewDistance)),
   }));
+
+  // Real bug found live (2026-09-16): cell 0's own perspective-projected
+  // vertices are a PURE UNIFORM SCALE of the real registry seed (cell
+  // 0's own 4D embedding has one constant w for every vertex, so the
+  // shared projection formula divides every one of its coordinates by
+  // the exact same denominator) -- but ShapeViewer.tsx places the
+  // ACTUAL rendered root using the real, unscaled registry spec
+  // directly (never this projected cell 0), while every OTHER cell's
+  // own vertices are computed relative to THIS complex's own internal,
+  // differently-scaled frame. Left uncorrected, this is a real,
+  // pre-existing scale mismatch between the rendered root and every
+  // other cell -- confirmed directly: a shell-1 cell's own shared-face
+  // vertices exactly equal cell 0's own INTERNAL vertices (a reflection
+  // fixes points on its own mirror plane), but were ~0.4 units away
+  // from the REAL root's own face vertices before this fix, visibly
+  // "four mini flat tetrahedrons orbiting" the real, correctly-scaled
+  // root instead of sharing a face with it. Fixed by rescaling EVERY
+  // cell's vertices by ONE uniform factor (real seed vertex length /
+  // cell 0's own internal vertex length) -- a uniform scale about a
+  // common origin preserves every relative relationship in the complex
+  // exactly (shared vertices between adjacent cells stay shared,
+  // distortion relative to a cell's own centroid is untouched), unlike
+  // an earlier, WRONG attempt at this fix that rescaled each cell's own
+  // centroid independently and broke that same shared-vertex
+  // coincidence between different cells.
+  const seedSpec = POLYHEDRA[seedSpecId];
+  const cell0 = cells.find((c) => c.id === 0);
+  if (seedSpec && cell0 && cell0.vertices3D.length === seedSpec.vertices.length) {
+    const realLen = Math.hypot(...seedSpec.vertices[0]);
+    const internalLen = Math.hypot(...cell0.vertices3D[0]);
+    if (internalLen > 1e-9) {
+      const scale = realLen / internalLen;
+      for (const cell of cells) {
+        cell.vertices3D = cell.vertices3D.map((v) => [v[0] * scale, v[1] * scale, v[2] * scale] as Vec3);
+      }
+    }
+  }
+
   return { seedSpecId, targetName, viewDistance, cells, adjacency };
 }
 
