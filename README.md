@@ -29,7 +29,7 @@ toggle shows the same cell either as an ordinary undistorted shape or
 at its real, warped position in the closed 4D structure, so the
 difference between a 3-dimensional and a 4-dimensional object is
 something you can actually see change in front of you, not just read
-about — and a "Coordinates" overlay goes a layer deeper, showing the
+about — and an "RCP-Coordinates" overlay goes a layer deeper, showing the
 literal points the construction generates each cell from. See
 **[Radial Cell Projection](docs/radial-cell-projection.md)** for the
 full mathematical method this is built on.
@@ -309,11 +309,15 @@ Since then:
   geometry: the 120-cell's perfect vertex-transitivity means every one
   of its 600 tetrahedral cells is mathematically equivalent, so RCP-C2B
   shows the real, exact shape rather than an artificially "tidied up"
-  stand-in. A **"Coordinates" overlay** reveals the construction itself:
-  each built cell's own real generating coordinate, shown as a point
-  connected to the shape's center by a line — on the 600-cell, a second
-  color also marks its dual points, each one the true center of a
-  dodecahedral cell from the original 120-cell.
+  stand-in. An **"RCP-Coordinates" overlay** reveals the construction
+  itself: each built cell's own real generating coordinate, marked with
+  a small cross (like a point on an architect's drawing, not a solid
+  ball) and joined to the shape's center by a purple laser beam — on the
+  600-cell, a second color also marks its dual points, each one the true
+  center of a dodecahedral cell from the original 120-cell. A dimmer
+  preview extends one step further than what's actually built, showing
+  exactly where the next click will go, right up to the closure's real
+  limit.
 - **The 4D Prism (duoprism) construction** (`app/lib/polyhedra/duoprism.ts`)
   — a structurally different, always-exact 4D construction: literally
   "shape × interval" (a tesseract is *also* describable as a cube

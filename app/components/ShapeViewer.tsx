@@ -74,6 +74,17 @@ const RCP_SEED_COLOR = 0xffd400;
 // point out in space).
 const RCP_COORD_POINT_COLOR = 0xaa33ff;
 const RCP_DUAL_POINT_COLOR = 0xff33cc;
+// Preview shell (nextRcpCellsToBuild's own doc comment): same colors as
+// the real, built points, just dimmed -- reads as "not built yet"
+// rather than being mistaken for real progress.
+const RCP_PREVIEW_OPACITY = 0.35;
+// Applied as a ratio of each cell's own actual rendered scale (never a
+// fixed absolute size -- see rebuildRcpCoordOverlay's own comment on
+// why), so it scales correctly across every closure. First calibrated
+// against CUBE's own circumradius to roughly match an old fixed size
+// that had looked right there (0.04), then reduced further on direct
+// live feedback ("a little big in cube and octahedron").
+const RCP_COORD_POINT_RADIUS_RATIO = 0.025;
 const TWIST_SENSITIVITY = 0.012; // radians per pixel of horizontal drag, vertex-attach
 const CLICK_DRAG_THRESHOLD_PX = 6; // beyond this, mousedown-to-mouseup is an orbit drag, not a click
 const FACE_REGISTRATION_DRAG_PX = 40; // pixels of drag per discrete face-registration step
@@ -1040,15 +1051,44 @@ export default function ShapeViewer({
     };
 
     /**
+     * The cells "Add next cell" or "Build next shell" would place if
+     * clicked right now, for `nodeId`'s own root -- shared by the real
+     * buttons below AND rebuildRcpCoordOverlay's own preview, so the
+     * preview can never show something the actual build wouldn't do.
+     * While shell 1 isn't complete, that's every remaining un-built
+     * shell-1 cell (what repeated "Add next cell" clicks would place,
+     * one at a time); once it is, it's every cell of the next shell
+     * (what one "Build next shell" click places in a batch). Naturally
+     * empty once the closure is fully built -- cellsAtShell of a shell
+     * past the real maximum is just an empty array, no separate "up to
+     * max" cap needed.
+     */
+    const nextRcpCellsToBuild = (nodeId: string): RcpComplex['cells'] => {
+      const node = graphRef.current.nodes.find((n) => n.id === nodeId);
+      if (!node?.rcpPolytope) return [];
+      const { seedSpecId, target } = node.rcpPolytope;
+      const seedSpec = POLYHEDRA[seedSpecId];
+      const complex = getRcpComplex(seedSpecId, target);
+      const rootConns = graphRef.current.connections.filter((c) => !c.orphaned && c.kind === 'rcp4d' && c.nodeA === nodeId);
+      const shell1BuiltCount = rootConns.filter((c) => c.shell === 1).length;
+      const builtCellIds = new Set(rootConns.map((c) => c.cellId!));
+      const nextShell = shell1BuiltCount < seedSpec.faces.length ? 1 : Math.max(0, ...rootConns.map((c) => c.shell!)) + 1;
+      return cellsAtShell(complex, nextShell).filter((c) => !builtCellIds.has(c.id));
+    };
+
+    /**
      * Rebuilds `nodeId`'s own "show coordinates" overlay from scratch
-     * (cheap -- markers/lines only, no real geometry) against whichever
-     * cells are actually built right now. A no-op if that root isn't
-     * currently toggled visible. Called after every RCP-C2B mutation
-     * (build/remove a cell or shell, a root mesh swap) rather than
-     * trying to patch the previous overlay incrementally -- simpler, and
-     * this never needs to be fast. Deliberately independent of the
-     * 3D/4D toggle: coordPoint3D is a property of the underlying 4D
-     * generation math, not of which rendered form shell 1 currently
+     * (cheap -- markers/lines only, no real geometry): every built
+     * cell's own points at full opacity, PLUS (direct user request) a
+     * dimmed preview of whichever cells the next click would actually
+     * add (nextRcpCellsToBuild's own doc comment) -- "where construction
+     * goes next," not just where it's already been. A no-op if that
+     * root isn't currently toggled visible. Called after every RCP-C2B
+     * mutation (build/remove a cell or shell, a root mesh swap) rather
+     * than trying to patch the previous overlay incrementally --
+     * simpler, and this never needs to be fast. Deliberately independent
+     * of the 3D/4D toggle: coordPoint3D is a property of the underlying
+     * 4D generation math, not of which rendered form shell 1 currently
      * uses, so the overlay looks identical in both views by construction
      * (the direct "3D and 4D views ok" requirement, satisfied by not
      * needing to do anything special for either).
@@ -1065,6 +1105,7 @@ export default function ShapeViewer({
         graphRef.current.connections.filter((c) => !c.orphaned && c.kind === 'rcp4d' && c.nodeA === nodeId).map((c) => c.cellId!),
       );
       builtCellIds.add(0); // the root/seed itself is always "built"
+      const previewCellIds = new Set(nextRcpCellsToBuild(nodeId).map((c) => c.id));
 
       // X-ray-style: this is a diagnostic overlay, not real geometry --
       // it should read THROUGH the (often opaque, Solid-mode) cells it's
@@ -1074,29 +1115,83 @@ export default function ShapeViewer({
       // meant to explain). depthTest:false always draws it on top;
       // renderOrder just needs to be higher than the shapes' own default
       // (0) so it isn't fought over within the same pass.
+      // Scaled to THIS complex's own actual rendered geometry (cell 0's
+      // real vertex distance from its own center), not the registry
+      // seed's nominal size -- real bug found live, twice: a fixed
+      // radius looked "too big and blobby" on the tetrahedron
+      // (circumradius 0.61, vs. 1.40 for the dodecahedron), and using
+      // the REGISTRY seed's own radius was still wrong for the 600-cell
+      // specifically ("bigger than the whole cell") -- its actual
+      // rendered scale is genuinely ~7x smaller than the real D4
+      // tetrahedron (confirmed directly: 0.084 vs. 0.612), an honest
+      // consequence of its own non-regular geometry (see
+      // effectiveSeedSpec's own doc comment), not a rendering defect to
+      // fix elsewhere. Cell 0's own real vertices3D reflect whichever
+      // of those two cases actually applies, for every closure uniformly.
+      const cell0 = complex.cells.find((c) => c.id === 0);
+      const seedRadius = cell0 ? Math.hypot(...cell0.vertices3D[0]) : Math.hypot(...POLYHEDRA[seedSpecId].vertices[0]);
       const group = new THREE.Group();
       group.renderOrder = 10;
-      const pointGeom = new THREE.SphereGeometry(0.035, 8, 8);
-      const coordMat = new THREE.MeshBasicMaterial({ color: RCP_COORD_POINT_COLOR, depthTest: false, transparent: true });
-      const dualMat = new THREE.MeshBasicMaterial({ color: RCP_DUAL_POINT_COLOR, depthTest: false, transparent: true });
-      const lineMat = new THREE.LineBasicMaterial({ color: RCP_COORD_POINT_COLOR, depthTest: false, transparent: true });
+      // Small 3-axis crosses ("like on an architect's or designer's
+      // drawing," direct user request), not solid balls -- a precise
+      // point marker rather than a volume, so it never reads as "big and
+      // blobby" regardless of how it's scaled (a real problem solid
+      // spheres had here). One shared geometry per size: 3 line segments
+      // through the local origin along X/Y/Z, translated into place per
+      // marker via its own mesh position, same as the sphere markers did.
+      const crossSize = seedRadius * RCP_COORD_POINT_RADIUS_RATIO;
+      const crossGeom = new THREE.BufferGeometry().setFromPoints([
+        new THREE.Vector3(-crossSize, 0, 0), new THREE.Vector3(crossSize, 0, 0),
+        new THREE.Vector3(0, -crossSize, 0), new THREE.Vector3(0, crossSize, 0),
+        new THREE.Vector3(0, 0, -crossSize), new THREE.Vector3(0, 0, crossSize),
+      ]);
+      const coordMat = new THREE.LineBasicMaterial({ color: RCP_COORD_POINT_COLOR, depthTest: false, transparent: true });
+      const dualMat = new THREE.LineBasicMaterial({ color: RCP_DUAL_POINT_COLOR, depthTest: false, transparent: true });
+      const previewCoordMat = new THREE.LineBasicMaterial({ color: RCP_COORD_POINT_COLOR, depthTest: false, transparent: true, opacity: RCP_PREVIEW_OPACITY });
+      const previewDualMat = new THREE.LineBasicMaterial({ color: RCP_DUAL_POINT_COLOR, depthTest: false, transparent: true, opacity: RCP_PREVIEW_OPACITY });
+      // The "laser" itself is a thin cylinder MESH, not a LineSegments --
+      // real bug found live ("too fine to see"): WebGL caps
+      // LineBasicMaterial's own line width at 1px on most GPUs
+      // regardless of any `linewidth` set on the material (a
+      // long-standing platform limitation, not something tunable away),
+      // so an ordinary line here would always render hairline-thin no
+      // matter how it's configured. A real 3D cylinder has an actual,
+      // controllable radius instead. One shared unit-height cylinder
+      // geometry, transformed per-laser (position at its own midpoint,
+      // scaled to its own length, rotated to point at its own target)
+      // rather than rebuilding geometry per cell.
+      const laserMat = new THREE.MeshBasicMaterial({ color: RCP_COORD_POINT_COLOR, depthTest: false, transparent: true });
+      const previewLaserMat = new THREE.MeshBasicMaterial({ color: RCP_COORD_POINT_COLOR, depthTest: false, transparent: true, opacity: RCP_PREVIEW_OPACITY });
+      // 0.12 of crossSize itself (already only ~2.5% of the seed's own
+      // radius) rendered as a near-invisible hairline in practice (real
+      // bug found live: "too fine to see") -- a much larger fraction is
+      // needed for this to read as an actual beam rather than a line.
+      const laserGeom = new THREE.CylinderGeometry(crossSize * 0.4, crossSize * 0.4, 1, 6);
       const origin = new THREE.Vector3(0, 0, 0);
+      const up = new THREE.Vector3(0, 1, 0);
 
       for (const cell of complex.cells) {
-        if (!builtCellIds.has(cell.id)) continue;
-        const marker = new THREE.Mesh(pointGeom, coordMat);
+        const isBuilt = builtCellIds.has(cell.id);
+        if (!isBuilt && !previewCellIds.has(cell.id)) continue;
+        const marker = new THREE.LineSegments(crossGeom, isBuilt ? coordMat : previewCoordMat);
         marker.position.set(...cell.coordPoint3D);
         marker.renderOrder = 10;
         group.add(marker);
 
-        const lineGeom = new THREE.BufferGeometry().setFromPoints([origin, new THREE.Vector3(...cell.coordPoint3D)]);
-        const line = new THREE.LineSegments(lineGeom, lineMat);
-        line.renderOrder = 10;
-        group.add(line);
+        const target3 = new THREE.Vector3(...cell.coordPoint3D);
+        const distance = origin.distanceTo(target3);
+        if (distance > 1e-6) {
+          const laser = new THREE.Mesh(laserGeom, isBuilt ? laserMat : previewLaserMat);
+          laser.position.copy(origin).lerp(target3, 0.5);
+          laser.quaternion.setFromUnitVectors(up, target3.clone().sub(origin).normalize());
+          laser.scale.set(1, distance, 1);
+          laser.renderOrder = 10;
+          group.add(laser);
+        }
 
         if (target === '600-cell') {
           for (const v of cell.vertices3D) {
-            const dualMarker = new THREE.Mesh(pointGeom, dualMat);
+            const dualMarker = new THREE.LineSegments(crossGeom, isBuilt ? dualMat : previewDualMat);
             dualMarker.position.set(...v);
             dualMarker.renderOrder = 10;
             group.add(dualMarker);

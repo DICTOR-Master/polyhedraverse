@@ -360,7 +360,7 @@ test('the "Coordinates" overlay toggles on/off, and orbiting the camera no longe
     await page.waitForTimeout(100);
   }
 
-  const coordBtn = page.getByRole('button', { name: 'Coordinates' });
+  const coordBtn = page.getByRole('button', { name: 'RCP-Coordinates' });
   await expect(coordBtn).toBeVisible();
   await coordBtn.click();
   await page.waitForTimeout(200);
@@ -378,4 +378,40 @@ test('the "Coordinates" overlay toggles on/off, and orbiting the camera no longe
 
   await coordBtn.click();
   await page.waitForTimeout(200);
+});
+
+/**
+ * The "RCP-Coordinates" overlay's preview (direct user request: "one
+ * shell further than current cell count would show where construction
+ * goes next") must never show something the real build wouldn't do --
+ * exercised across every stage a preview could exist or vanish: mid
+ * shell-1, right as shell 1 completes (batch buttons appear), after
+ * building the final shell (nothing left to preview), and after
+ * removing that shell again (the preview reappears). No console errors
+ * at any of those transitions is the real check here (the fixture's own
+ * auto-check) -- the geometry itself is already covered by
+ * nextRcpCellsToBuild reusing the exact same selection code the real
+ * build buttons call.
+ */
+test('the "RCP-Coordinates" preview survives every build/remove stage without erroring', async ({ page }) => {
+  await resetTo(page, 'CUBE');
+  const { cx, cy } = await getCanvasCenter(page);
+  await page.mouse.click(cx, cy);
+  await page.getByRole('button', { name: 'Build via RCP-C2B…' }).click();
+  await page.getByRole('button', { name: 'RCP-Coordinates' }).click();
+  await page.waitForTimeout(200);
+
+  for (let i = 0; i < 6; i++) {
+    await page.getByRole('button', { name: new RegExp(`Add next cell \\(${i} / 6\\)`) }).click();
+    await page.waitForTimeout(100);
+  }
+  await expect(page.getByRole('button', { name: 'Build next shell' })).toBeVisible();
+
+  await page.getByRole('button', { name: 'Build next shell' }).click();
+  await page.waitForTimeout(300);
+  await expect(page.getByRole('button', { name: 'Build next shell' })).toBeDisabled(); // fully closed -- nothing left to preview
+
+  await page.getByRole('button', { name: 'Remove last shell' }).click();
+  await page.waitForTimeout(300);
+  await expect(page.getByRole('button', { name: 'Build next shell' })).toBeEnabled(); // preview reappears
 });

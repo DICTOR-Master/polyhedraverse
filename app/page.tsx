@@ -622,7 +622,7 @@ export default function Home() {
                     : { background: 'none', border: '1px solid #aa33ff', color: '#aa33ff' }
                 }
               >
-                Coordinates
+                RCP-Coordinates
               </button>
             )}
           </>
