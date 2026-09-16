@@ -1136,9 +1136,16 @@ export default function ShapeViewer({
       // drawing," direct user request), not solid balls -- a precise
       // point marker rather than a volume, so it never reads as "big and
       // blobby" regardless of how it's scaled (a real problem solid
-      // spheres had here). One shared geometry per size: 3 line segments
-      // through the local origin along X/Y/Z, translated into place per
-      // marker via its own mesh position, same as the sphere markers did.
+      // spheres had here). Plain LineSegments, deliberately NOT thick
+      // cylinder meshes -- a real, tried alternative this session, but
+      // direct user feedback afterward was that the ordinary thin lines
+      // had never actually been the problem on most shapes (the
+      // dodecahedron looked right from the start); the earlier "too
+      // fine to see" report was this SAME marker/laser sizing being
+      // wrong for the tetrahedron specifically (fixed above by scaling
+      // off the complex's own real geometry, not the registry seed's),
+      // not a request to make every shape's lines thicker than the
+      // dodecahedron's own already-correct ones.
       const crossSize = seedRadius * RCP_COORD_POINT_RADIUS_RATIO;
       const crossGeom = new THREE.BufferGeometry().setFromPoints([
         new THREE.Vector3(-crossSize, 0, 0), new THREE.Vector3(crossSize, 0, 0),
@@ -1149,26 +1156,9 @@ export default function ShapeViewer({
       const dualMat = new THREE.LineBasicMaterial({ color: RCP_DUAL_POINT_COLOR, depthTest: false, transparent: true });
       const previewCoordMat = new THREE.LineBasicMaterial({ color: RCP_COORD_POINT_COLOR, depthTest: false, transparent: true, opacity: RCP_PREVIEW_OPACITY });
       const previewDualMat = new THREE.LineBasicMaterial({ color: RCP_DUAL_POINT_COLOR, depthTest: false, transparent: true, opacity: RCP_PREVIEW_OPACITY });
-      // The "laser" itself is a thin cylinder MESH, not a LineSegments --
-      // real bug found live ("too fine to see"): WebGL caps
-      // LineBasicMaterial's own line width at 1px on most GPUs
-      // regardless of any `linewidth` set on the material (a
-      // long-standing platform limitation, not something tunable away),
-      // so an ordinary line here would always render hairline-thin no
-      // matter how it's configured. A real 3D cylinder has an actual,
-      // controllable radius instead. One shared unit-height cylinder
-      // geometry, transformed per-laser (position at its own midpoint,
-      // scaled to its own length, rotated to point at its own target)
-      // rather than rebuilding geometry per cell.
-      const laserMat = new THREE.MeshBasicMaterial({ color: RCP_COORD_POINT_COLOR, depthTest: false, transparent: true });
-      const previewLaserMat = new THREE.MeshBasicMaterial({ color: RCP_COORD_POINT_COLOR, depthTest: false, transparent: true, opacity: RCP_PREVIEW_OPACITY });
-      // 0.12 of crossSize itself (already only ~2.5% of the seed's own
-      // radius) rendered as a near-invisible hairline in practice (real
-      // bug found live: "too fine to see") -- a much larger fraction is
-      // needed for this to read as an actual beam rather than a line.
-      const laserGeom = new THREE.CylinderGeometry(crossSize * 0.4, crossSize * 0.4, 1, 6);
+      const laserMat = new THREE.LineBasicMaterial({ color: RCP_COORD_POINT_COLOR, depthTest: false, transparent: true });
+      const previewLaserMat = new THREE.LineBasicMaterial({ color: RCP_COORD_POINT_COLOR, depthTest: false, transparent: true, opacity: RCP_PREVIEW_OPACITY });
       const origin = new THREE.Vector3(0, 0, 0);
-      const up = new THREE.Vector3(0, 1, 0);
 
       for (const cell of complex.cells) {
         const isBuilt = builtCellIds.has(cell.id);
@@ -1178,16 +1168,10 @@ export default function ShapeViewer({
         marker.renderOrder = 10;
         group.add(marker);
 
-        const target3 = new THREE.Vector3(...cell.coordPoint3D);
-        const distance = origin.distanceTo(target3);
-        if (distance > 1e-6) {
-          const laser = new THREE.Mesh(laserGeom, isBuilt ? laserMat : previewLaserMat);
-          laser.position.copy(origin).lerp(target3, 0.5);
-          laser.quaternion.setFromUnitVectors(up, target3.clone().sub(origin).normalize());
-          laser.scale.set(1, distance, 1);
-          laser.renderOrder = 10;
-          group.add(laser);
-        }
+        const lineGeom = new THREE.BufferGeometry().setFromPoints([origin, new THREE.Vector3(...cell.coordPoint3D)]);
+        const line = new THREE.LineSegments(lineGeom, isBuilt ? laserMat : previewLaserMat);
+        line.renderOrder = 10;
+        group.add(line);
 
         if (target === '600-cell') {
           for (const v of cell.vertices3D) {
