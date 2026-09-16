@@ -20,15 +20,17 @@ A browser-based construction kit spanning all 137 convex polyhedra
 across 7 families (Platonic, Archimedean, Johnson, Catalan, prisms,
 antiprisms, and the original Deltahedra set this project started from),
 plus a genuine interactive path into the fourth dimension: **RCP-C2B
-(Radial-perspective Click-to-build)** lets you construct a real regular
-4-polytope — the 5-cell, tesseract, 16-cell, 24-cell, or 120-cell — one
-3D cell at a time, built from the actual Wythoff/Coxeter reflection
-construction mathematicians use to define these objects, not an
-animation or approximation. A one-click "3D / 4D" toggle shows the same
-cell either as an ordinary undistorted shape or at its real, warped
-position in the closed 4D structure, so the difference between a
-3-dimensional and a 4-dimensional object is something you can actually
-see change in front of you, not just read about. See
+(Radial Cell Projection, Click-to-Build)** lets you construct a real
+regular 4-polytope — the 5-cell, tesseract, 16-cell, 24-cell, 120-cell,
+or 600-cell — one 3D cell at a time, built from the actual
+Wythoff/Coxeter reflection construction mathematicians use to define
+these objects, not an animation or approximation. A one-click "3D / 4D"
+toggle shows the same cell either as an ordinary undistorted shape or
+at its real, warped position in the closed 4D structure, so the
+difference between a 3-dimensional and a 4-dimensional object is
+something you can actually see change in front of you, not just read
+about — and a "Coordinates" overlay goes a layer deeper, showing the
+literal points the construction generates each cell from. See
 **[Radial Cell Projection](docs/radial-cell-projection.md)** for the
 full mathematical method this is built on.
 
@@ -301,12 +303,17 @@ Since then:
   watch the actual difference between a 3-dimensional and a
   4-dimensional structure, not just take it on faith. The choice
   persists with the rest of the scene, so reloading a saved build keeps
-  the view you left it in. Covers 5 of the 6 verified closures (5-cell,
-  tesseract, 16-cell, 24-cell, 120-cell); the 600-cell is verified
-  correct at the pure-math level above but not yet interactively
-  buildable — reached only via `dualize()` rather than a direct
-  reflection, its own reference cell needs a proper alignment fix before
-  it can be placed against a real, already-placed root.
+  the view you left it in. Covers all 6 verified closures, including the
+  600-cell — reached via `dualize()` on the already-verified 120-cell
+  rather than a direct reflection, and rendered from its own true
+  geometry: the 120-cell's perfect vertex-transitivity means every one
+  of its 600 tetrahedral cells is mathematically equivalent, so RCP-C2B
+  shows the real, exact shape rather than an artificially "tidied up"
+  stand-in. A **"Coordinates" overlay** reveals the construction itself:
+  each built cell's own real generating coordinate, shown as a point
+  connected to the shape's center by a line — on the 600-cell, a second
+  color also marks its dual points, each one the true center of a
+  dodecahedral cell from the original 120-cell.
 - **The 4D Prism (duoprism) construction** (`app/lib/polyhedra/duoprism.ts`)
   — a structurally different, always-exact 4D construction: literally
   "shape × interval" (a tesseract is *also* describable as a cube
