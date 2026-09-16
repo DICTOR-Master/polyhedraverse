@@ -21,7 +21,7 @@ import { collectSubtree, findParentConnection, hasCycle } from '../lib/graph';
 import { FOURD_CAPABLE_IDS } from '../lib/polyhedra/fourD';
 import { edgeClosingCorrection } from '../lib/polyhedra/fold4';
 import { buildWallPrism, duoprismBuildDepth } from '../lib/polyhedra/duoprism';
-import { buildRpcComplex, buildSyntheticCellSpec, cellsAtShell, maxShell, type RpcComplex } from '../lib/polyhedra/rpcBuild';
+import { buildRpcComplex, buildSyntheticCellSpec, effectiveSeedSpec, cellsAtShell, maxShell, type RpcComplex } from '../lib/polyhedra/rpcBuild';
 import { resolveParamsKey, FOUR_D_SHAPE_PARAMS } from '../lib/polyhedra/radialProjection';
 
 /**
@@ -51,6 +51,13 @@ const COLOR_OCCUPIED = 0x777777;
 const COLOR_PENDING = 0xff6688;
 const NODE_SELECTED_EMISSIVE = 0x663300;
 const NODE_HAS_CAPACITY_EMISSIVE = 0x0d2b1a; // subtle: this node still has a free vertex or face to build from
+// The RPC-build seed/root cell's own highlight color -- direct user
+// feedback: against every constructed cell's ordinary green, the one real
+// seed shape needs to stay identifiable at a glance throughout the whole
+// build. Applied once (beginRpcBuild) and reapplied after every mesh swap
+// that would otherwise reset it back to green (applyRootMeshForView's own
+// fresh buildPlacedShape call, and loadAssembly's own reconstruction).
+const RPC_SEED_COLOR = 0xffd400;
 const TWIST_SENSITIVITY = 0.012; // radians per pixel of horizontal drag, vertex-attach
 const FACE_REGISTRATION_DRAG_PX = 40; // pixels of drag per discrete face-registration step
 
@@ -232,6 +239,8 @@ export interface ShapeViewerHandle {
   beginRpcBuild(seedSpecId: string, target: string): void;
   /** While the selected RPC-build root's shell 1 isn't yet complete, adds exactly one more shell-1 cell (its own next not-yet-built face-neighbor, in face-index order). No-op otherwise. */
   buildNextRpcCell(): void;
+  /** The inverse of buildNextRpcCell: removes the single most-recently-added shell-1 cell. No-op if no shell-1 cells are built yet. */
+  removeLastRpcCell(): void;
   /** Once shell 1 is complete, adds every remaining cell at (current max shell + 1) in one batch. No-op if shell 1 isn't complete yet or the complex is already fully built. */
   buildNextRpcShell(): void;
   /** The inverse of buildNextRpcShell: removes every node at the current max shell in one batch. No-op if only the root (or an incomplete shell 1) remains. */
@@ -473,6 +482,10 @@ function paintVertex(sphere: THREE.Mesh, opts: { selected?: boolean; hovered?: b
  * (pure counting over the same occupied flags the hover tooltip already
  * reports). Selection always wins over the capacity glow.
  */
+function applyRpcSeedColor(placed: PlacedShape) {
+  (placed.mesh.material as THREE.MeshStandardMaterial).color.setHex(RPC_SEED_COLOR);
+}
+
 function applyNodeAppearance(placed: PlacedShape, selected: boolean) {
   const material = placed.mesh.material as THREE.MeshStandardMaterial;
   if (selected) {
@@ -995,14 +1008,22 @@ export default function ShapeViewer({
       rootPosition: THREE.Vector3,
       rootQuaternion: THREE.Quaternion,
     ): { spec: PolyhedronSpec; position: THREE.Vector3; quaternion: THREE.Quaternion } | null => {
-      const seedSpec = POLYHEDRA[seedSpecId];
+      const complex = getRpcComplex(seedSpecId, target);
       if (view3D) {
+        // "3D" is always the real, ordinary, perfectly regular registry
+        // seed self-attach -- for every closure including the 600-cell
+        // (whose own true tetrahedra are honestly slightly non-regular,
+        // and whose 4 faces are therefore NOT all mutually congruent, so
+        // self-attaching that shape onto itself would silently fail for
+        // some faces). "3D" and "4D" stay fully self-consistent within
+        // themselves (3D: real seed root + real seed self-attach; 4D:
+        // effectiveSeedSpec root + this complex's own cell data) rather
+        // than mixing the two.
         const registrySpec = POLYHEDRA[cellShapeIdFor(seedSpecId, target)];
-        const transform = computeSelfAttachTransform(rootWorldMatrix, seedSpec, faceIndex);
+        const transform = computeSelfAttachTransform(rootWorldMatrix, registrySpec, faceIndex);
         if (!transform) return null;
         return { spec: registrySpec, position: transform.position, quaternion: transform.quaternion };
       }
-      const complex = getRpcComplex(seedSpecId, target);
       const cell = complex.cells.find((c) => c.id === cellId);
       if (!cell) return null;
       const cellSpec = POLYHEDRA[cellShapeIdFor(seedSpecId, target)];
@@ -1018,6 +1039,51 @@ export default function ShapeViewer({
     /** The registry id an rpc4d child's own `node.shape` (and, for shell-1, its own placed geometry) must use -- matches assembly.ts's isValidAssembly exactly: always 'D4' for the 600-cell (its cells are tetrahedra regardless of which D4-congruent seed built it), the root's own seedSpecId otherwise. */
     const cellShapeIdFor = (seedSpecId: string, target: string): string => (target === '600-cell' ? 'D4' : seedSpecId);
 
+    /**
+     * The 600-cell's own root is the ONE case where the root's own mesh
+     * is toggleable at all (every other closure's root always stays the
+     * plain, real registry shape, since its own cell 0 already exactly
+     * equals it -- see effectiveSeedSpec's own doc comment for why the
+     * 600-cell has nothing real to match instead). No-op for every other
+     * target. Mirrors setRpcView3D's own mesh-swap pattern, applied to
+     * the root instead of a shell-1 child.
+     */
+    const applyRootMeshForView = (nodeId: string, seedSpecId: string, target: string, view3D: boolean) => {
+      if (target !== '600-cell') return;
+      const oldPlaced = findPlaced(nodeId);
+      const node = graphRef.current.nodes.find((n) => n.id === nodeId);
+      if (!oldPlaced || !node) return;
+      const complex = getRpcComplex(seedSpecId, target);
+      const spec = view3D ? POLYHEDRA[cellShapeIdFor(seedSpecId, target)] : effectiveSeedSpec(complex);
+
+      const oldPosition = oldPlaced.object.position.clone();
+      const oldQuaternion = oldPlaced.object.quaternion.clone();
+      scene.remove(oldPlaced.object);
+      disposePlacedShape(oldPlaced);
+      const replacement = buildPlacedShape(spec, nodeId);
+      replacement.object.position.copy(oldPosition);
+      replacement.object.quaternion.copy(oldQuaternion);
+      applyViewMode(replacement, viewModeRef.current);
+      applyRpcSeedColor(replacement);
+      scene.add(replacement.object);
+
+      const index = placedRef.current.indexOf(oldPlaced);
+      if (index !== -1) placedRef.current[index] = replacement;
+      else placedRef.current.push(replacement);
+      if (selectedNodeRef.current === oldPlaced) selectedNodeRef.current = replacement;
+      if (hoveredRef.current && (hoveredRef.current.parent as THREE.Group | null)?.parent === oldPlaced.object) {
+        hoveredRef.current = null;
+      }
+      if (selectedRef.current && (selectedRef.current.parent as THREE.Group | null)?.parent === oldPlaced.object) {
+        selectedRef.current = null;
+      }
+
+      node.transform = {
+        position: replacement.object.position.toArray() as [number, number, number],
+        quaternion: replacement.object.quaternion.toArray() as [number, number, number, number],
+      };
+    };
+
     const beginRpcBuild = (seedSpecId: string, target: string) => {
       const placed = selectedNodeRef.current;
       if (!placed || pendingRef.current) return;
@@ -1031,8 +1097,18 @@ export default function ShapeViewer({
 
       const node = graphRef.current.nodes.find((n) => n.id === nodeId);
       if (!node) return;
-      node.rpcPolytope = { seedSpecId: specId, target };
-      publishNodeSelection(placed);
+      node.rpcPolytope = { seedSpecId: specId, target, view3D: true };
+      // 3D is the default view (direct user feedback: 4D's warped cells
+      // are harder to read as a starting point than the ordinary flush
+      // fan-out; 4D stays one click away throughout) -- for the 600-cell
+      // specifically, "3D" is a no-op here since its root already IS the
+      // plain registry shape at this point (applyRootMeshForView only
+      // swaps the root's mesh in "4D"). Re-read selectedNodeRef afterward
+      // since the swap may have replaced `placed` itself.
+      applyRootMeshForView(nodeId, specId, target, true);
+      const currentRoot = selectedNodeRef.current ?? placed;
+      applyRpcSeedColor(currentRoot);
+      publishNodeSelection(currentRoot);
     };
 
     const buildNextRpcCell = () => {
@@ -1084,6 +1160,34 @@ export default function ShapeViewer({
       });
 
       reportCageStatus();
+      publishNodeSelection(placed);
+    };
+
+    /**
+     * Undoes the single most-recently-added shell-1 cell (the one built by
+     * the last `buildNextRpcCell` call, identified as the built shell-1
+     * connection with the highest `cellId` -- shell 1 is always built in
+     * increasing cellId order, so this is exactly the last one added).
+     * Shell-1 only, matching `buildNextRpcCell`'s own one-at-a-time scope;
+     * shell 2+ is undone a whole shell at a time via `removeLastRpcShell`.
+     */
+    const removeLastRpcCell = () => {
+      const placed = selectedNodeRef.current;
+      if (!placed || pendingRef.current) return;
+      const { nodeId } = placed.object.userData as ShapeObjectUserData;
+      const node = graphRef.current.nodes.find((n) => n.id === nodeId);
+      if (!node?.rpcPolytope) return;
+      const shell1Conns = graphRef.current.connections.filter((c) => !c.orphaned && c.kind === 'rpc4d' && c.nodeA === nodeId && c.shell === 1);
+      if (shell1Conns.length === 0) return;
+      const last = shell1Conns.reduce((a, b) => (b.cellId! > a.cellId! ? b : a));
+      deleteNodeById(last.nodeB);
+
+      // deleteNodeById clears selection as part of its own per-node
+      // cleanup -- re-select the root, matching removeLastRpcShell's own
+      // "stay on the root" UX.
+      selectedNodeRef.current = placed;
+      selectedFaceIndexRef.current = null;
+      applyNodeAppearance(placed, true);
       publishNodeSelection(placed);
     };
 
@@ -1201,6 +1305,12 @@ export default function ShapeViewer({
       const shell1Cells = cellsAtShell(complex, 1).slice().sort((a, b) => a.id - b.id);
 
       rootNode.rpcPolytope.view3D = view3D;
+      // Root mesh swap (600-cell only -- a no-op for every other closure)
+      // happens FIRST: it disposes/replaces the root's own placed object,
+      // so `rootPlaced` above is stale afterward -- re-fetch the current
+      // one before reading its matrixWorld/position/quaternion below.
+      applyRootMeshForView(rootId, seedSpecId, target, view3D);
+      const currentRootPlaced = findPlaced(rootId)!;
       scene.updateMatrixWorld(true);
 
       for (const conn of shell1Conns) {
@@ -1210,7 +1320,7 @@ export default function ShapeViewer({
         const faceIndex = shell1Cells.findIndex((c) => c.id === conn.cellId);
         if (faceIndex === -1) continue;
 
-        const derived = deriveShell1Cell(seedSpecId, target, conn.cellId, faceIndex, view3D, rootPlaced.object.matrixWorld, rootPlaced.object.position, rootPlaced.object.quaternion);
+        const derived = deriveShell1Cell(seedSpecId, target, conn.cellId, faceIndex, view3D, currentRootPlaced.object.matrixWorld, currentRootPlaced.object.position, currentRootPlaced.object.quaternion);
         if (!derived) continue;
 
         scene.remove(oldPlaced.object);
@@ -1244,7 +1354,7 @@ export default function ShapeViewer({
       }
 
       scene.updateMatrixWorld(true);
-      publishNodeSelection(rootPlaced);
+      publishNodeSelection(findPlaced(rootId) ?? rootPlaced);
     };
 
     /**
@@ -1253,7 +1363,18 @@ export default function ShapeViewer({
      * click handler below (previously duplicated inline).
      */
     const publishNodeSelection = (placed: PlacedShape) => {
-      const { specId, nodeId } = placed.object.userData as ShapeObjectUserData;
+      const { specId: meshSpecId, nodeId } = placed.object.userData as ShapeObjectUserData;
+      const node = graphRef.current.nodes.find((n) => n.id === nodeId);
+      // A synthetic RPC-cell mesh's own `userData.specId` is a non-registry
+      // id (e.g. 'D4::rpc:0', from buildSyntheticCellSpec/effectiveSeedSpec
+      // -- see their own doc comments), never a valid POLYHEDRA key. Every
+      // registry lookup below (face/vertex topology, eligibility, name
+      // display) must use the node's own real, always-registry `shape`
+      // field instead -- identical to `meshSpecId` for every ordinary node,
+      // and exactly the real seed id (e.g. 'D4') for an RPC root/child,
+      // whose topology (faces/edges) is copied unchanged from that real
+      // seed regardless of its own warped vertex positions.
+      const specId = node?.shape ?? meshSpecId;
       const faceIndex = selectedFaceIndexRef.current;
       const faceSize = faceIndex !== null ? POLYHEDRA[specId].faces[faceIndex].length : null;
       const faceOccupied = faceIndex !== null ? placed.faceOccupied[faceIndex] : true;
@@ -1298,22 +1419,17 @@ export default function ShapeViewer({
       // doc comment.
       const rpcParamsKey = resolveParamsKey(POLYHEDRA[specId]);
       const hasNoIncoming = !findParentConnection(graphRef.current.connections, nodeId);
-      // 600-cell deliberately excluded from RPC-build (2026-09-16, real
-      // bug found live): it's verified correct at the pure math level
-      // (dualize() on the 120-cell, docs/radial-cell-projection.md
-      // section 21.3), but build600CellFromDodecahedron's own "cell 0"
-      // is a genuinely WARPED tetrahedron (not all edges equal length),
-      // unlike every other closure's cell 0 (the literal embedded seed,
-      // always a pure uniform scale of the real registry shape) -- there
-      // is no undistorted reference cell in the dualize-derived complex
-      // to align the actual placed root against, so every other cell's
-      // real face-sharing with the root breaks. Needs a real fix (a
-      // proper anchor-cell selection/alignment for the dual complex),
-      // not a quick patch -- re-enable once that exists.
-      const rpcClosureOptions = rpcParamsKey ? FOUR_D_SHAPE_PARAMS[rpcParamsKey]?.map((o) => o.name) ?? [] : [];
+      // 600-cell re-enabled (2026-09-16, second fix): its own cell 0 is
+      // genuinely, unavoidably non-regular under this projection (the
+      // 120-cell's own vertex-transitivity means no cell is any less
+      // distorted than any other -- confirmed directly), so it's no
+      // longer forced to fake-match the real registry seed. Instead its
+      // root uses cell 0's own real, self-consistent geometry in "4D"
+      // (effectiveSeedSpec), keeping the whole complex's real shared-face
+      // coincidences intact -- see effectiveSeedSpec's own doc comment.
+      const rpcClosureOptions = rpcParamsKey ? [...(FOUR_D_SHAPE_PARAMS[rpcParamsKey] ?? []).map((o) => o.name), ...(rpcParamsKey === 'D4' ? ['600-cell'] : [])] : [];
       const rpcBuildEligible = hasNoIncoming && rpcClosureOptions.length > 0;
 
-      const node = graphRef.current.nodes.find((n) => n.id === nodeId);
       let rpcRoot: NodeSelection['rpcRoot'] = null;
       if (node?.rpcPolytope) {
         const { seedSpecId, target } = node.rpcPolytope;
@@ -1486,6 +1602,15 @@ export default function ShapeViewer({
             const cellSpec = POLYHEDRA[cellShapeIdFor(rootNode.rpcPolytope.seedSpecId, rootNode.rpcPolytope.target)];
             if (cell && cellSpec) spec = buildSyntheticCellSpec(cellSpec, cell.id, cell.vertices3D);
           }
+        } else if (node.rpcPolytope?.target === '600-cell') {
+          // The 600-cell's own root is the one case where a ROOT node's
+          // geometry isn't simply POLYHEDRA[node.shape] -- "4D" (the
+          // default) is cell 0's real, self-consistent geometry, since
+          // there's no external real seed it actually equals (see
+          // effectiveSeedSpec's own doc comment); "3D" is the plain,
+          // ordinary registry tetrahedron, same as every other node.
+          const complex = getRpcComplex(node.rpcPolytope.seedSpecId, node.rpcPolytope.target);
+          spec = node.rpcPolytope.view3D ? POLYHEDRA[cellShapeIdFor(node.rpcPolytope.seedSpecId, node.rpcPolytope.target)] : effectiveSeedSpec(complex);
         } else {
           spec = POLYHEDRA[node.shape];
         }
@@ -1494,6 +1619,7 @@ export default function ShapeViewer({
         placed.object.position.fromArray(node.transform.position);
         placed.object.quaternion.fromArray(node.transform.quaternion);
         applyViewMode(placed, viewModeRef.current);
+        if (node.rpcPolytope) applyRpcSeedColor(placed);
         scene.add(placed.object);
         placedRef.current.push(placed);
         byNodeId.set(node.id, placed);
@@ -2310,6 +2436,7 @@ export default function ShapeViewer({
       setFoldAmount,
       beginRpcBuild,
       buildNextRpcCell,
+      removeLastRpcCell,
       buildNextRpcShell,
       removeLastRpcShell,
       setRpcView3D,

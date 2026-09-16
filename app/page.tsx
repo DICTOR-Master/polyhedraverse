@@ -516,6 +516,17 @@ export default function Home() {
                 </button>
               )
             )}
+            {nodeSelection.rpcRoot && (
+              // Running cell count, always visible across the whole build
+              // (shell 1's one-at-a-time phase and every shell-batch
+              // phase after it) -- direct user feedback: without this the
+              // only way to tell progress was counting cells by eye.
+              // +1 for the root/seed cell itself, which `builtCount` (an
+              // rpc4d CONNECTION count) never includes.
+              <span className="text-xs font-medium" style={{ color: '#b388ff' }}>
+                Cells: {nodeSelection.rpcRoot.builtCount + 1} / {nodeSelection.rpcRoot.totalCells}
+              </span>
+            )}
             {nodeSelection.rpcRoot && !nodeSelection.rpcRoot.shell1Complete && (
               <button
                 type="button"
@@ -525,6 +536,17 @@ export default function Home() {
                 style={{ background: '#8a3ffc' }}
               >
                 Add next cell ({nodeSelection.rpcRoot.builtCount} / {nodeSelection.rpcRoot.shell1Size})
+              </button>
+            )}
+            {nodeSelection.rpcRoot && nodeSelection.rpcRoot.builtCount > 0 && !nodeSelection.rpcRoot.shell1Complete && (
+              <button
+                type="button"
+                onClick={() => handleRef.current?.removeLastRpcCell()}
+                title="Remove the most recently added shell-1 cell"
+                className="rounded-full px-4 py-1.5 text-sm font-medium transition-colors"
+                style={{ background: 'none', border: '1px solid #b388ff', color: '#b388ff' }}
+              >
+                Remove last cell
               </button>
             )}
             {nodeSelection.rpcRoot?.shell1Complete && (

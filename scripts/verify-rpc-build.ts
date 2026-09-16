@@ -11,7 +11,7 @@
  */
 import { POLYHEDRA } from '../app/lib/polyhedra';
 import { triangulateFace, type Vec3 } from '../app/lib/polyhedra/core';
-import { buildRpcComplex, buildSyntheticCellSpec, cellsAtShell, maxShell } from '../app/lib/polyhedra/rpcBuild';
+import { buildRpcComplex, buildSyntheticCellSpec, effectiveSeedSpec, cellsAtShell, maxShell } from '../app/lib/polyhedra/rpcBuild';
 
 let failures = 0;
 function check(label: string, condition: boolean) {
@@ -166,18 +166,16 @@ for (const { label, seedSpecId, target, shellsToCheck } of CASES) {
 // this is the exact scenario reported live ("a big tetrahedron with
 // four mini flat tetrahedrons orbiting it") and is the actual
 // definition of "the 4D structure closes" this whole feature exists to
-// show. Checked across every seed/target pair EXCEPT 600-cell: its own
-// "cell 0" (build600CellFromDodecahedron's dual-derived tetrahedron) is
-// not all-equal-edge-length -- a genuinely warped shape, not a uniform
-// scale of the real seed the way every other closure's cell 0 is -- so
-// there is no undistorted reference to align the real root against yet.
-// RPC-build itself deliberately excludes 600-cell from its own closure
-// picker for exactly this reason (ShapeViewer.tsx); this is a known,
-// intentionally deferred gap, not a silently-skipped failure.
+// show. For 5 of 6 closures, "the real root" is the plain registry
+// seed (cell 0 already exactly equals it). For the 600-cell, there IS
+// no real seed to match -- effectiveSeedSpec (rpcBuild.ts) is checked
+// against instead, since THAT's what ShapeViewer.tsx actually places
+// as the root for this one closure (see its own doc comment for why:
+// the 120-cell's own vertex-transitivity means every dual cell,
+// including whichever gets labeled "0", is equally non-regular).
 for (const { label, seedSpecId, target } of CASES) {
-  if (target === '600-cell') continue;
-  const spec = POLYHEDRA[seedSpecId];
   const complex = buildRpcComplex(seedSpecId, target);
+  const rootSpec = target === '600-cell' ? effectiveSeedSpec(complex) : POLYHEDRA[seedSpecId];
   const shell1 = cellsAtShell(complex, 1);
   if (shell1.length === 0) continue;
   const cell = shell1[0];
@@ -187,8 +185,8 @@ for (const { label, seedSpecId, target } of CASES) {
   // vertices (robust to which face buildCellComplex happened to use).
   let bestFace = -1;
   let bestScore = Infinity;
-  for (let fi = 0; fi < spec.faces.length; fi++) {
-    const faceVerts = spec.faces[fi].map((i) => spec.vertices[i]);
+  for (let fi = 0; fi < rootSpec.faces.length; fi++) {
+    const faceVerts = rootSpec.faces[fi].map((i) => rootSpec.vertices[i]);
     const score = faceVerts.reduce((s, fv) => s + Math.min(...cell.vertices3D.map((cv) => Math.hypot(cv[0] - fv[0], cv[1] - fv[1], cv[2] - fv[2]))), 0);
     if (score < bestScore) {
       bestScore = score;
@@ -196,6 +194,25 @@ for (const { label, seedSpecId, target } of CASES) {
     }
   }
   check(`${label}: shell-1 cell ${cell.id} shares its real face (index ${bestFace}) with the ACTUAL rendered root's own vertices (total nearest-vertex error ${bestScore.toExponential(2)})`, bestScore < 1e-6);
+}
+
+// The 600-cell's own root must be a REAL cell of the true 600-cell (not
+// an arbitrary or degenerate shape): same vertex/edge/face count as a
+// tetrahedron, Euler-valid, and non-degenerate -- the same shape-level
+// checks already applied to every other cell above, applied here to
+// effectiveSeedSpec's own output specifically.
+{
+  const complex = buildRpcComplex('D4', '600-cell');
+  const rootSpec = effectiveSeedSpec(complex);
+  check('D4 -> 600-cell: effectiveSeedSpec root has the same vertex count as a tetrahedron', rootSpec.vertices.length === 4);
+  check('D4 -> 600-cell: effectiveSeedSpec root is Euler-valid (V - E + F = 2)', eulerFormulaHolds(rootSpec.vertices.length, rootSpec.edges.length, rootSpec.faces.length));
+  const { planar, nonDegenerate } = facesArePlanarAndNonDegenerate(rootSpec.vertices, rootSpec.faces);
+  check('D4 -> 600-cell: effectiveSeedSpec root is planar and non-degenerate', planar && nonDegenerate);
+  // Confirmed honestly non-regular (not a bug -- see effectiveSeedSpec's
+  // own doc comment): at least two distinct edge lengths.
+  const edgeLens = rootSpec.edges.map(([i, j]) => Math.hypot(...(rootSpec.vertices[i].map((c, k) => c - rootSpec.vertices[j][k]) as Vec3)));
+  const distinctLens = new Set(edgeLens.map((l) => l.toFixed(6))).size;
+  check(`D4 -> 600-cell: effectiveSeedSpec root is honestly non-regular, not silently forced regular (${distinctLens} distinct edge lengths among ${edgeLens.length} edges)`, distinctLens > 1);
 }
 
 console.log(failures === 0 ? '\nAll checks passed.' : `\n${failures} FAILURE(S).`);

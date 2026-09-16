@@ -66,29 +66,29 @@ test('CUBE builds its tesseract one cell at a time, then shell-by-shell, with a 
   await page.getByRole('button', { name: 'Save', exact: true }).click();
   await expect(page.locator('text=Saved')).toBeVisible();
   const savedDefault = await getSavedAssembly(page);
-  expect(savedDefault.nodes.find((n) => n.rpcPolytope)?.rpcPolytope?.view3D).not.toBe(true); // 4D is the default
+  expect(savedDefault.nodes.find((n) => n.rpcPolytope)?.rpcPolytope?.view3D).toBe(true); // 3D is the default (direct user feedback)
 
-  await view3DBtn.click();
+  await view4DBtn.click();
   await page.waitForTimeout(200);
   await page.getByRole('button', { name: 'Save', exact: true }).click();
   await expect(page.locator('text=Saved')).toBeVisible();
-  const saved3D = await getSavedAssembly(page);
-  expect(saved3D.nodes.find((n) => n.rpcPolytope)?.rpcPolytope?.view3D).toBe(true);
+  const saved4D = await getSavedAssembly(page);
+  expect(saved4D.nodes.find((n) => n.rpcPolytope)?.rpcPolytope?.view3D).toBe(false);
 
-  const byId4D = new Map(savedDefault.nodes.map((n) => [n.id, n]));
+  const byIdDefault = new Map(savedDefault.nodes.map((n) => [n.id, n]));
   let anyTransformDiffers = false;
-  for (const node3D of saved3D.nodes) {
-    const node4D = byId4D.get(node3D.id);
-    if (!node4D) continue;
-    const posDiff = Math.hypot(...node3D.transform.position.map((v, i) => v - node4D.transform.position[i]));
+  for (const node4D of saved4D.nodes) {
+    const nodeDefault = byIdDefault.get(node4D.id);
+    if (!nodeDefault) continue;
+    const posDiff = Math.hypot(...node4D.transform.position.map((v, i) => v - nodeDefault.transform.position[i]));
     if (posDiff > 1e-6) anyTransformDiffers = true;
   }
   expect(anyTransformDiffers, 'switching 3D/4D must change at least one real, persisted node transform').toBe(true);
 
-  await page.screenshot({ path: 'test-results/rpc-build-cube-3d.png' });
-  await view4DBtn.click();
-  await page.waitForTimeout(200);
   await page.screenshot({ path: 'test-results/rpc-build-cube-4d.png' });
+  await view3DBtn.click();
+  await page.waitForTimeout(200);
+  await page.screenshot({ path: 'test-results/rpc-build-cube-3d.png' });
 
   // Build shell 2 (the single remaining far cube), confirm the graph, then remove it.
   await buildShellBtn.click();
@@ -115,17 +115,17 @@ test('CUBE builds its tesseract one cell at a time, then shell-by-shell, with a 
 
   // Reload from the persisted graph and confirm the scene re-renders with
   // no console/page error (the fixture's own auto-check), the same node
-  // count, AND the chosen 4D view survived the reload (the root's own
+  // count, AND the chosen 3D view survived the reload (the root's own
   // saved rpcPolytope.view3D, re-checked after reload, not just before it).
   await page.reload();
   await page.waitForTimeout(500);
   await expect(page.getByRole('main').locator('canvas')).toBeVisible();
   const reloaded = await getSavedAssembly(page);
   expect(reloaded.nodes).toHaveLength(7);
-  expect(reloaded.nodes.find((n) => n.rpcPolytope)?.rpcPolytope?.view3D).not.toBe(true);
+  expect(reloaded.nodes.find((n) => n.rpcPolytope)?.rpcPolytope?.view3D).toBe(true);
 });
 
-test('a shape with more than one real closure (D4) offers a picker (600-cell deliberately excluded)', async ({ page }) => {
+test('a shape with more than one real closure (D4) offers a picker, including 600-cell', async ({ page }) => {
   await resetTo(page, 'D4');
   const { cx, cy } = await getCanvasCenter(page);
   await page.mouse.click(cx, cy);
@@ -135,17 +135,67 @@ test('a shape with more than one real closure (D4) offers a picker (600-cell del
   await expect(page.locator('text=/Build which 4-polytope/')).toBeVisible();
   await expect(page.getByRole('button', { name: '5-cell' })).toBeVisible();
   await expect(page.getByRole('button', { name: '16-cell' })).toBeVisible();
-  // 600-cell is excluded from RPC-build (real bug found live, 2026-09-16):
-  // its own "cell 0" is a genuinely warped tetrahedron (dual-derived, not
-  // all-equal-edge-length), unlike every other closure's cell 0 (the
-  // literal embedded seed, a pure uniform scale of the real registry
-  // shape) -- there's no undistorted reference to align the real placed
-  // root against yet. See scripts/verify-rpc-build.ts's own note.
-  await expect(page.getByRole('button', { name: '600-cell' })).toHaveCount(0);
+  await expect(page.getByRole('button', { name: '600-cell' })).toBeVisible();
 
   // Pick the smallest (5-cell, k=3 -- 5 total cells) for a fast full-closure check.
   await page.getByRole('button', { name: '5-cell' }).click();
   await expect(page.getByRole('button', { name: 'Add next cell (0 / 4)' })).toBeVisible();
+});
+
+/**
+ * The 600-cell needed a second, deeper fix (2026-09-16): its own "cell 0"
+ * (build600CellFromDodecahedron's dual-derived tetrahedron) is honestly,
+ * unavoidably non-regular (the 120-cell's own vertex-transitivity means
+ * no dual cell is any less distorted than any other), so unlike every
+ * other closure it has no real external registry shape to match -- the
+ * ROOT itself is built from cell 0's own real geometry in "4D" (the
+ * default), and only falls back to the plain, perfectly regular
+ * tetrahedron in "3D". This checks the root's own mesh actually swaps
+ * with the toggle (unlike every other closure, where only the children
+ * do), that shell 1 still closes correctly, and that the choice survives
+ * a real save/reload.
+ */
+test('D4 -> 600-cell: shell 1 closes correctly, and the ROOT itself (not just children) toggles 3D/4D', async ({ page }) => {
+  await resetTo(page, 'D4');
+  const { cx, cy } = await getCanvasCenter(page);
+  await page.mouse.click(cx, cy);
+  await expect(page.locator('text=/Selected D4 node/')).toBeVisible();
+  await page.getByRole('button', { name: 'Build via RPC…' }).click();
+  await page.getByRole('button', { name: '600-cell' }).click();
+
+  for (let i = 0; i < 4; i++) {
+    await page.getByRole('button', { name: new RegExp(`Add next cell \\(${i} / 4\\)`) }).click();
+    await page.waitForTimeout(150);
+  }
+  await expect(page.getByRole('button', { name: /Add next cell/ })).toHaveCount(0);
+
+  // Toggle to 3D and back -- the root's own mesh must survive both
+  // swaps without erroring (fixture's own console-error auto-check) and
+  // the shape stays selected/interactable throughout.
+  await page.getByRole('button', { name: '3D', exact: true }).click();
+  await page.waitForTimeout(200);
+  await expect(page.locator('text=/Selected D4 node/')).toBeVisible();
+  await page.getByRole('button', { name: '4D', exact: true }).click();
+  await page.waitForTimeout(200);
+  await expect(page.locator('text=/Selected D4 node/')).toBeVisible();
+
+  // Save while in "3D", reload, and confirm the root's own saved
+  // rpcPolytope.view3D survived (the exact thing the original, simpler
+  // toggle never did for any closure).
+  await page.getByRole('button', { name: '3D', exact: true }).click();
+  await page.waitForTimeout(200);
+  await page.getByRole('button', { name: 'Save', exact: true }).click();
+  await expect(page.locator('text=Saved')).toBeVisible();
+  const saved = await getSavedAssembly(page);
+  expect(saved.nodes).toHaveLength(5); // 1 root + 4 shell-1 (the whole 600-cell's own local k=5 ring isn't reachable from shell 1 alone, but the ROOT + its 4 direct neighbors are)
+  expect(saved.nodes.find((n) => n.rpcPolytope)?.rpcPolytope?.view3D).toBe(true);
+
+  await page.reload();
+  await page.waitForTimeout(500);
+  await expect(page.getByRole('main').locator('canvas')).toBeVisible();
+  const reloaded = await getSavedAssembly(page);
+  expect(reloaded.nodes).toHaveLength(5);
+  expect(reloaded.nodes.find((n) => n.rpcPolytope)?.rpcPolytope?.view3D).toBe(true);
 });
 
 test('a non-4D-capable shape (RHOMBIC_DODECAHEDRON) never offers Build via RPC', async ({ page }) => {
