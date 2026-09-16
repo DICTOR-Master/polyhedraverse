@@ -359,8 +359,9 @@ export function buildRadialProjectionScene(spec: PolyhedronSpec, viewMargin = 5)
 
 export interface DualCell {
   id: number;
-  vertices: Vec4[]; // this dual cell's own embedded vertices (one per original polytope CELL incident to the corresponding original VERTEX)
+  vertices: Vec4[]; // this dual cell's own embedded vertices (one per original polytope CELL incident to the corresponding original VERTEX) -- these ARE the "dual points" (each one a center of an original-complex cell), not a separate quantity to compute.
   normal: Vec4; // this dual cell's own outward direction -- equal to the corresponding original polytope vertex's own direction
+  originalVertex: Vec4; // the real (un-normalized) original-polytope vertex position this dual cell corresponds to -- its own "coordinate point" (see rcpBuild.ts's own RcpComplex.cells[].coordPoint3D doc comment)
 }
 
 export interface DualCellComplex {
@@ -420,6 +421,7 @@ export function dualize(complex: FourDCellComplex): DualCellComplex {
     id: idx,
     vertices: vertexMembership[idx].map(centroidOfCell),
     normal: norm4(vpos),
+    originalVertex: vpos,
   }));
 
   // Original edges (local edge list applied through every cell's own
@@ -466,6 +468,8 @@ export interface CellLikeCell {
   id: number;
   vertices4D: Vec4[];
   shell: number;
+  /** This cell's own "coordinate point" source (see rcpBuild.ts's RcpComplex.cells[].coordPoint3D) -- for a dual-derived cell, the real original-polytope vertex it corresponds to (DualCell.originalVertex); undefined for a non-dual CellLikeComplex (none exists yet, but the type stays honest about it being dual-only data). */
+  coordPoint4D?: Vec4;
 }
 
 export interface CellLikeComplex {
@@ -522,6 +526,7 @@ export function dualToCellLikeComplex(dual: DualCellComplex, seedSpecId: string,
     id: c.id,
     vertices4D: c.vertices,
     shell: shellOf.get(c.id) ?? 0,
+    coordPoint4D: c.originalVertex,
   }));
 
   return { seedSpecId, targetName, cells, adjacency: dual.adjacency };

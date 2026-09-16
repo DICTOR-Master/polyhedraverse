@@ -58,7 +58,24 @@ const NODE_HAS_CAPACITY_EMISSIVE = 0x0d2b1a; // subtle: this node still has a fr
 // that would otherwise reset it back to green (applyRootMeshForView's own
 // fresh buildPlacedShape call, and loadAssembly's own reconstruction).
 const RCP_SEED_COLOR = 0xffd400;
+// "Show coordinates" overlay: RCP_COORD_POINT_COLOR marks each built
+// cell's own real generating coordinate (RcpComplex.cells[].coordPoint3D
+// -- its own doc comment explains why this is the actual generating
+// point, not just a convenient stand-in like the vertex centroid),
+// joined to the root's own center by a thin line ("lasers from the
+// center", direct user request) -- visualizes the literal radial
+// structure the whole feature (Radial Cell Projection) is named after.
+// RCP_DUAL_POINT_COLOR (600-cell only) marks its cells' own vertices --
+// which, by construction, ARE the "dual points": each one is the real
+// centroid of a dodecahedral cell from the original 120-cell this
+// closure was dualized from (dualize()'s own doc comment) -- a distinct
+// concept from the coordinate point above, so a distinct color, with no
+// line (they're already the cell's own rendered corners, not a separate
+// point out in space).
+const RCP_COORD_POINT_COLOR = 0xaa33ff;
+const RCP_DUAL_POINT_COLOR = 0xff33cc;
 const TWIST_SENSITIVITY = 0.012; // radians per pixel of horizontal drag, vertex-attach
+const CLICK_DRAG_THRESHOLD_PX = 6; // beyond this, mousedown-to-mouseup is an orbit drag, not a click
 const FACE_REGISTRATION_DRAG_PX = 40; // pixels of drag per discrete face-registration step
 
 // Which vertex of an *incoming* shape serves as its own connection point for
@@ -257,6 +274,18 @@ export interface ShapeViewerHandle {
    * so it survives save/reload. No-op if no shell-1 cells exist yet.
    */
   setRcpView3D(view3D: boolean): void;
+  /**
+   * Toggles the selected RCP-C2B root's own "show coordinates" overlay:
+   * a purple point + line-from-center per built cell, at that cell's
+   * real generating coordinate (never its vertex centroid -- see
+   * RcpComplex.cells[].coordPoint3D's own doc comment for why those
+   * differ), plus (600-cell only) a second marker color at each cell's
+   * own vertices -- the real dual points, already rendered as that
+   * cell's own corners. Independent of the 3D/4D toggle by construction
+   * (coordPoint3D doesn't depend on it) and never persisted (session-only,
+   * same as fold4's own foldAmount). No-op if no root is selected.
+   */
+  setRcpCoordinatesVisible(visible: boolean): void;
 }
 
 export interface ShapeSelection {
@@ -335,6 +364,8 @@ export interface NodeSelection {
     viewToggleLocked: boolean;
     /** The root's own current view choice (`rcpPolytope.view3D`, defaulting to true/3D). */
     view3D: boolean;
+    /** Whether the "show coordinates" overlay (purple coordinate-point lasers, plus dual-point markers for the 600-cell) is currently on for this root -- session-only, never persisted, same as fold4's own foldAmount. */
+    coordinatesVisible: boolean;
   } | null;
 }
 
@@ -592,6 +623,12 @@ export default function ShapeViewer({
   const sceneRef = useRef<THREE.Scene | null>(null);
   const placedRef = useRef<PlacedShape[]>([]);
   const graphRef = useRef<Assembly>(emptyAssembly());
+  // Which RCP-C2B roots currently show their "coordinate points" overlay
+  // -- a pure display aid, deliberately session-only/not persisted (same
+  // precedent as fold4's own foldAmount: "never stored, always
+  // re-derived"), so this is empty again after every reload.
+  const rcpCoordVisibleRef = useRef<Set<string>>(new Set());
+  const rcpCoordGroupRef = useRef<Map<string, THREE.Group>>(new Map());
   const hoveredRef = useRef<THREE.Mesh | null>(null);
   const selectedRef = useRef<THREE.Mesh | null>(null);
   const hoveredNodeRef = useRef<PlacedShape | null>(null);
@@ -987,6 +1024,100 @@ export default function ShapeViewer({
       return complex;
     };
 
+    const disposeRcpCoordOverlay = (nodeId: string) => {
+      const group = rcpCoordGroupRef.current.get(nodeId);
+      if (!group) return;
+      group.parent?.remove(group);
+      group.traverse((child) => {
+        if (child instanceof THREE.Mesh || child instanceof THREE.LineSegments) {
+          child.geometry.dispose();
+          const material = child.material;
+          if (Array.isArray(material)) material.forEach((m) => m.dispose());
+          else material.dispose();
+        }
+      });
+      rcpCoordGroupRef.current.delete(nodeId);
+    };
+
+    /**
+     * Rebuilds `nodeId`'s own "show coordinates" overlay from scratch
+     * (cheap -- markers/lines only, no real geometry) against whichever
+     * cells are actually built right now. A no-op if that root isn't
+     * currently toggled visible. Called after every RCP-C2B mutation
+     * (build/remove a cell or shell, a root mesh swap) rather than
+     * trying to patch the previous overlay incrementally -- simpler, and
+     * this never needs to be fast. Deliberately independent of the
+     * 3D/4D toggle: coordPoint3D is a property of the underlying 4D
+     * generation math, not of which rendered form shell 1 currently
+     * uses, so the overlay looks identical in both views by construction
+     * (the direct "3D and 4D views ok" requirement, satisfied by not
+     * needing to do anything special for either).
+     */
+    const rebuildRcpCoordOverlay = (nodeId: string) => {
+      disposeRcpCoordOverlay(nodeId);
+      if (!rcpCoordVisibleRef.current.has(nodeId)) return;
+      const node = graphRef.current.nodes.find((n) => n.id === nodeId);
+      const placed = findPlaced(nodeId);
+      if (!node?.rcpPolytope || !placed) return;
+      const { seedSpecId, target } = node.rcpPolytope;
+      const complex = getRcpComplex(seedSpecId, target);
+      const builtCellIds = new Set(
+        graphRef.current.connections.filter((c) => !c.orphaned && c.kind === 'rcp4d' && c.nodeA === nodeId).map((c) => c.cellId!),
+      );
+      builtCellIds.add(0); // the root/seed itself is always "built"
+
+      // X-ray-style: this is a diagnostic overlay, not real geometry --
+      // it should read THROUGH the (often opaque, Solid-mode) cells it's
+      // annotating rather than being hidden behind their faces, which is
+      // what plain depth-tested materials did (real bug found live: the
+      // whole overlay was invisible, occluded by the very shape it was
+      // meant to explain). depthTest:false always draws it on top;
+      // renderOrder just needs to be higher than the shapes' own default
+      // (0) so it isn't fought over within the same pass.
+      const group = new THREE.Group();
+      group.renderOrder = 10;
+      const pointGeom = new THREE.SphereGeometry(0.035, 8, 8);
+      const coordMat = new THREE.MeshBasicMaterial({ color: RCP_COORD_POINT_COLOR, depthTest: false, transparent: true });
+      const dualMat = new THREE.MeshBasicMaterial({ color: RCP_DUAL_POINT_COLOR, depthTest: false, transparent: true });
+      const lineMat = new THREE.LineBasicMaterial({ color: RCP_COORD_POINT_COLOR, depthTest: false, transparent: true });
+      const origin = new THREE.Vector3(0, 0, 0);
+
+      for (const cell of complex.cells) {
+        if (!builtCellIds.has(cell.id)) continue;
+        const marker = new THREE.Mesh(pointGeom, coordMat);
+        marker.position.set(...cell.coordPoint3D);
+        marker.renderOrder = 10;
+        group.add(marker);
+
+        const lineGeom = new THREE.BufferGeometry().setFromPoints([origin, new THREE.Vector3(...cell.coordPoint3D)]);
+        const line = new THREE.LineSegments(lineGeom, lineMat);
+        line.renderOrder = 10;
+        group.add(line);
+
+        if (target === '600-cell') {
+          for (const v of cell.vertices3D) {
+            const dualMarker = new THREE.Mesh(pointGeom, dualMat);
+            dualMarker.position.set(...v);
+            dualMarker.renderOrder = 10;
+            group.add(dualMarker);
+          }
+        }
+      }
+
+      placed.object.add(group);
+      rcpCoordGroupRef.current.set(nodeId, group);
+    };
+
+    const setRcpCoordinatesVisible = (visible: boolean) => {
+      const placed = selectedNodeRef.current;
+      if (!placed) return;
+      const { nodeId } = placed.object.userData as ShapeObjectUserData;
+      if (visible) rcpCoordVisibleRef.current.add(nodeId);
+      else rcpCoordVisibleRef.current.delete(nodeId);
+      rebuildRcpCoordOverlay(nodeId);
+      publishNodeSelection(placed);
+    };
+
     /**
      * RCP-C2B's shell-1 "3D view" placement: the REAL ordinary flush
      * self-attach ShapeViewer.tsx's own beginFaceAttach already computes
@@ -1148,6 +1279,10 @@ export default function ShapeViewer({
         position: replacement.object.position.toArray() as [number, number, number],
         quaternion: replacement.object.quaternion.toArray() as [number, number, number, number],
       };
+      // The old overlay group (if any) was just disposed along with
+      // oldPlaced.object -- rebuild it under the new one so rcpCoordGroupRef
+      // doesn't keep pointing at a disposed group, and so it doesn't just vanish.
+      rebuildRcpCoordOverlay(nodeId);
     };
 
     const beginRcpBuild = (seedSpecId: string, target: string) => {
@@ -1227,6 +1362,7 @@ export default function ShapeViewer({
       // applyViewModeToPlaced reads) resolves this cell's own shell from
       // the graph, not a parameter, so the connection must already exist.
       applyViewModeToPlaced(childPlaced, viewModeRef.current);
+      rebuildRcpCoordOverlay(nodeId);
 
       reportCageStatus();
       publishNodeSelection(placed);
@@ -1257,6 +1393,7 @@ export default function ShapeViewer({
       selectedNodeRef.current = placed;
       selectedFaceIndexRef.current = null;
       applyNodeAppearance(placed, true);
+      rebuildRcpCoordOverlay(nodeId);
       publishNodeSelection(placed);
     };
 
@@ -1333,6 +1470,7 @@ export default function ShapeViewer({
         // After the connection is registered -- see buildNextRcpCell's own comment.
         applyViewModeToPlaced(childPlaced, viewModeRef.current);
       }
+      rebuildRcpCoordOverlay(nodeId);
 
       reportCageStatus();
       publishNodeSelection(placed);
@@ -1362,6 +1500,7 @@ export default function ShapeViewer({
       selectedNodeRef.current = placed;
       selectedFaceIndexRef.current = null;
       applyNodeAppearance(placed, true);
+      rebuildRcpCoordOverlay(nodeId);
       publishNodeSelection(placed);
     };
 
@@ -1545,6 +1684,7 @@ export default function ShapeViewer({
           viewToggleAvailable: shell1BuiltCount > 0,
           viewToggleLocked: maxBuiltShell > 1,
           view3D: node.rcpPolytope.view3D === true,
+          coordinatesVisible: rcpCoordVisibleRef.current.has(nodeId),
         };
       }
 
@@ -1614,6 +1754,8 @@ export default function ShapeViewer({
         (mesh.material as THREE.Material).dispose();
       }
       duoprismMeshesRef.current.clear();
+      rcpCoordVisibleRef.current.clear();
+      rcpCoordGroupRef.current.clear();
       graphRef.current = emptyAssembly();
       hoveredRef.current = null;
       selectedRef.current = null;
@@ -2379,6 +2521,11 @@ export default function ShapeViewer({
         disposePlacedShape(placed);
         const idx = placedRef.current.indexOf(placed);
         if (idx !== -1) placedRef.current.splice(idx, 1);
+        // disposePlacedShape already disposed this node's own coordinate
+        // overlay group's geometries (it's a child of placed.object) --
+        // just drop the now-stale tracking entries.
+        rcpCoordVisibleRef.current.delete(id);
+        rcpCoordGroupRef.current.delete(id);
 
         // This node's OWN incoming connection (if duoprism) may own
         // several wall-prism meshes -- one per [vertexA,
@@ -2544,6 +2691,7 @@ export default function ShapeViewer({
       buildNextRcpShell,
       removeLastRcpShell,
       setRcpView3D,
+      setRcpCoordinatesVisible,
     });
 
     let cancelled = false;
@@ -2565,6 +2713,18 @@ export default function ShapeViewer({
     const raycaster = new THREE.Raycaster();
     const pointer = new THREE.Vector2();
     let isDragging = false;
+    // Tracks the pointer's own down position, independent of OrbitControls
+    // (which handles the actual camera rotation itself and has no reason
+    // to expose this) -- a plain click-to-select/deselect and an
+    // orbit-drag-that-ends-on-the-canvas are indistinguishable to the
+    // browser's own native 'click' event (it still fires on mouseup
+    // regardless of how far the pointer moved in between), so without
+    // this, rotating the camera could silently deselect the current node
+    // (real user report: "why do 4D buttons just vanish... when you
+    // touch or turn object" -- every RCP-C2B control disappears with the
+    // selection). onClick below skips its own selection logic entirely
+    // once the pointer moved more than CLICK_DRAG_THRESHOLD_PX.
+    let mouseDownClientPos: { x: number; y: number } | null = null;
     // Tracks the most recent real PointerEvent's pointerType -- see
     // positionLabel's own comment for why this is needed (onClick's
     // native 'click' MouseEvent never carries pointerType itself, even
@@ -2756,6 +2916,7 @@ export default function ShapeViewer({
     // deltas computed by hand here have no such platform gap.
     let lastDragX = 0;
     const onPointerDown = (event: PointerEvent) => {
+      mouseDownClientPos = { x: event.clientX, y: event.clientY };
       if (!pendingRef.current) return;
       isDragging = true;
       lastDragX = event.clientX;
@@ -2774,6 +2935,18 @@ export default function ShapeViewer({
 
     const onClick = (event: MouseEvent) => {
       if (pendingRef.current) return; // confirm/cancel drive pending state, not clicks
+
+      // An OrbitControls camera-rotate drag still ends in a native
+      // 'click' event at wherever the pointer lands (browsers don't
+      // suppress it just because the pointer moved) -- without this
+      // check, that would run the selection logic below against
+      // whatever's now under the cursor, which could silently deselect
+      // the current node (mouseDownClientPos's own comment).
+      if (mouseDownClientPos) {
+        const dx = event.clientX - mouseDownClientPos.x;
+        const dy = event.clientY - mouseDownClientPos.y;
+        if (Math.hypot(dx, dy) > CLICK_DRAG_THRESHOLD_PX) return;
+      }
 
       // Re-raycast at the click's own position before trusting the hover
       // refs below -- see updateHover's own comment for why: touch never

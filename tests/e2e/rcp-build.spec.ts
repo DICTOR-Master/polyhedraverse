@@ -175,13 +175,16 @@ test('DODECAHEDRON: building shell 2 while shell 1 is in "3D" auto-forces "4D", 
   await expect(view4DBtn).toBeDisabled();
 
   // The dodecahedron's shell 2 is a large batch (dozens of cells) --
-  // give the click a moment before relying on it (flake seen live:
-  // occasionally missed while the browser was still settling from that
-  // batch), and poll for "Saved" with a generous timeout rather than
-  // relying on the default.
+  // occasionally the very first Save click lands while the browser is
+  // still settling from that batch and doesn't register (flake seen
+  // live). "Saved" only shows for 2s (page.tsx's own saveStatusResetRef),
+  // so retry the click rather than trusting a single one no matter how
+  // long the wait before it.
   await page.waitForTimeout(300);
-  await page.getByRole('button', { name: 'Save', exact: true }).click();
-  await expect(page.locator('text=Saved')).toBeVisible({ timeout: 10000 });
+  await expect(async () => {
+    await page.getByRole('button', { name: 'Save', exact: true }).click();
+    await expect(page.locator('text=Saved')).toBeVisible({ timeout: 1500 });
+  }).toPass({ timeout: 15000 });
   const saved = await getSavedAssembly(page);
   expect(saved.nodes.find((n) => n.rcpPolytope)?.rcpPolytope?.view3D).toBe(false); // auto-forced
 
@@ -332,4 +335,47 @@ test('an old save using the legacy rpcPolytope/rpc4d spellings still loads corre
   const cellCount = page.locator('text=/Cells: /');
   await expect(cellCount).toBeVisible({ timeout: 3000 });
   await expect(cellCount).toHaveText('Cells: 2 / 8');
+});
+
+/**
+ * The "Coordinates" overlay shows each built cell's own real generating
+ * coordinate (a purple point + line-from-center -- see
+ * RcpComplex.cells[].coordPoint3D's own doc comment for why this is the
+ * literal generating point, not just the vertex centroid) as a plain
+ * on/off toggle, independent of the 3D/4D view. Also covers a real bug
+ * found live alongside it: an OrbitControls camera-rotate drag still
+ * fires a native 'click' at wherever the pointer ends up, which used to
+ * run the selection logic and could silently deselect the current node
+ * -- every RCP-C2B control (including this new toggle) would just
+ * disappear (real user report: "why do 4D buttons just vanish... when
+ * you touch or turn object").
+ */
+test('the "Coordinates" overlay toggles on/off, and orbiting the camera no longer deselects the node', async ({ page }) => {
+  await resetTo(page, 'CUBE');
+  const { cx, cy } = await getCanvasCenter(page);
+  await page.mouse.click(cx, cy);
+  await page.getByRole('button', { name: 'Build via RCP-C2B…' }).click();
+  for (let i = 0; i < 6; i++) {
+    await page.getByRole('button', { name: new RegExp(`Add next cell \\(${i} / 6\\)`) }).click();
+    await page.waitForTimeout(100);
+  }
+
+  const coordBtn = page.getByRole('button', { name: 'Coordinates' });
+  await expect(coordBtn).toBeVisible();
+  await coordBtn.click();
+  await page.waitForTimeout(200);
+
+  // Orbit the camera by dragging on empty space near the shape -- this
+  // must NOT deselect the node (the bug: it used to clear the whole
+  // toolbar, including this same toggle).
+  await page.mouse.move(cx, cy);
+  await page.mouse.down();
+  await page.mouse.move(cx + 120, cy + 60, { steps: 10 });
+  await page.mouse.up();
+  await page.waitForTimeout(200);
+  await expect(page.locator('text=/Selected CUBE node/')).toBeVisible();
+  await expect(coordBtn).toBeVisible();
+
+  await coordBtn.click();
+  await page.waitForTimeout(200);
 });

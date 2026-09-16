@@ -34,8 +34,21 @@ export interface RcpComplex {
   viewDistance: number;
   // One entry per cell, in id order; each is that cell's own vertices
   // (same indexing as POLYHEDRA[seedSpecId].vertices/faces) already
-  // perspective-projected to 3D, plus its shell (BFS ring distance).
-  cells: { id: number; shell: number; vertices3D: Vec3[] }[];
+  // perspective-projected to 3D, plus its shell (BFS ring distance) and
+  // its own "coordinate point" -- the real 4D point the generation
+  // algorithm actually tracks this cell by (for a direct reflection
+  // closure: its own outward `normal` scaled to the seed's embedding
+  // depth; for a dualize()-derived closure like the 600-cell: the real
+  // original-polytope vertex it corresponds to), projected through this
+  // same shared perspective frame. Deliberately NOT the same as this
+  // cell's own vertex centroid: the two are equal before projection
+  // (every reflection here is a pure linear map, so centroid-of-
+  // transformed = transform-of-centroid), but perspective projection
+  // itself is nonlinear, so centroid-after-projecting and project-the-
+  // one-true-coordinate diverge slightly -- this is the literal
+  // generating coordinate, not an approximation of it. Purely a display
+  // aid (the "show RCP coordinates" overlay) -- never affects placement.
+  cells: { id: number; shell: number; vertices3D: Vec3[]; coordPoint3D: Vec3 }[];
   adjacency: [number, number][];
 }
 
@@ -45,7 +58,12 @@ export interface RcpComplex {
 // rather than each cell separately normalized.
 const VIEW_MARGIN = 5;
 
-function projectAll(seedSpecId: string, targetName: string, cellsWithVerts: { id: number; shell: number; verts4D: Vec4[] }[], adjacency: [number, number][]): RcpComplex {
+function projectAll(
+  seedSpecId: string,
+  targetName: string,
+  cellsWithVerts: { id: number; shell: number; verts4D: Vec4[]; coordPoint4D: Vec4 }[],
+  adjacency: [number, number][],
+): RcpComplex {
   const allVerts = cellsWithVerts.flatMap((c) => c.verts4D);
   const maxAbsW = Math.max(...allVerts.map((v) => Math.abs(v[3])), 1e-6);
   const viewDistance = maxAbsW * VIEW_MARGIN;
@@ -53,6 +71,7 @@ function projectAll(seedSpecId: string, targetName: string, cellsWithVerts: { id
     id: c.id,
     shell: c.shell,
     vertices3D: c.verts4D.map((v) => projectVec4ToVec3(v, viewDistance)),
+    coordPoint3D: projectVec4ToVec3(c.coordPoint4D, viewDistance),
   }));
 
   // Real bug found live (2026-09-16): cell 0's own perspective-projected
@@ -106,6 +125,7 @@ function projectAll(seedSpecId: string, targetName: string, cellsWithVerts: { id
         const scale = realLen / internalLen;
         for (const cell of cells) {
           cell.vertices3D = cell.vertices3D.map((v) => [v[0] * scale, v[1] * scale, v[2] * scale] as Vec3);
+          cell.coordPoint3D = [cell.coordPoint3D[0] * scale, cell.coordPoint3D[1] * scale, cell.coordPoint3D[2] * scale];
         }
       }
     }
@@ -137,6 +157,7 @@ function projectAll(seedSpecId: string, targetName: string, cellsWithVerts: { id
       }
       for (const cell of cells) {
         cell.vertices3D = cell.vertices3D.map((v) => [v[0] - centroid[0], v[1] - centroid[1], v[2] - centroid[2]] as Vec3);
+        cell.coordPoint3D = [cell.coordPoint3D[0] - centroid[0], cell.coordPoint3D[1] - centroid[1], cell.coordPoint3D[2] - centroid[2]];
       }
     }
   }
@@ -145,13 +166,33 @@ function projectAll(seedSpecId: string, targetName: string, cellsWithVerts: { id
 }
 
 function fromFourDCellComplex(complex: FourDCellComplex): RcpComplex {
-  const cellsWithVerts = complex.cells.map((cell) => ({ id: cell.id, shell: cell.shell, verts4D: cellVertices(complex, cell) }));
+  // This cell's own "coordinate point" (RcpComplex.cells[].coordPoint3D's
+  // own doc comment) -- its outward `normal` scaled to the same depth
+  // the seed's own embedding uses, i.e. exactly where the seed's own
+  // reference point (depth * n0) lands once carried through this cell's
+  // own (purely linear) transform.
+  const depth = complex.seedEmbedding[0][3];
+  const cellsWithVerts = complex.cells.map((cell) => ({
+    id: cell.id,
+    shell: cell.shell,
+    verts4D: cellVertices(complex, cell),
+    coordPoint4D: [cell.normal[0] * depth, cell.normal[1] * depth, cell.normal[2] * depth, cell.normal[3] * depth] as Vec4,
+  }));
   const adjacency: [number, number][] = complex.adjacency.map(([a, b]) => [a, b]);
   return projectAll(complex.seedSpecId, complex.targetName, cellsWithVerts, adjacency);
 }
 
 function fromCellLikeComplex(complex: CellLikeComplex): RcpComplex {
-  const cellsWithVerts = complex.cells.map((cell) => ({ id: cell.id, shell: cell.shell, verts4D: cell.vertices4D }));
+  const cellsWithVerts = complex.cells.map((cell) => ({
+    id: cell.id,
+    shell: cell.shell,
+    verts4D: cell.vertices4D,
+    // Always populated by dualToCellLikeComplex (its own doc comment) --
+    // the CellLikeCell type keeps it optional only because a non-dual
+    // CellLikeComplex is a real possibility the type shouldn't rule out,
+    // not because this call site can actually see one.
+    coordPoint4D: cell.coordPoint4D!,
+  }));
   return projectAll(complex.seedSpecId, complex.targetName, cellsWithVerts, complex.adjacency);
 }
 
