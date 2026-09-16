@@ -6,16 +6,26 @@
  * directory's sibling for the archived v1 set and
  * `docs/rvcmg-adapter-pieces-spec.md` for the full redesign history).
  *
- * 8 pieces, no RD-Hemi (direct user instruction, 2026-09-17 — the
- * hex is no longer tied to a real RD's own native scale, so there is no
- * longer a "bare dome" piece in this v2 set):
+ * 8 tapered pieces, no RD-Hemi (direct user instruction, 2026-09-17 —
+ * the hex is no longer tied to a real RD's own native scale, so there
+ * is no longer a "bare dome" piece in this v2 set):
  * Triangle, Square, Pentagon, Golden-Rhombus, RD-Native-Rhombus,
- * DI-Kite, DH-Kite, Regular-Hexagon — all -to-U-Hex.
+ * DI-Kite, DH-Kite, Regular-Hexagon — all -to-U-Hex. Plus a 9th, the
+ * U-Hex spacer prism (direct user request, 2026-09-17: "a U-Hex prism
+ * too, to extend between connections for convenience") — a plain
+ * hex-to-hex right prism (both caps are the universal hex itself, not
+ * a shape-specific target), so any two of these pieces stack to
+ * lengthen a chain of adapters. Height = the hex's own edge length
+ * (direct user confirmation: "height same as length and depth of
+ * hexagon"), which makes all 6 lateral faces genuine squares — no
+ * RVCMG coalescence math needed here either (see
+ * `polygonPrismSolid.ts`, `app/lib/polyhedra/`).
  */
 
 import { type PolyhedronSpec } from '../../core';
 import { buildAdapterSolid } from '../../../rvcmg/solid';
-import { universalHexInterfaceFrame, HEX_CIRCUMRADIUS } from '../../../rvcmg/universalHexInterface';
+import { buildPolygonPrismSolid } from '../../polygonPrismSolid';
+import { universalHexInterfaceFrame, UNIVERSAL_HEX_INTERFACE, HEX_CIRCUMRADIUS } from '../../../rvcmg/universalHexInterface';
 import { deriveTriangleToUHex } from '../../../rvcmg/adapters/triangleToUHex';
 import { deriveSquareToUHex } from '../../../rvcmg/adapters/squareToUHex';
 import { derivePentagonToUHex } from '../../../rvcmg/adapters/pentagonToUHex';
@@ -59,6 +69,35 @@ function buildPiece(id: string, name: string, derive: () => ReturnType<typeof de
   return { ...spec, attachableFaceIndices: [hexFaceIndex, targetFaceIndex] };
 }
 
+/**
+ * The U-Hex spacer prism: both caps are the universal hex itself
+ * (`UNIVERSAL_HEX_INTERFACE`), not a derived shape-specific target, so
+ * this needs `buildPolygonPrismSolid` directly rather than
+ * `buildPiece`/`buildAdapterSolid` (which both assume a hex-to-
+ * DIFFERENT-shape taper with its own Stage 0-7 derivation). Height =
+ * `HEX_CIRCUMRADIUS`, which for a regular hexagon equals its own edge
+ * length too — direct user confirmation, "height same as length and
+ * depth of hexagon" — making all 6 lateral faces genuine squares.
+ * Unlike the quad-prisms (`miscellaneous/quad-prisms/`), this piece's
+ * lateral faces stay NON-attachable (`attachableFaces` left at its
+ * default `'caps-only'`) — direct user instruction, 2026-09-17: "dont
+ * bother fr U-Hex," since a square hex-spacer face could only ever
+ * connect sideways to itself/a cube, unlike a rhombus/kite prism's own
+ * lateral squares opening up a genuinely new cross-family attachment.
+ */
+function buildUHexSpacer(): PolyhedronSpec {
+  const id = 'RVCMG_V2_UHEX_SPACER';
+  const { spec, problems } = buildPolygonPrismSolid({
+    id,
+    name: 'U-Hex spacer prism (square sides)',
+    faceVertices: UNIVERSAL_HEX_INTERFACE,
+    normal: NORMAL,
+    height: HEX_CIRCUMRADIUS,
+  });
+  if (problems.length > 0) throw new Error(`${id}: unresolved problems: ${JSON.stringify(problems)}`);
+  return spec;
+}
+
 export const RVCMG_V2_CONNECTOR_ADDITIONS: Record<string, PolyhedronSpec> = {
   RVCMG_V2_TRIANGLE_TO_UHEX: buildPiece('RVCMG_V2_TRIANGLE_TO_UHEX', 'triangle to U-Hex adapter', deriveTriangleToUHex),
   RVCMG_V2_SQUARE_TO_UHEX: buildPiece('RVCMG_V2_SQUARE_TO_UHEX', 'square to U-Hex adapter', deriveSquareToUHex),
@@ -68,6 +107,7 @@ export const RVCMG_V2_CONNECTOR_ADDITIONS: Record<string, PolyhedronSpec> = {
   RVCMG_V2_DI_KITE_TO_UHEX: buildPiece('RVCMG_V2_DI_KITE_TO_UHEX', 'DI-kite to U-Hex adapter', deriveDIKiteToUHex),
   RVCMG_V2_DH_KITE_TO_UHEX: buildPiece('RVCMG_V2_DH_KITE_TO_UHEX', 'DH-kite to U-Hex adapter', deriveDHKiteToUHex),
   RVCMG_V2_REGULAR_HEX_TO_UHEX: buildPiece('RVCMG_V2_REGULAR_HEX_TO_UHEX', 'regular hexagon to U-Hex adapter', deriveRegularHexToUHex),
+  RVCMG_V2_UHEX_SPACER: buildUHexSpacer(),
 };
 
 export const RVCMG_V2_CONNECTOR_ADDITION_IDS: string[] = Object.keys(RVCMG_V2_CONNECTOR_ADDITIONS);

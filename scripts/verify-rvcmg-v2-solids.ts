@@ -11,10 +11,14 @@
  * degenerate face, the target cap's own edges matching its Stage 0-7
  * pre-lift state exactly, both caps sitting on the same axis exactly
  * `WALL_HEIGHT_V2` apart, and that `attachableFaceIndices` names exactly
- * the two real ports (hex + target), never a wall/side triangle.
+ * the two real ports (hex + target), never a wall/side triangle. Also
+ * covers the 9th piece, the U-Hex spacer prism, which has no Stage 0-7
+ * derivation (both caps are the plain universal hex, not a
+ * shape-specific target) so it's checked separately, below the main
+ * per-piece loop.
  */
 import { RVCMG_V2_CONNECTOR_ADDITIONS, RVCMG_V2_CONNECTOR_ADDITION_IDS } from '../app/lib/polyhedra/miscellaneous/rvcmg-connectors-v2';
-import { universalHexInterfaceFrame, HEX_CIRCUMRADIUS } from '../app/lib/rvcmg/universalHexInterface';
+import { universalHexInterfaceFrame, UNIVERSAL_HEX_INTERFACE, HEX_CIRCUMRADIUS } from '../app/lib/rvcmg/universalHexInterface';
 import { validateAdapterSolid } from '../app/lib/rvcmg/solid';
 import { uHexStartState, deriveTriangleToUHex } from '../app/lib/rvcmg/adapters/triangleToUHex';
 import { deriveSquareToUHex } from '../app/lib/rvcmg/adapters/squareToUHex';
@@ -53,8 +57,8 @@ const PIECES: { id: string; derive: () => ReturnType<typeof deriveTriangleToUHex
 ];
 
 check(
-  'rvcmg-connectors-v2 registers exactly these 8 tapered pieces (no RD-Hemi)',
-  PIECES.every((p) => RVCMG_V2_CONNECTOR_ADDITION_IDS.includes(p.id)) && RVCMG_V2_CONNECTOR_ADDITION_IDS.length === 8,
+  'rvcmg-connectors-v2 registers exactly these 8 tapered pieces + the U-Hex spacer (9 total, no RD-Hemi)',
+  PIECES.every((p) => RVCMG_V2_CONNECTOR_ADDITION_IDS.includes(p.id)) && RVCMG_V2_CONNECTOR_ADDITION_IDS.length === 9,
 );
 
 for (const { id, derive } of PIECES) {
@@ -111,6 +115,47 @@ for (const { id, derive } of PIECES) {
     `${id}: hex cap edges match the universal hex interface exactly (as a multiset)`,
     hexEdgeLensBuilt.every((l, k) => Math.abs(l - hexEdgeLensReal[k]) < 1e-9),
   );
+}
+
+// The 9th piece: the U-Hex spacer prism. No Stage 0-7 derivation to
+// check (both caps are the plain universal hex), so verified directly
+// against the registry entry instead.
+{
+  const id = 'RVCMG_V2_UHEX_SPACER';
+  const spec = RVCMG_V2_CONNECTOR_ADDITIONS[id];
+  check(`${id}: is registered`, !!spec);
+  if (spec) {
+    const V = spec.vertices.length;
+    const E = spec.edges.length;
+    const F = spec.faces.length;
+    check(`${id}: V=${V} E=${E} F=${F}, Euler's formula holds`, V - E + F === 2);
+    check(`${id}: exactly 12 vertices, 18 edges, 8 faces (a hex prism)`, V === 12 && E === 18 && F === 8);
+    check(`${id}: attachableFaceIndices is exactly the two hex caps [0, 1]`, JSON.stringify(spec.attachableFaceIndices) === JSON.stringify([0, 1]));
+
+    for (const capIndex of [0, 1] as const) {
+      const capEdgeLensBuilt = spec.faces[capIndex].map((idx, k) => dist(spec.vertices[idx], spec.vertices[spec.faces[capIndex][(k + 1) % 6]])).sort((a, b) => a - b);
+      const hexEdgeLensReal = UNIVERSAL_HEX_INTERFACE.map((p, k) => dist(p, UNIVERSAL_HEX_INTERFACE[(k + 1) % 6])).sort((a, b) => a - b);
+      check(
+        `${id}: cap ${capIndex} edges match the universal hex interface exactly (as a multiset)`,
+        capEdgeLensBuilt.every((l, k) => Math.abs(l - hexEdgeLensReal[k]) < 1e-9),
+      );
+    }
+
+    // Height = HEX_CIRCUMRADIUS, which for a regular hexagon equals its
+    // own edge length too -- direct user confirmation ("height same as
+    // length and depth of hexagon"). Checked here as the actual lateral
+    // (vertical) edge length, not just trusted from the construction call.
+    const lateralEdges = [0, 1, 2, 3, 4, 5].map((i) => dist(spec.vertices[i], spec.vertices[i + 6]));
+    check(
+      `${id}: all 6 lateral edges equal the hex's own edge length ${HEX_CIRCUMRADIUS.toFixed(9)} (making every lateral face a square)`,
+      lateralEdges.every((l) => Math.abs(l - HEX_CIRCUMRADIUS) < 1e-9),
+    );
+    for (let fi = 2; fi < 8; fi++) {
+      const pts = spec.faces[fi].map((idx) => spec.vertices[idx]);
+      const sides = [0, 1].map((k) => dist(pts[k], pts[k + 1]));
+      check(`${id}: lateral face ${fi} is a genuine square (sides ${sides.map((s) => s.toFixed(6))})`, Math.abs(sides[0] - sides[1]) < 1e-9);
+    }
+  }
 }
 
 console.log(`\n${failures} failures.`);

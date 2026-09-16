@@ -297,6 +297,16 @@ export function rotateFaceToMirrorAxis(vertices: Vec3[], face: number[], tol = 1
   const n = face.length;
   const pts = face.map((i) => vertices[i]);
   const edges = Array.from({ length: n }, (_, i) => dist(pts[i], pts[(i + 1) % n]));
+  const angleAt = (k: number): number => {
+    const prev = pts[(k - 1 + n) % n];
+    const curr = pts[k];
+    const next = pts[(k + 1) % n];
+    const v1: Vec3 = [prev[0] - curr[0], prev[1] - curr[1], prev[2] - curr[2]];
+    const v2: Vec3 = [next[0] - curr[0], next[1] - curr[1], next[2] - curr[2]];
+    const cos = (v1[0] * v2[0] + v1[1] * v2[1] + v1[2] * v2[2]) / (Math.hypot(...v1) * Math.hypot(...v2));
+    return Math.acos(Math.min(1, Math.max(-1, cos)));
+  };
+  const angles = Array.from({ length: n }, (_, k) => angleAt(k));
   // A shape can have MORE THAN ONE valid mirror-axis start (a kite's own
   // 4-gon has exactly two: the short-short corner AND the long-long
   // corner, both individually satisfying the palindrome check below) --
@@ -312,9 +322,28 @@ export function rotateFaceToMirrorAxis(vertices: Vec3[], face: number[], tol = 1
   // `edges[k-1]`) are equal to each other by definition of the check
   // below, so "smallest" unambiguously means "the shorter of the two
   // symmetric edge values this shape has," matching "short-short" for a
-  // kite and simply being a no-op tie-break for a fully regular polygon
-  // or a rhombus (where every valid start shares the same edge length
-  // anyway).
+  // kite.
+  //
+  // SECOND real bug, same class, caught computationally (2026-09-17): a
+  // RHOMBUS also has more than one valid mirror start (both ends of
+  // EITHER diagonal all individually satisfy the palindrome check, since
+  // every edge is already the same length), but the edge-length
+  // tie-break above is then a genuine no-op — it can't tell the LONG-
+  // diagonal corner from the SHORT-diagonal corner, since both have
+  // identical adjacent edges. Two independently-built rhombus pieces
+  // (an RVCMG adapter's derived target vs. a plain extrusion of the same
+  // real Catalan face) can then land on OPPOSITE roles for vertex 0 —
+  // geometrically valid individually, but incompatible with each other
+  // under computeFaceAttach's `incoming[i] <-> target[(n-i)%n]`
+  // correspondence, which needs vertex 0 to mean the SAME corner on
+  // both sides. Fixed with a second, purely intrinsic tie-break (each
+  // valid start's own INTERIOR ANGLE, smallest wins) that only applies
+  // when edge length still ties -- never changes the kite's already-
+  // correct edge-length-driven answer (its two valid starts differ in
+  // edge length, so the angle tie-break is never reached), and makes a
+  // rhombus's own choice a deterministic function of its shape alone
+  // (smallest interior angle = the short-diagonal corner), independent
+  // of which array order either caller happened to build it in.
   const validStarts: number[] = [];
   for (let k = 0; k < n; k++) {
     let ok = true;
@@ -329,7 +358,11 @@ export function rotateFaceToMirrorAxis(vertices: Vec3[], face: number[], tol = 1
     if (ok) validStarts.push(k);
   }
   if (validStarts.length > 0) {
-    const k = validStarts.reduce((best, cand) => (edges[cand] < edges[best] ? cand : best));
+    const k = validStarts.reduce((best, cand) => {
+      if (edges[cand] < edges[best] - tol) return cand;
+      if (edges[cand] > edges[best] + tol) return best;
+      return angles[cand] < angles[best] ? cand : best;
+    });
     return Array.from({ length: n }, (_, i) => face[(k + i) % n]);
   }
   return face;
