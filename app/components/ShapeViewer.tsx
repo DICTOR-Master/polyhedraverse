@@ -18,6 +18,7 @@ import { DELTAHEDRA } from '../lib/polyhedra/deltahedra';
 import { emptyAssembly, isValidAssembly, migrateLegacyRcp4d, ASSEMBLY_STORAGE_KEY, type Assembly } from '../lib/assembly';
 import { matchRewriteVertices, REWRITE_TARGET } from '../lib/polyhedra/rewrite';
 import { collectSubtree, findParentConnection, hasCycle } from '../lib/graph';
+import { describeAssembly } from '../lib/assemblyNaming';
 import { FOURD_CAPABLE_IDS } from '../lib/polyhedra/fourD';
 import { edgeClosingCorrection } from '../lib/polyhedra/fold4';
 import { buildWallPrism, duoprismBuildDepth } from '../lib/polyhedra/duoprism';
@@ -608,6 +609,7 @@ export default function ShapeViewer({
   onPendingChange,
   onNodeSelectionChange,
   onCageClosedChange,
+  onAssemblyNameChange,
   onCanUndoChange,
   onFoldConnectionsChange,
   onReady,
@@ -617,6 +619,17 @@ export default function ShapeViewer({
   onPendingChange?: (pending: { specId: string; fold4?: boolean; duoprism?: boolean } | null) => void;
   onNodeSelectionChange?: (selection: NodeSelection | null) => void;
   onCageClosedChange?: (closed: boolean) => void;
+  /**
+   * Fires alongside onCageClosedChange (same reportCageStatus call sites
+   * -- every real graph mutation), with a running, always-on description
+   * of the WHOLE current assembly (see app/lib/assemblyNaming.ts):
+   * root shape name alone for a single node, a recognized name for a
+   * small curated set of confirmed signatures, otherwise a generic
+   * summary grouping every attached shape by kind + count. Independent
+   * of node selection -- fires even with nothing selected, unlike
+   * onNodeSelectionChange.
+   */
+  onAssemblyNameChange?: (name: string) => void;
   onCanUndoChange?: (canUndo: boolean) => void;
   /**
    * Fires whenever the current assembly's own count of real fold4
@@ -687,6 +700,7 @@ export default function ShapeViewer({
   const onPendingChangeRef = useRef(onPendingChange);
   const onNodeSelectionChangeRef = useRef(onNodeSelectionChange);
   const onCageClosedChangeRef = useRef(onCageClosedChange);
+  const onAssemblyNameChangeRef = useRef(onAssemblyNameChange);
   const onCanUndoChangeRef = useRef(onCanUndoChange);
   const onReadyRef = useRef(onReady);
 
@@ -705,6 +719,10 @@ export default function ShapeViewer({
   useEffect(() => {
     onCageClosedChangeRef.current = onCageClosedChange;
   }, [onCageClosedChange]);
+
+  useEffect(() => {
+    onAssemblyNameChangeRef.current = onAssemblyNameChange;
+  }, [onAssemblyNameChange]);
 
   useEffect(() => {
     onCanUndoChangeRef.current = onCanUndoChange;
@@ -937,6 +955,7 @@ export default function ShapeViewer({
 
     const reportCageStatus = () => {
       onCageClosedChangeRef.current?.(hasCycle(graphRef.current));
+      onAssemblyNameChangeRef.current?.(describeAssembly(graphRef.current.nodes, graphRef.current.connections));
     };
 
     /** The OTHER face of `spec` (besides `faceIndex`) that also borders the edge (vi,vj) of `faceIndex`'s own cycle, or null (shouldn't happen for a valid manifold solid). */

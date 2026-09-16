@@ -39,6 +39,12 @@ export default function Home() {
   const [nodeSelection, setNodeSelection] = useState<NodeSelection | null>(null);
   const [rewriteNote, setRewriteNote] = useState<string | null>(null);
   const [cageClosed, setCageClosed] = useState(false);
+  // A running, always-on description of the current assembly (see
+  // app/lib/assemblyNaming.ts) -- direct user request: "a running total
+  // name so far" as pieces get attached. Independent of node selection,
+  // so it stays visible in the persistent header row even with nothing
+  // selected.
+  const [assemblyName, setAssemblyName] = useState('');
   const [canUndo, setCanUndo] = useState(false);
   // Bumped whenever the DIRECT wheel (below, opened via CornerHudWheel's
   // medallion) picks "Full Catalog" -- see ShapeBrowser's own
@@ -284,7 +290,17 @@ export default function Home() {
       }}
     >
       <header className="flex items-start justify-between px-6 py-4">
-        <div>
+        {/* flex-shrink-0: a real regression found live (persistence.spec.ts,
+            radial-projection.spec.ts): with no shrink protection, adding
+            enough content to the right-side controls div below (e.g. the
+            assembly-name label) squeezed this block's own available width
+            enough that its subtitle <p> -- ordinary wrapping text, no
+            nowrap of its own -- reflowed onto a second line, growing the
+            whole header's height and shifting the canvas below it. This
+            block's own two lines of text should never depend on how much
+            is on the right; it's the right side's job to fit its own
+            space (via its own truncation), not this one's job to shrink. */}
+        <div className="shrink-0">
           {/* Same green-split treatment as WelcomeOverlay's <h1> --
               "Polyhedra" pale, "verse" the brand green -- rather than
               plain zinc-50, matching the identity established there and
@@ -297,6 +313,23 @@ export default function Home() {
           </p>
         </div>
         <div className="flex items-center gap-2">
+          {assemblyName && (
+            // whitespace-nowrap + truncate: a long generic summary must
+            // never wrap onto a second line -- real regression found
+            // live (persistence.spec.ts): wrapping grows the header's
+            // own height, shifting the canvas (and every pixel-position
+            // a test or the user has already noted) downward on the
+            // very next render. Truncating with an ellipsis keeps the
+            // header a fixed single-line height regardless of how
+            // elaborate the assembly's own description gets.
+            <span
+              className="max-w-xs truncate whitespace-nowrap text-sm font-medium"
+              style={{ color: '#a9f795' }}
+              title={assemblyName}
+            >
+              {assemblyName}
+            </span>
+          )}
           {cageClosed && (
             <span className="rounded-full bg-fuchsia-900 px-3 py-1 text-xs font-medium text-fuchsia-200">
               Closed cage!
@@ -342,7 +375,7 @@ export default function Home() {
           <button
             type="button"
             onClick={() => setChangelogOpen(true)}
-            className="rounded-full px-4 py-1.5 text-sm font-medium transition-colors"
+            className="shrink-0 whitespace-nowrap rounded-full px-4 py-1.5 text-sm font-medium transition-colors"
             style={{ background: '#0e1209', border: '1px solid rgba(71,204,36,.3)', color: '#5ee233' }}
           >
             What&apos;s New
@@ -350,7 +383,7 @@ export default function Home() {
           <button
             type="button"
             onClick={cycleViewMode}
-            className="rounded-full px-4 py-1.5 text-sm font-medium transition-colors"
+            className="shrink-0 whitespace-nowrap rounded-full px-4 py-1.5 text-sm font-medium transition-colors"
             style={{ background: '#0e1209', border: '1px solid rgba(71,204,36,.3)', color: '#5ee233' }}
           >
             View: {VIEW_MODE_LABELS[viewMode]}
@@ -360,7 +393,7 @@ export default function Home() {
             onClick={handleUndo}
             disabled={!canUndo || pending !== null}
             title="Undo the last confirmed attach (single-level -- undoing again does nothing until you attach something new)"
-            className="rounded-full px-4 py-1.5 text-sm font-medium transition-colors disabled:opacity-50"
+            className="shrink-0 whitespace-nowrap rounded-full px-4 py-1.5 text-sm font-medium transition-colors disabled:opacity-50"
             style={{ background: '#0e1209', border: '1px solid rgba(71,204,36,.3)', color: '#5ee233' }}
           >
             Undo
@@ -369,7 +402,7 @@ export default function Home() {
             type="button"
             onClick={handleSave}
             disabled={saveStatus === 'saving' || pending !== null}
-            className="rounded-full px-4 py-1.5 text-sm font-medium transition-colors disabled:opacity-50"
+            className="shrink-0 whitespace-nowrap rounded-full px-4 py-1.5 text-sm font-medium transition-colors disabled:opacity-50"
             style={{ background: '#0e1209', border: '1px solid rgba(71,204,36,.3)', color: '#5ee233' }}
           >
             {saveStatus === 'saving' ? 'Saving…' : 'Save'}
@@ -378,7 +411,7 @@ export default function Home() {
             type="button"
             onClick={handleExport}
             title="Download the current assembly as a JSON file"
-            className="rounded-full px-4 py-1.5 text-sm font-medium transition-colors"
+            className="shrink-0 whitespace-nowrap rounded-full px-4 py-1.5 text-sm font-medium transition-colors"
             style={{ background: '#0e1209', border: '1px solid rgba(71,204,36,.3)', color: '#5ee233' }}
           >
             Export JSON
@@ -708,6 +741,7 @@ export default function Home() {
           onPendingChange={setPending}
           onNodeSelectionChange={setNodeSelection}
           onCageClosedChange={setCageClosed}
+          onAssemblyNameChange={setAssemblyName}
           onCanUndoChange={setCanUndo}
           onFoldConnectionsChange={(has) => {
             setHasFoldConnections(has);

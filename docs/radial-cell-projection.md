@@ -12,14 +12,14 @@ Radial Cell Projection (RCP) is a computational method conceived and developed b
 
 RCP begins with a regular three-dimensional polyhedral cell and constructs a four-dimensional cell complex by recursively reflecting copies of that cell across its faces in four-dimensional space. The construction is **cell-first**: the three-dimensional seed cell, its faces, their orientations, and a verified dihedral parameter are supplied; the four-dimensional embedding, face-positioned reflection hyperplanes, neighbouring cell transforms, cell adjacency, closure, and final radial projection are derived by a single generic computational procedure.
 
-Four regular seed cells have been implemented and verified:
+Four regular seed cells have been implemented and verified, one of them — the tetrahedron — admitting three distinct closures of its own (§21.1):
 
-- tetrahedron → 16-cell
+- tetrahedron → 16-cell, 5-cell, or 600-cell (via dualization, §21.3)
 - cube → tesseract
 - octahedron → 24-cell
 - dodecahedron → 120-cell
 
-The resulting complexes contain respectively 16, 8, 24, and 120 congruent three-dimensional cells. Their adjacency degrees are 4, 6, 8, and 12 respectively.
+The resulting complexes contain 16, 5, or 600 congruent three-dimensional cells for the tetrahedron's three closures respectively, and 8, 24, and 120 for the cube, octahedron, and dodecahedron. Their adjacency degrees are 4 (all three tetrahedron closures), 6, 8, and 12 respectively. §21.5 gives the complete, updated table of all six verified closures.
 
 RCP does not claim the discovery of these four-dimensional regular polytopes, nor does it claim the invention of radial projection itself. The contribution described here is the particular cell-first computational formulation in which a regular three-dimensional seed is embedded in four dimensions, its actual face geometry determines origin-centred reflection hyperplanes, the complete four-dimensional complex is generated recursively, finite closure is detected computationally, and the resulting structure is subsequently represented through radial projection into three dimensions.
 
