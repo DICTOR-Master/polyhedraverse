@@ -78,12 +78,14 @@ function buildPiece(id: string, name: string, derive: () => ReturnType<typeof de
  * `HEX_CIRCUMRADIUS`, which for a regular hexagon equals its own edge
  * length too — direct user confirmation, "height same as length and
  * depth of hexagon" — making all 6 lateral faces genuine squares.
- * Unlike the quad-prisms (`miscellaneous/quad-prisms/`), this piece's
- * lateral faces stay NON-attachable (`attachableFaces` left at its
- * default `'caps-only'`) — direct user instruction, 2026-09-17: "dont
- * bother fr U-Hex," since a square hex-spacer face could only ever
- * connect sideways to itself/a cube, unlike a rhombus/kite prism's own
- * lateral squares opening up a genuinely new cross-family attachment.
+ *
+ * `attachableFaces: 'all'` — direct user request, 2026-09-17 ("I didnt
+ * realize Hexagon sides were squares... please make the sides
+ * attachable"), reversing an earlier "dont bother fr U-Hex" call made
+ * before that was noticed. Safe unlike the kite prisms' own rectangle
+ * faces: all 6 here are genuine squares (verified,
+ * `verify:rvcmg-v2-solids`), so none of the edge-midpoint-mirror-axis
+ * limitation `quad-prisms/index.ts`'s own kite pieces hit applies.
  */
 function buildUHexSpacer(): PolyhedronSpec {
   const id = 'RVCMG_V2_UHEX_SPACER';
@@ -93,6 +95,7 @@ function buildUHexSpacer(): PolyhedronSpec {
     faceVertices: UNIVERSAL_HEX_INTERFACE,
     normal: NORMAL,
     height: HEX_CIRCUMRADIUS,
+    attachableFaces: 'all',
   });
   if (problems.length > 0) throw new Error(`${id}: unresolved problems: ${JSON.stringify(problems)}`);
   return spec;

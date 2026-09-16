@@ -19,6 +19,7 @@
 import { POLYHEDRA, POLYHEDRON_IDS } from '../app/lib/polyhedra/index';
 import { MISCELLANEOUS_ADDITION_IDS, GRADED_PYRAMID_ADDITION_IDS } from '../app/lib/polyhedra/miscellaneous';
 import { RVCMG_V2_CONNECTOR_ADDITION_IDS } from '../app/lib/polyhedra/miscellaneous/rvcmg-connectors-v2';
+import { QUAD_PRISM_ADDITION_IDS } from '../app/lib/polyhedra/miscellaneous/quad-prisms';
 import { facesCongruent, isRegularFace, faceRotationalSymmetry, type PolyhedronSpec } from '../app/lib/polyhedra/core';
 
 let failures = 0;
@@ -109,8 +110,15 @@ for (const id of GRADED_PYRAMID_ADDITION_IDS) {
 // the eligibility gate doesn't just exclude everything by accident.
 // v2 has no RD-Hemi piece (direct user instruction, 2026-09-17 -- the
 // hex is no longer tied to a real RD's own native scale), so unlike v1
-// there is no separate "bare dome" case to check here. ---
+// there is no separate "bare dome" case to check here.
+//
+// The 9th piece, the U-Hex spacer, is a genuine exception (direct user
+// request, 2026-09-17: "please make the sides attachable" -- all 6 of
+// its lateral faces are real squares, unlike a kite's own mixed set),
+// so it gets its own block below rather than being forced through the
+// "exactly 2" assumption every tapered piece still satisfies. ---
 for (const id of RVCMG_V2_CONNECTOR_ADDITION_IDS) {
+  if (id === 'RVCMG_V2_UHEX_SPACER') continue;
   const spec = POLYHEDRA[id];
   check(`${id}: has attachableFaceIndices set to exactly 2 faces`, Array.isArray(spec.attachableFaceIndices) && spec.attachableFaceIndices.length === 2);
   const [hexIdx, targetIdx] = spec.attachableFaceIndices ?? [-1, -1];
@@ -120,6 +128,37 @@ for (const id of RVCMG_V2_CONNECTOR_ADDITION_IDS) {
   });
   const targetOptions = attachOptionsFor(id, targetIdx);
   check(`${id}: target port offers at least one real cross-family match (got ${targetOptions.length}: ${targetOptions.slice(0, 3).join(', ')})`, targetOptions.length > 0);
+}
+
+{
+  const id = 'RVCMG_V2_UHEX_SPACER';
+  const spec = POLYHEDRA[id];
+  check(`${id}: has attachableFaceIndices listing all 8 faces (all-square, safe to open)`, JSON.stringify(spec.attachableFaceIndices) === JSON.stringify(Array.from({ length: 8 }, (_, i) => i)));
+  spec.faces.forEach((_, fi) => {
+    check(`${id}: face ${fi} eligibility matches attachableFaceIndices (expected true)`, isFaceEligibleForAttach(spec, fi) === true);
+  });
+  spec.faces.forEach((_, fi) => {
+    const options = attachOptionsFor(id, fi);
+    check(`${id}: face ${fi} offers at least one real cross-family match (got ${options.length}: ${options.slice(0, 3).join(', ')})`, options.length > 0);
+  });
+}
+
+// --- Quad-prism pieces: same real ShapeViewer.tsx eligibility path,
+// not just the direct attachableFaceIndices array check verify-quad-
+// prisms.ts already does -- proving isFaceEligibleForAttach/
+// attachOptionsFor (the actual functions the app calls) agree, and that
+// every OPEN face has a genuine cross-shape match to offer, not just a
+// permissive-looking index list nothing can actually reach. ---
+for (const id of QUAD_PRISM_ADDITION_IDS) {
+  const spec = POLYHEDRA[id];
+  spec.faces.forEach((_, fi) => {
+    const shouldBeEligible = !!spec.attachableFaceIndices?.includes(fi);
+    check(`${id}: face ${fi} eligibility matches attachableFaceIndices (expected ${shouldBeEligible})`, isFaceEligibleForAttach(spec, fi) === shouldBeEligible);
+    if (shouldBeEligible) {
+      const options = attachOptionsFor(id, fi);
+      check(`${id}: open face ${fi} offers at least one real cross-shape match (got ${options.length}: ${options.slice(0, 3).join(', ')})`, options.length > 0);
+    }
+  });
 }
 
 // --- Catalan solids must be completely unaffected: their irregular

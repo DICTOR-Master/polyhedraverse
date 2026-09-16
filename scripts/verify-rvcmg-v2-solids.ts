@@ -130,7 +130,7 @@ for (const { id, derive } of PIECES) {
     const F = spec.faces.length;
     check(`${id}: V=${V} E=${E} F=${F}, Euler's formula holds`, V - E + F === 2);
     check(`${id}: exactly 12 vertices, 18 edges, 8 faces (a hex prism)`, V === 12 && E === 18 && F === 8);
-    check(`${id}: attachableFaceIndices is exactly the two hex caps [0, 1]`, JSON.stringify(spec.attachableFaceIndices) === JSON.stringify([0, 1]));
+    check(`${id}: attachableFaceIndices lists all 8 faces (all 6 laterals are genuine squares, safe to open)`, JSON.stringify(spec.attachableFaceIndices) === JSON.stringify(Array.from({ length: 8 }, (_, i) => i)));
 
     for (const capIndex of [0, 1] as const) {
       const capEdgeLensBuilt = spec.faces[capIndex].map((idx, k) => dist(spec.vertices[idx], spec.vertices[spec.faces[capIndex][(k + 1) % 6]])).sort((a, b) => a - b);

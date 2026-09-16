@@ -14,8 +14,9 @@
  * helpers so the numbers can never drift from what RVCMG already
  * verified. Geometry itself comes from the shared, n-agnostic
  * `polygonPrismSolid.ts` (one level up — also used by the U-Hex spacer
- * piece in `rvcmg-connectors-v2/`, n=6, though that one keeps its own
- * lateral faces non-attachable — see that file's own comment).
+ * piece in `rvcmg-connectors-v2/`, n=6, whose own 6 lateral faces are
+ * ALSO all attachable, all genuine squares, same as this file's own
+ * rhombus prisms).
  *
  * Every face is a real attach port (direct user request, 2026-09-17:
  * "add that please for branching possibilities") — the lateral

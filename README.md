@@ -16,10 +16,13 @@ your browser, nothing to install.
 > transforming, and interconnecting polyhedral forms in three dimensions
 > — and, uniquely, in four.
 
-A browser-based construction kit spanning all 137 convex polyhedra
-across 7 families (Platonic, Archimedean, Johnson, Catalan, prisms,
-antiprisms, and the original Deltahedra set this project started from),
-plus a genuine interactive path into the fourth dimension: **RCP-C2B
+A browser-based construction kit spanning 162 shapes across 8 families
+— the 137 classical convex polyhedra (Platonic, Archimedean, Johnson,
+Catalan, prisms, antiprisms, and the original Deltahedra set this
+project started from) plus a 25-shape "Miscellaneous" family (graded
+pyramids, RVCMG connector pieces, and quad-prism extenders — see "What's
+here now" below) — plus a genuine interactive path into the fourth
+dimension: **RCP-C2B
 (Radial Cell Projection, Click-to-Build)** lets you construct a real
 regular 4-polytope — the 5-cell, tesseract, 16-cell, 24-cell, 120-cell,
 or 600-cell — one 3D cell at a time, built from the actual
@@ -262,6 +265,13 @@ Since then:
   picking a face-attach target. Actions (augment/diminish) and
   Spherical/X-Ray view modes are still deferred — see
   `docs/build-plan.md`'s own sections for the full design record.
+- **4 languages** (`app/lib/i18n.ts`) — English, 日本語, Español, and
+  Français, switchable live via the "Language" button (wheel/HUD chrome
+  and ShapeBrowser). Scoped deliberately to the app's OWN interface
+  strings only (tab labels, facet headers, buttons, empty states) — shape
+  names and family names (Deltahedra, Johnson, etc.) always stay in their
+  original form in every language, the same way a karaoke machine never
+  translates a song title.
 - **4D radial cell projection** (`app/lib/polyhedra/fourD.ts`,
   `app/lib/polyhedra/radialProjection.ts`, full method write-up at
   `docs/radial-cell-projection.md`) — the real 4D system. `fourD.ts`
@@ -342,37 +352,67 @@ Since then:
   pieces stay undistorted at any depth.
 - **RVCMG (Reversible Vertex-Coalescence Morphing Geometry)**
   (`app/lib/rvcmg/`, `docs/RVCMG.md`, `docs/rvcmg-adapter-pieces-spec.md`)
-  — a physical adapter system, not a UI feature: a universal "RD-hemi"
-  joint (a real, non-regular hexagon derived by bisecting this project's
-  own rhombic dodecahedron, mirroring Rhombiverse's own
-  `hemisphereSplit()`) plus 7 shape-specific adapter pieces (triangle,
-  square, pentagon, golden-rhombus, and both real-Catalan (di-/dh-) kite
-  shapes, plus a regular-hexagon piece) that each morph the shared hex
-  interface down to that shape's own face via `coalesce()` — a real,
-  reversible (both directions: 6 points can reduce to 3, or split back
-  out to 12 or any other count) vertex-merge primitive, verified via a
-  dedicated Stage 7 transition-checker across every piece, plus two
-  from-scratch heptagon/octagon constructions proving the split
-  ("multiply") direction directly rather than just asserting divide has
-  an inverse. Every piece is now a real, closed, placeable 3D solid — a
-  tapered, convex wall connecting the hex interface to the target
-  face — including a genuine bare "RD-Hemi" dome piece (an actual half
-  of a rhombic dodecahedron, derived directly from this project's own
-  registered `RHOMBIC_DODECAHEDRON`, not a flat disk) that the 7
-  adapters all plug into. These 7 connector shapes have no external
-  precedent — unlike every other family in this
+  — a physical adapter system, not a UI feature: a shared hex interface
+  plus shape-specific adapter pieces that each morph that hex down to a
+  target face via `coalesce()` — a real, reversible (both directions: 6
+  points can reduce to 3, or split back out to 12 or any other count)
+  vertex-merge primitive, verified via a dedicated Stage 7 transition-
+  checker across every piece, plus two from-scratch heptagon/octagon
+  constructions proving the split ("multiply") direction directly
+  rather than just asserting divide has an inverse. **Redesigned
+  2026-09-17 (v2, the live default)**: the original hex (derived by
+  bisecting this project's own rhombic dodecahedron — a real, non-
+  regular D2h hexagon reaching circumradius 1.0) was up to 1.73x too big
+  to fit inside its own tightest target, a unit-edge triangle, and its
+  2-fold symmetry couldn't align with a triangle's 3-fold symmetry
+  either. v2 replaces it with a small, plain, fully regular hexagon
+  (circumradius = edge = `sqrt(2)/2`, exactly a unit-edge square's own
+  circumradius — chosen so the triangle/square/pentagon tapers are all
+  mild in either direction, not tuned to just the tightest case) and 9
+  pieces built on it: triangle, square, pentagon, golden-rhombus, a new
+  RD-native-rhombus (confirmed genuinely congruent to a real
+  `RHOMBIC_DODECAHEDRON` face — a UHex adapter can now reach a real RD
+  directly, no intermediary dome needed), both real-Catalan (di-/dh-)
+  kite shapes, a regular-hexagon piece, and a plain U-Hex-to-U-Hex
+  spacer prism for lengthening a chain of adapters — whose own 6
+  lateral faces are genuine squares and, like the quad-prism extenders
+  below, real attach ports too, not just its two hex ends. No bare
+  "RD-Hemi" dome in v2 — the hex is no longer tied to a real RD's own
+  native scale. **v1 (the original 7 adapters + bare RD-Hemi) is archived, not
+  deleted** (`rvcmg-connectors-v1-archived/`) — code and tests still
+  pass, but it's no longer part of the live app. These connector shapes
+  have no external precedent — unlike every other family in this
   registry (Platonic, Archimedean, Johnson, Catalan, prisms/antiprisms,
   the Kepler-Poinsot star polyhedra), which all reproduce a known,
   published classification, RVCMG's adapter pieces are an original
   construction of this Polyhedraverse project itself, designed to solve
   a specific real-world physical-connector problem rather than to
   recreate an existing mathematical catalog.
+- **Quad-prism extenders** (`app/lib/polyhedra/miscellaneous/
+  quad-prisms/`, `app/lib/polyhedra/polygonPrismSolid.ts`) — 4 more
+  prism-like pieces: a real Catalan-solid rhombus/kite face (RD-native
+  rhombus, golden rhombus, DI-kite, DH-kite) extruded into a right
+  prism along its own normal, with every lateral face a genuine
+  rectangle (a square where the base's own edge equals the extrusion
+  height). Every face is a real attach port — a cube or another
+  matching piece can attach sideways, not just end-to-end — EXCEPT a
+  kite's own 2 non-square rectangle faces, which stay excluded: their
+  only mirror axes pass through an edge midpoint rather than a vertex,
+  a case the app's own face-attach placement math (which aligns via a
+  vertex-based correspondence) can't handle for ANY pair of such faces,
+  confirmed directly rather than assumed. Building this also surfaced
+  and fixed a real, separate bug in `rotateFaceToMirrorAxis` (`core.ts`,
+  shared by every family): a rhombus has more than one valid mirror-
+  axis start, and the existing tie-break was a no-op for one, so two
+  independently-built rhombus pieces could fail to attach correctly —
+  fixed with a second, purely intrinsic tie-break (smallest interior
+  angle), confirmed via the full exhaustive `verify:face-attach` sweep.
 - **A new "Miscellaneous" registry family** (`app/lib/polyhedra/
   miscellaneous/`, symbol `⌂`) for irregular/graded add-ons that don't
-  belong to one of the classical families — a directory of two
-  sub-groups, each free to grow independently: `pyramids/` (done) and
-  `rvcmg-connectors/` (reserved scaffold for the RVCMG pieces above,
-  once they have real solid geometry). **Graded pyramids**: every
+  belong to one of the classical families — a directory of independent
+  sub-groups: `pyramids/` (done), `rvcmg-connectors-v2/` (the live RVCMG
+  set above), `rvcmg-connectors-v1-archived/` (kept for reference, not
+  in the live app), and `quad-prisms/` (above). **Graded pyramids**: every
   regular-pyramid-capable base already in the registry (triangular,
   square, pentagonal — a regular hexagonal pyramid is geometrically
   impossible, confirmed computationally: 60° is exactly both the
@@ -418,16 +458,20 @@ polyhedraverse/
         fold4.ts         # superseded by RCP-C2B as the live construction method; kept only for backward-compat load/render of old saves
         duoprism.ts      # the 4D Prism (duoprism) construction -- always-exact, any shape, any chaining depth
         gradedPyramids.ts # apex-angle-driven pyramid construction, shared by every graded-pyramid base
+        polygonPrismSolid.ts # shared n-agnostic right-prism builder -- quad-prisms (n=4) and the U-Hex spacer (n=6)
         miscellaneous/   # the "Miscellaneous" family (symbol: house glyph) -- irregular/graded add-ons
-          index.ts         # combines the two sub-groups below into MISCELLANEOUS_ADDITIONS
+          index.ts         # combines every sub-group below into MISCELLANEOUS_ADDITIONS
           pyramids/        # graded pyramids -- 3 bases x 4 grades, done
-          rvcmg-connectors/ # the 7 RVCMG adapter pieces + the bare RD-Hemi dome -- real 3D solids, done
+          rvcmg-connectors-v2/         # the LIVE 9 RVCMG adapter pieces, on the new universal hex -- done
+          rvcmg-connectors-v1-archived/ # the original 7 adapters + bare RD-Hemi, superseded but kept intact
+          quad-prisms/     # 4 prism-like extenders (RD-/golden-rhombus, DI-/DH-kite) -- done
         index.ts         # combined POLYHEDRA / POLYHEDRON_IDS across every family
       rvcmg/             # Reversible Vertex-Coalescence Morphing Geometry -- see docs/RVCMG.md
-        hemiRdInterface.ts # the shared RD-hemi hex joint, derived from POLYHEDRA.RHOMBIC_DODECAHEDRON
+        hemiRdInterface.ts # the ARCHIVED v1 hex joint, derived from POLYHEDRA.RHOMBIC_DODECAHEDRON
+        universalHexInterface.ts # the LIVE v2 hex joint -- a plain regular hexagon, not derived from any solid
         coalesce.ts / separate.ts / splitVertex.ts # the divide / undo-one-divide / multiply primitives
         stateGraph.ts / morph.ts / verify.ts # traversal, smooth preview, Stage 7 transition verification
-        adapters/          # the 7 shape-specific adapter pieces + shared.ts (assignTargetAngles/fitTargetPolygon)
+        adapters/          # every shape-specific adapter piece (both v1 and v2) + shared.ts (assignTargetAngles/fitTargetPolygon)
         split-demos/       # heptagon/octagon -- real proof of the "multiply" (split) direction
       assembly.ts        # the real {nodes, connections} graph + validation (vertex-, face-, and fold4-kind); ASSEMBLY_STORAGE_KEY for localStorage save/load
       graph.ts           # subtree/cycle graph logic (pure, no three.js)
@@ -507,10 +551,21 @@ but never in production, replaced by browser localStorage).
 `docs/RVCMG.md` is the normative RVCMG spec (author James Baker),
 updated in place once the described system was actually built.
 `docs/rvcmg-adapter-pieces-spec.md` is the working record of building
-it: the hemi-RD hex interface, all 7 adapter pieces plus the bare
-RD-Hemi dome as real, closed, placeable 3D solids, the heptagon/octagon
-split-direction proofs, the Miscellaneous family (graded pyramids +
-RVCMG connectors), and the two face-attach UX/eligibility fixes above.
+it: the original hemi-RD hex interface, all 7 v1 adapter pieces plus
+the bare RD-Hemi dome as real, closed, placeable 3D solids, the
+heptagon/octagon split-direction proofs, the Miscellaneous family
+(graded pyramids + RVCMG connectors), the two face-attach UX/
+eligibility fixes above, and — prepended at the top — the full v2
+redesign record: why the original hex was replaced, the new sizing
+derivation, and the quad-prism extenders built alongside it.
+
+Production hardening: `next.config.ts` sets the standard security
+headers (HSTS, CSP, X-Content-Type-Options, X-Frame-Options,
+Referrer-Policy, Permissions-Policy) — tailored to what this app
+actually does (checked directly, not copied from a generic template):
+no `eval`/Web Workers anywhere in `app/`, so the CSP omits
+`unsafe-eval`/`worker-src` entirely rather than including them "just in
+case."
 
 ## Contributing
 

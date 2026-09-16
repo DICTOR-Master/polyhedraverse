@@ -309,7 +309,7 @@ export default function Home() {
             Polyhedra<span style={{ color: '#47cc24' }}>verse</span>
           </h1>
           <p className="text-sm" style={{ color: '#5ee233', opacity: 0.8 }}>
-            137 shapes across 7 families — vertex ball-joints and face-to-face connections
+            162 shapes across 8 families — vertex ball-joints and face-to-face connections
           </p>
         </div>
         <div className="flex items-center gap-2">

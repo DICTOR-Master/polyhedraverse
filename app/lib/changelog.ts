@@ -15,6 +15,15 @@ export interface ChangelogDay {
 
 export const CHANGELOG: ChangelogDay[] = [
   {
+    date: '2026-09-17',
+    entries: [
+      'Redesigned RVCMG\'s shared connector joint: the original hex interface was up to 1.73x too big to fit inside its own tightest target (a unit-edge triangle), so it\'s been replaced with a smaller, fully regular hexagon sized to balance the triangle, square, and pentagon connectors instead of favoring the tightest one. 9 pieces now build on it — the original 7 plus two new ones: a rhombus piece that can now attach directly to a real Rhombic Dodecahedron face (no intermediary dome needed), and a plain hex-to-hex spacer for lengthening a chain of connectors. The original 7-piece set (plus its bare dome piece) is kept intact for reference but no longer appears in the catalog.',
+      'Added 4 prism-like connector pieces (RD-rhombus, golden-rhombus, DI-kite, DH-kite): a real Catalan-solid face extruded into a rectangular- or square-sided prism. Most faces on these — and on the new hex spacer above — are now real attach points on every side, not just the two ends, so a cube or another matching piece can attach sideways for branching structures. (A kite piece\'s own 2 non-square side faces stay off-limits — a real placement limitation for that specific shape, found while wiring this up, not yet fixed.)',
+      'Fixed the header\'s shape count, which had quietly gone stale: 162 shapes across 8 families, not 137 across 7 — the "Miscellaneous" family (graded pyramids + RVCMG connectors + the new prism pieces above) wasn\'t being counted.',
+      'Hardened the deployed site\'s security headers (HSTS, Content-Security-Policy, and friends) — a behind-the-scenes change with no visible effect on using the app.',
+    ],
+  },
+  {
     date: '2026-09-16',
     entries: [
       'Added a running assembly name: build up an ordinary 3D structure and see it described live — the shape you started with, plus every piece attached to it grouped by type and how it\'s joined. A small, hand-curated set of recognized builds (starting with "Tetrahedral Star" — a tetrahedron with a sharp pyramid on every face) get their own name; everything else gets an honest, always-accurate description.',

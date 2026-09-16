@@ -22,6 +22,7 @@ export const metadata: Metadata = {
   openGraph: {
     title,
     description,
+    locale: "en_US",
     images: [{ url: "/brand/icon.png", width: 600, height: 600, alt: "Polyhedraverse" }],
   },
   twitter: {
