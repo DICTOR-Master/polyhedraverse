@@ -9,31 +9,44 @@ import type { Assembly } from '../../app/lib/assembly';
  * projected geometry shell 2+ already uses (not the superseded
  * rigid-rotation open/closed toggle -- see docs/radial-cell-projection.md
  * and the RCP-C2B UI plan's own revision history for why that toggle
- * never actually looked 4D and was replaced). A per-root "3D"/"4D" view
- * toggle switches EVERY built shell-1 cell between that real projected
- * geometry and an ordinary undistorted flush-attached copy of the seed.
- * scripts/verify-rcp-build.ts already exhaustively checks the underlying
- * geometry (Euler validity, planarity, connector rebuilding); this file
- * checks the UI wires up to it correctly, that switching views actually
- * changes the PERSISTED graph (not just a live-only visual, which is
- * exactly the bug this replaced), and that a real save/load round trip
- * preserves both the built graph and the chosen view.
+ * never actually looked 4D and was replaced). A per-root "Open"/"Closed"
+ * view toggle switches EVERY built shell-1 cell between that real
+ * projected geometry and an ordinary undistorted flush-attached copy of
+ * the seed. scripts/verify-rcp-build.ts already exhaustively checks the
+ * underlying geometry (Euler validity, planarity, connector rebuilding);
+ * this file checks the UI wires up to it correctly, that switching views
+ * actually changes the PERSISTED graph (not just a live-only visual,
+ * which is exactly the bug this replaced), and that a real save/load
+ * round trip preserves both the built graph and the chosen view.
+ *
+ * A MAIN "3D / 4D" toggle (direct user feedback: showing every ordinary
+ * control -- Delete, Attach via face, Attach via Duoprism -- alongside
+ * every RCP-C2B build control at once was "too busy") gates which
+ * control set is visible for an RCP-C2B-eligible node: "3D" shows the
+ * ordinary controls, "4D" starts a build (if none exists yet) and shows
+ * only the RCP-C2B controls. This is a genuinely different toggle from
+ * the per-root "Open/Closed" one above (renamed FROM "3D/4D" specifically
+ * so the two wouldn't collide) -- the main toggle is what every test
+ * below clicks to begin a build in the first place.
  */
 test.beforeEach(async ({ page }) => {
   await page.goto('/');
   await page.waitForTimeout(500);
 });
 
-test('CUBE builds its tesseract one cell at a time, then shell-by-shell, with a real, persisted 3D/4D view toggle', async ({ page }) => {
+/** Clicks the MAIN 3D/4D mode toggle's "4D" button to begin (or switch into) an RCP-C2B build -- the "Build via RCP-C2B…" plain button no longer exists. */
+async function clickMain4D(page: import('@playwright/test').Page) {
+  await page.getByRole('button', { name: '4D', exact: true }).click();
+}
+
+test('CUBE builds its tesseract one cell at a time, then shell-by-shell, with a real, persisted Open/Closed view toggle', async ({ page }) => {
   await resetTo(page, 'CUBE');
   const { cx, cy } = await getCanvasCenter(page);
   await page.mouse.click(cx, cy);
   await expect(page.locator('text=/Selected CUBE node/')).toBeVisible();
 
   // CUBE has exactly one real closure (tesseract) -- no picker, immediate begin.
-  const buildBtn = page.getByRole('button', { name: 'Build via RCP-C2B…' });
-  await expect(buildBtn).toBeVisible();
-  await buildBtn.click();
+  await clickMain4D(page);
 
   const addCellBtn = page.getByRole('button', { name: /Add next cell/ });
   await expect(addCellBtn).toBeVisible();
@@ -53,11 +66,11 @@ test('CUBE builds its tesseract one cell at a time, then shell-by-shell, with a 
   // Only shell 1 remains built -- "Remove last shell" would target it, disabled per the plan's own scope.
   await expect(removeShellBtn).toBeDisabled();
 
-  // The 3D/4D view toggle appeared once shell 1 has at least one cell.
-  const view3DBtn = page.getByRole('button', { name: '3D', exact: true });
-  const view4DBtn = page.getByRole('button', { name: '4D', exact: true });
-  await expect(view3DBtn).toBeVisible();
-  await expect(view4DBtn).toBeVisible();
+  // The Open/Closed view toggle appeared once shell 1 has at least one cell.
+  const openBtn = page.getByRole('button', { name: 'Open', exact: true });
+  const closedBtn = page.getByRole('button', { name: 'Closed', exact: true });
+  await expect(openBtn).toBeVisible();
+  await expect(closedBtn).toBeVisible();
 
   // Rigorous check (this is exactly the bug the superseded toggle had):
   // switching the view must actually change the PERSISTED transforms,
@@ -66,9 +79,9 @@ test('CUBE builds its tesseract one cell at a time, then shell-by-shell, with a 
   await page.getByRole('button', { name: 'Save', exact: true }).click();
   await expect(page.locator('text=Saved')).toBeVisible();
   const savedDefault = await getSavedAssembly(page);
-  expect(savedDefault.nodes.find((n) => n.rcpPolytope)?.rcpPolytope?.view3D).toBe(true); // 3D is the default (direct user feedback)
+  expect(savedDefault.nodes.find((n) => n.rcpPolytope)?.rcpPolytope?.view3D).toBe(true); // Open (3D) is the default (direct user feedback)
 
-  await view4DBtn.click();
+  await closedBtn.click();
   await page.waitForTimeout(200);
   await page.getByRole('button', { name: 'Save', exact: true }).click();
   await expect(page.locator('text=Saved')).toBeVisible();
@@ -83,26 +96,26 @@ test('CUBE builds its tesseract one cell at a time, then shell-by-shell, with a 
     const posDiff = Math.hypot(...node4D.transform.position.map((v, i) => v - nodeDefault.transform.position[i]));
     if (posDiff > 1e-6) anyTransformDiffers = true;
   }
-  expect(anyTransformDiffers, 'switching 3D/4D must change at least one real, persisted node transform').toBe(true);
+  expect(anyTransformDiffers, 'switching Open/Closed must change at least one real, persisted node transform').toBe(true);
 
   await page.screenshot({ path: 'test-results/rcp-build-cube-4d.png' });
-  await view3DBtn.click();
+  await openBtn.click();
   await page.waitForTimeout(200);
   await page.screenshot({ path: 'test-results/rcp-build-cube-3d.png' });
 
-  // Build shell 2 (the single remaining far cube) while shell 1 is in "3D"
-  // -- shell 2's own cells are permanently anchored to shell 1's "4D"
+  // Build shell 2 (the single remaining far cube) while shell 1 is Open
+  // -- shell 2's own cells are permanently anchored to shell 1's Closed
   // position (buildNextRcpShell's own comment), so this must auto-force
-  // shell 1 back to "4D" first rather than leaving the two disconnected
+  // shell 1 back to Closed first rather than leaving the two disconnected
   // (real bug found live: "wrong artifacts... in later cycles"). The
   // toggle itself stays VISIBLE but becomes disabled from here on (real
   // user frustration otherwise: "4D feature buttons just disappear of
   // their own accord") -- it would only ever break that anchoring now.
   await buildShellBtn.click();
   await page.waitForTimeout(200);
-  await expect(view3DBtn).toBeVisible();
-  await expect(view3DBtn).toBeDisabled();
-  await expect(view4DBtn).toBeDisabled();
+  await expect(openBtn).toBeVisible();
+  await expect(openBtn).toBeDisabled();
+  await expect(closedBtn).toBeDisabled();
   await expect(page.getByRole('button', { name: 'Build next shell' })).toBeDisabled(); // tesseract is now fully closed (8/8 cells)
   await expect(page.getByRole('button', { name: 'Remove last shell' })).toBeEnabled();
 
@@ -116,12 +129,12 @@ test('CUBE builds its tesseract one cell at a time, then shell-by-shell, with a 
 
   // Remove shell 2 -- the toggle becomes ENABLED again (back to just
   // shell 1), but view3D itself stays wherever building shell 2 left it
-  // (forced to "4D") rather than silently reverting to whatever it was
+  // (forced to Closed) rather than silently reverting to whatever it was
   // before that forced switch.
   await page.getByRole('button', { name: 'Remove last shell' }).click();
   await page.waitForTimeout(200);
-  await expect(view3DBtn).toBeEnabled();
-  await expect(view4DBtn).toBeEnabled();
+  await expect(openBtn).toBeEnabled();
+  await expect(closedBtn).toBeEnabled();
   await page.getByRole('button', { name: 'Save', exact: true }).click();
   await expect(page.locator('text=Saved')).toBeVisible();
   const afterRemove = await getSavedAssembly(page);
@@ -143,36 +156,36 @@ test('CUBE builds its tesseract one cell at a time, then shell-by-shell, with a 
 
 /**
  * Real bug found live: shell 2+ cells are permanently anchored to shell
- * 1's "4D" (real, warped) position -- if shell 1 stays in "3D" (the
+ * 1's Closed (real, warped) position -- if shell 1 stays Open (the
  * ordinary flush self-attach, a genuinely different position) while
  * shell 2 is built, shell 2 ends up floating disconnected from shell 1
  * once rendered, since it was baked against a shell-1 layout that no
- * longer exists. Covers both directions: building shell 2 from "3D"
- * auto-forces "4D" first, and the toggle becomes DISABLED (never hidden
- * -- real user frustration otherwise: "4D feature buttons just disappear
- * of their own accord") once any shell 2+ cell exists, re-enabling once
- * shell 2 is removed again.
+ * longer exists. Covers both directions: building shell 2 while Open
+ * auto-forces Closed first, and the toggle becomes DISABLED (never
+ * hidden -- real user frustration otherwise: "4D feature buttons just
+ * disappear of their own accord") once any shell 2+ cell exists,
+ * re-enabling once shell 2 is removed again.
  */
-test('DODECAHEDRON: building shell 2 while shell 1 is in "3D" auto-forces "4D", and the toggle locks (stays visible, disabled) until shell 2 is removed', async ({ page }) => {
+test('DODECAHEDRON: building shell 2 while shell 1 is Open auto-forces Closed, and the toggle locks (stays visible, disabled) until shell 2 is removed', async ({ page }) => {
   await resetTo(page, 'DODECAHEDRON');
   const { cx, cy } = await getCanvasCenter(page);
   await page.mouse.click(cx, cy);
-  await page.getByRole('button', { name: 'Build via RCP-C2B…' }).click();
+  await clickMain4D(page);
   for (let i = 0; i < 12; i++) {
     await page.getByRole('button', { name: new RegExp(`Add next cell \\(${i} / 12\\)`) }).click();
     await page.waitForTimeout(100);
   }
-  // 3D is the default -- confirm we start there.
-  const view3DBtn = page.getByRole('button', { name: '3D', exact: true });
-  const view4DBtn = page.getByRole('button', { name: '4D', exact: true });
-  await expect(view3DBtn).toBeVisible();
-  await expect(view3DBtn).toBeEnabled();
+  // Open (3D) is the default -- confirm we start there.
+  const openBtn = page.getByRole('button', { name: 'Open', exact: true });
+  const closedBtn = page.getByRole('button', { name: 'Closed', exact: true });
+  await expect(openBtn).toBeVisible();
+  await expect(openBtn).toBeEnabled();
 
   await page.getByRole('button', { name: 'Build next shell' }).click();
   await page.waitForTimeout(300);
-  await expect(view3DBtn).toBeVisible();
-  await expect(view3DBtn).toBeDisabled();
-  await expect(view4DBtn).toBeDisabled();
+  await expect(openBtn).toBeVisible();
+  await expect(openBtn).toBeDisabled();
+  await expect(closedBtn).toBeDisabled();
 
   // The dodecahedron's shell 2 is a large batch (dozens of cells) --
   // occasionally the very first Save click lands while the browser is
@@ -190,8 +203,8 @@ test('DODECAHEDRON: building shell 2 while shell 1 is in "3D" auto-forces "4D", 
 
   await page.getByRole('button', { name: 'Remove last shell' }).click();
   await page.waitForTimeout(200);
-  await expect(view3DBtn).toBeEnabled();
-  await expect(view4DBtn).toBeEnabled();
+  await expect(openBtn).toBeEnabled();
+  await expect(closedBtn).toBeEnabled();
 });
 
 test('a shape with more than one real closure (D4) offers a picker, including 600-cell', async ({ page }) => {
@@ -200,7 +213,7 @@ test('a shape with more than one real closure (D4) offers a picker, including 60
   await page.mouse.click(cx, cy);
   await expect(page.locator('text=/Selected D4 node/')).toBeVisible();
 
-  await page.getByRole('button', { name: 'Build via RCP-C2B…' }).click();
+  await clickMain4D(page);
   await expect(page.locator('text=/Build which 4-polytope/')).toBeVisible();
   await expect(page.getByRole('button', { name: '5-cell' })).toBeVisible();
   await expect(page.getByRole('button', { name: '16-cell' })).toBeVisible();
@@ -217,19 +230,19 @@ test('a shape with more than one real closure (D4) offers a picker, including 60
  * unavoidably non-regular (the 120-cell's own vertex-transitivity means
  * no dual cell is any less distorted than any other), so unlike every
  * other closure it has no real external registry shape to match -- the
- * ROOT itself is built from cell 0's own real geometry in "4D" (the
+ * ROOT itself is built from cell 0's own real geometry when Closed (the
  * default), and only falls back to the plain, perfectly regular
- * tetrahedron in "3D". This checks the root's own mesh actually swaps
+ * tetrahedron when Open. This checks the root's own mesh actually swaps
  * with the toggle (unlike every other closure, where only the children
  * do), that shell 1 still closes correctly, and that the choice survives
  * a real save/reload.
  */
-test('D4 -> 600-cell: shell 1 closes correctly, and the ROOT itself (not just children) toggles 3D/4D', async ({ page }) => {
+test('D4 -> 600-cell: shell 1 closes correctly, and the ROOT itself (not just children) toggles Open/Closed', async ({ page }) => {
   await resetTo(page, 'D4');
   const { cx, cy } = await getCanvasCenter(page);
   await page.mouse.click(cx, cy);
   await expect(page.locator('text=/Selected D4 node/')).toBeVisible();
-  await page.getByRole('button', { name: 'Build via RCP-C2B…' }).click();
+  await clickMain4D(page);
   await page.getByRole('button', { name: '600-cell' }).click();
 
   for (let i = 0; i < 4; i++) {
@@ -238,20 +251,20 @@ test('D4 -> 600-cell: shell 1 closes correctly, and the ROOT itself (not just ch
   }
   await expect(page.getByRole('button', { name: /Add next cell/ })).toHaveCount(0);
 
-  // Toggle to 3D and back -- the root's own mesh must survive both
-  // swaps without erroring (fixture's own console-error auto-check) and
-  // the shape stays selected/interactable throughout.
-  await page.getByRole('button', { name: '3D', exact: true }).click();
+  // Toggle Open and back to Closed -- the root's own mesh must survive
+  // both swaps without erroring (fixture's own console-error auto-check)
+  // and the shape stays selected/interactable throughout.
+  await page.getByRole('button', { name: 'Open', exact: true }).click();
   await page.waitForTimeout(200);
   await expect(page.locator('text=/Selected D4 node/')).toBeVisible();
-  await page.getByRole('button', { name: '4D', exact: true }).click();
+  await page.getByRole('button', { name: 'Closed', exact: true }).click();
   await page.waitForTimeout(200);
   await expect(page.locator('text=/Selected D4 node/')).toBeVisible();
 
-  // Save while in "3D", reload, and confirm the root's own saved
+  // Save while Open, reload, and confirm the root's own saved
   // rcpPolytope.view3D survived (the exact thing the original, simpler
   // toggle never did for any closure).
-  await page.getByRole('button', { name: '3D', exact: true }).click();
+  await page.getByRole('button', { name: 'Open', exact: true }).click();
   await page.waitForTimeout(200);
   await page.getByRole('button', { name: 'Save', exact: true }).click();
   await expect(page.locator('text=Saved')).toBeVisible();
@@ -267,12 +280,16 @@ test('D4 -> 600-cell: shell 1 closes correctly, and the ROOT itself (not just ch
   expect(reloaded.nodes.find((n) => n.rcpPolytope)?.rcpPolytope?.view3D).toBe(true);
 });
 
-test('a non-4D-capable shape (RHOMBIC_DODECAHEDRON) never offers Build via RCP-C2B', async ({ page }) => {
+test('a non-4D-capable shape (RHOMBIC_DODECAHEDRON) never offers the RCP-C2B main toggle', async ({ page }) => {
   await resetTo(page, 'RHOMBIC_DODECAHEDRON');
   const { cx, cy } = await getCanvasCenter(page);
   await page.mouse.click(cx, cy);
   await expect(page.locator('text=/Selected RHOMBIC_DODECAHEDRON node/')).toBeVisible();
-  await expect(page.getByRole('button', { name: 'Build via RCP-C2B…' })).toHaveCount(0);
+  // Neither the main mode toggle nor any RCP-C2B control renders at all
+  // for a non-4D-capable shape -- checking "4D" specifically (not "3D",
+  // which nothing else on this panel happens to say) is enough to prove
+  // the whole toggle is absent.
+  await expect(page.getByRole('button', { name: '4D', exact: true })).toHaveCount(0);
 });
 
 /**
@@ -331,30 +348,33 @@ test('an old save using the legacy rpcPolytope/rpc4d spellings still loads corre
   // The root is still recognized as a real RCP-C2B root (migrated
   // rcpPolytope) with its rcp4d child correctly counted -- if the
   // migration failed, this would just look like an ordinary CUBE with
-  // no RCP-C2B controls at all.
+  // no RCP-C2B controls at all. The main mode toggle defaults to "4D"
+  // whenever a build already exists (page.tsx's own rcpMainMode4D reset
+  // logic), so the build controls (including this count) are visible
+  // immediately, with no extra click needed.
   const cellCount = page.locator('text=/Cells: /');
   await expect(cellCount).toBeVisible({ timeout: 3000 });
   await expect(cellCount).toHaveText('Cells: 2 / 8');
 });
 
 /**
- * The "Coordinates" overlay shows each built cell's own real generating
- * coordinate (a purple point + line-from-center -- see
+ * The "RCP-Coordinates" overlay shows each built cell's own real
+ * generating coordinate (a purple point + line-from-center -- see
  * RcpComplex.cells[].coordPoint3D's own doc comment for why this is the
  * literal generating point, not just the vertex centroid) as a plain
- * on/off toggle, independent of the 3D/4D view. Also covers a real bug
- * found live alongside it: an OrbitControls camera-rotate drag still
+ * on/off toggle, independent of the Open/Closed view. Also covers a real
+ * bug found live alongside it: an OrbitControls camera-rotate drag still
  * fires a native 'click' at wherever the pointer ends up, which used to
  * run the selection logic and could silently deselect the current node
  * -- every RCP-C2B control (including this new toggle) would just
  * disappear (real user report: "why do 4D buttons just vanish... when
  * you touch or turn object").
  */
-test('the "Coordinates" overlay toggles on/off, and orbiting the camera no longer deselects the node', async ({ page }) => {
+test('the "RCP-Coordinates" overlay toggles on/off, and orbiting the camera no longer deselects the node', async ({ page }) => {
   await resetTo(page, 'CUBE');
   const { cx, cy } = await getCanvasCenter(page);
   await page.mouse.click(cx, cy);
-  await page.getByRole('button', { name: 'Build via RCP-C2B…' }).click();
+  await clickMain4D(page);
   for (let i = 0; i < 6; i++) {
     await page.getByRole('button', { name: new RegExp(`Add next cell \\(${i} / 6\\)`) }).click();
     await page.waitForTimeout(100);
@@ -397,7 +417,7 @@ test('the "RCP-Coordinates" preview survives every build/remove stage without er
   await resetTo(page, 'CUBE');
   const { cx, cy } = await getCanvasCenter(page);
   await page.mouse.click(cx, cy);
-  await page.getByRole('button', { name: 'Build via RCP-C2B…' }).click();
+  await clickMain4D(page);
   await page.getByRole('button', { name: 'RCP-Coordinates' }).click();
   await page.waitForTimeout(200);
 
@@ -414,4 +434,39 @@ test('the "RCP-Coordinates" preview survives every build/remove stage without er
   await page.getByRole('button', { name: 'Remove last shell' }).click();
   await page.waitForTimeout(300);
   await expect(page.getByRole('button', { name: 'Build next shell' })).toBeEnabled(); // preview reappears
+});
+
+/**
+ * The MAIN 3D/4D mode toggle itself (direct user feedback: "screen is
+ * too busy... BUILD 3D/4D should be main toggle on 4D capable"): "3D"
+ * shows this node's ordinary controls (Delete, Attach via face, Attach
+ * via Duoprism), "4D" shows only the RCP-C2B build controls -- never
+ * both at once. Delete stays visible in both modes by direct user
+ * decision (you can remove the whole structure without switching back
+ * to 3D first).
+ */
+test('the main 3D/4D toggle splits ordinary controls from RCP-C2B controls, never showing both', async ({ page }) => {
+  await resetTo(page, 'CUBE');
+  const { cx, cy } = await getCanvasCenter(page);
+  await page.mouse.click(cx, cy);
+  await expect(page.locator('text=/Selected CUBE node/')).toBeVisible();
+
+  // Default is 3D: ordinary controls visible, no RCP-C2B controls yet.
+  await expect(page.getByRole('button', { name: 'Delete' })).toBeVisible();
+  await expect(page.getByRole('button', { name: /Add next cell/ })).toHaveCount(0);
+  await expect(page.getByRole('button', { name: 'RCP-Coordinates' })).toHaveCount(0);
+
+  await clickMain4D(page);
+  // 4D: RCP-C2B controls visible, ordinary attach controls gone, Delete stays.
+  await expect(page.getByRole('button', { name: 'Delete' })).toBeVisible();
+  await expect(page.getByRole('button', { name: /Add next cell/ })).toBeVisible();
+  await expect(page.getByRole('button', { name: 'Attach via face…' })).toHaveCount(0);
+  await expect(page.getByRole('button', { name: 'Attach via Duoprism…' })).toHaveCount(0);
+
+  // Switching back to 3D hides the RCP-C2B controls again -- the build
+  // itself isn't lost, just not shown (switching back to 4D would reveal
+  // it again, unlike a plain page.tsx re-render).
+  await page.getByRole('button', { name: '3D', exact: true }).click();
+  await expect(page.getByRole('button', { name: /Add next cell/ })).toHaveCount(0);
+  await expect(page.getByRole('button', { name: 'Delete' })).toBeVisible();
 });

@@ -170,9 +170,20 @@ export default function Home() {
   // state when a prop changes), not in an effect -- avoids the extra
   // render-then-effect-then-render cascade a useEffect version would cause.
   const [rcpSelectionTrackedId, setRcpSelectionTrackedId] = useState<string | null>(null);
+  // The MAIN 3D/4D mode switch for an RCP-C2B-eligible node: "3D" shows
+  // this node's ordinary, ANY-shape controls (Delete stays visible in
+  // both modes -- direct user decision); "4D" shows only the RCP-C2B
+  // build controls. Direct user feedback: showing both sets of controls
+  // together read as "too busy." Defaults to whichever mode the node is
+  // actually in (4D once a real build already exists, 3D otherwise) --
+  // distinct from `rcpRoot.view3D` (renamed "Open/Closed" in the UI
+  // below), which is about how shell-1 cells RENDER, not which controls
+  // are visible.
+  const [rcpMainMode4D, setRcpMainMode4D] = useState(false);
   if ((nodeSelection?.nodeId ?? null) !== rcpSelectionTrackedId) {
     setRcpSelectionTrackedId(nodeSelection?.nodeId ?? null);
     setRcpPickerOpen(false);
+    setRcpMainMode4D(!!nodeSelection?.rcpRoot);
   }
 
   const handleSave = async () => {
@@ -431,7 +442,13 @@ export default function Home() {
             >
               Delete
             </button>
-            {nodeSelection.faceAttachOptions.length > 0 && (
+            {/* Ordinary, single-shape controls -- hidden while an
+                RCP-C2B-eligible node is in "4D" mode (direct user
+                feedback: showing these alongside the build controls was
+                "too busy"). Delete itself (above) stays visible in both
+                modes by direct user decision -- you can always remove
+                the whole structure without switching back to 3D first. */}
+            {!(nodeSelection.rcpBuildEligible && rcpMainMode4D) && nodeSelection.faceAttachOptions.length > 0 && (
               <button
                 type="button"
                 onClick={() => openPicker('faceAttach')}
@@ -445,7 +462,7 @@ export default function Home() {
                 Attach via face…
               </button>
             )}
-            {nodeSelection.faceDuoprismEligible && (
+            {!(nodeSelection.rcpBuildEligible && rcpMainMode4D) && nodeSelection.faceDuoprismEligible && (
               // 4D Prism (duoprism) construction: same eligibility as
               // 4D fold, but a structurally different, always-exact
               // attach (a flat extrusion, no angular defect to close —
@@ -472,8 +489,43 @@ export default function Home() {
                 distinct from amber (ordinary)/gold (4D-capable badge)/
                 teal (duoprism)/red (delete) — a genuinely new family so
                 it reads as its own construction mode, not a variant of
-                an existing one. */}
-            {nodeSelection.rcpBuildEligible && !nodeSelection.rcpRoot && (
+                an existing one.
+
+                The MAIN 3D/4D mode switch: "3D" shows the ordinary
+                controls above; "4D" starts a build (if none exists yet
+                for this root) and shows only the RCP-C2B controls below.
+                Not the same toggle as "Open/Closed" further down, which
+                is about how shell-1 cells RENDER once a build exists. */}
+            {nodeSelection.rcpBuildEligible && (
+              <div
+                className="flex items-center gap-1 rounded-full px-3 py-1 text-xs font-medium"
+                style={{ background: '#0e1209', border: '1px solid #8a3ffc' }}
+                title="3D: this node's ordinary controls (delete, attach via face/duoprism). 4D: build the real 4-polytope this shape closes into, one cell at a time — the Radial Cell Projection click-to-build (RCP-C2B) construction."
+              >
+                <button
+                  type="button"
+                  onClick={() => setRcpMainMode4D(false)}
+                  className="rounded-full px-2 py-0.5 transition-colors"
+                  style={{ background: !rcpMainMode4D ? '#8a3ffc' : 'transparent', color: !rcpMainMode4D ? '#fff' : '#b388ff' }}
+                >
+                  3D
+                </button>
+                <button
+                  type="button"
+                  onClick={() => {
+                    setRcpMainMode4D(true);
+                    if (nodeSelection.rcpRoot) return; // already building -- just switch which controls show
+                    if (nodeSelection.rcpClosureOptions.length > 1) setRcpPickerOpen(true);
+                    else handleRef.current?.beginRcpBuild(nodeSelection.specId, nodeSelection.rcpClosureOptions[0]);
+                  }}
+                  className="rounded-full px-2 py-0.5 transition-colors"
+                  style={{ background: rcpMainMode4D ? '#8a3ffc' : 'transparent', color: rcpMainMode4D ? '#fff' : '#b388ff' }}
+                >
+                  4D
+                </button>
+              </div>
+            )}
+            {nodeSelection.rcpBuildEligible && rcpMainMode4D && !nodeSelection.rcpRoot && (
               rcpPickerOpen && nodeSelection.rcpClosureOptions.length > 1 ? (
                 <>
                   <span className="text-xs uppercase tracking-wide" style={{ color: '#b388ff' }}>
@@ -495,28 +547,18 @@ export default function Home() {
                   ))}
                   <button
                     type="button"
-                    onClick={() => setRcpPickerOpen(false)}
+                    onClick={() => {
+                      setRcpPickerOpen(false);
+                      setRcpMainMode4D(false);
+                    }}
                     className="rounded-full bg-zinc-800 px-4 py-1.5 text-sm font-medium text-zinc-300 transition-colors hover:bg-zinc-700"
                   >
                     Cancel
                   </button>
                 </>
-              ) : (
-                <button
-                  type="button"
-                  onClick={() => {
-                    if (nodeSelection.rcpClosureOptions.length > 1) setRcpPickerOpen(true);
-                    else handleRef.current?.beginRcpBuild(nodeSelection.specId, nodeSelection.rcpClosureOptions[0]);
-                  }}
-                  title="Build the real 4-polytope this shape closes into, one cell at a time — the Radial Cell Projection click-to-build (RCP-C2B) construction"
-                  className="rounded-full px-4 py-1.5 text-sm font-medium text-white transition-colors"
-                  style={{ background: '#8a3ffc' }}
-                >
-                  Build via RCP-C2B…
-                </button>
-              )
+              ) : null
             )}
-            {nodeSelection.rcpRoot && (
+            {nodeSelection.rcpRoot && rcpMainMode4D && (
               // Running cell count, always visible across the whole build
               // (shell 1's one-at-a-time phase and every shell-batch
               // phase after it) -- direct user feedback: without this the
@@ -527,7 +569,7 @@ export default function Home() {
                 Cells: {nodeSelection.rcpRoot.builtCount + 1} / {nodeSelection.rcpRoot.totalCells}
               </span>
             )}
-            {nodeSelection.rcpRoot && !nodeSelection.rcpRoot.shell1Complete && (
+            {nodeSelection.rcpRoot && rcpMainMode4D && !nodeSelection.rcpRoot.shell1Complete && (
               <button
                 type="button"
                 onClick={() => handleRef.current?.buildNextRcpCell()}
@@ -538,7 +580,7 @@ export default function Home() {
                 Add next cell ({nodeSelection.rcpRoot.builtCount} / {nodeSelection.rcpRoot.shell1Size})
               </button>
             )}
-            {nodeSelection.rcpRoot && nodeSelection.rcpRoot.builtCount > 0 && !nodeSelection.rcpRoot.shell1Complete && (
+            {nodeSelection.rcpRoot && rcpMainMode4D && nodeSelection.rcpRoot.builtCount > 0 && !nodeSelection.rcpRoot.shell1Complete && (
               <button
                 type="button"
                 onClick={() => handleRef.current?.removeLastRcpCell()}
@@ -549,7 +591,7 @@ export default function Home() {
                 Remove last cell
               </button>
             )}
-            {nodeSelection.rcpRoot?.shell1Complete && (
+            {nodeSelection.rcpRoot?.shell1Complete && rcpMainMode4D && (
               <>
                 <button
                   type="button"
@@ -571,14 +613,14 @@ export default function Home() {
                 </button>
               </>
             )}
-            {nodeSelection.rcpRoot?.viewToggleAvailable && (
+            {nodeSelection.rcpRoot?.viewToggleAvailable && rcpMainMode4D && (
               <div
                 className="flex items-center gap-1 rounded-full px-3 py-1 text-xs font-medium"
                 style={{ background: '#0e1209', border: '1px solid #b388ff', opacity: nodeSelection.rcpRoot.viewToggleLocked ? 0.5 : 1 }}
                 title={
                   nodeSelection.rcpRoot.viewToggleLocked
-                    ? 'Locked to 4D: shell 2+ is permanently anchored to shell 1’s real 4D position, so switching shell 1 to 3D here would disconnect the two. Remove shell 2 to unlock.'
-                    : '3D: every built cell shown as an ordinary, undistorted copy of the seed, flush-attached. 4D: the same cells at their real, warped position in the closed 4-polytope — the same look shell 2+ already uses.'
+                    ? 'Locked closed: shell 2+ is permanently anchored to shell 1’s real 4D position, so opening shell 1 here would disconnect the two. Remove shell 2 to unlock.'
+                    : 'Open: every built cell shown as an ordinary, undistorted copy of the seed, flush-attached, with the real angular gap visible. Closed: the same cells at their real, warped position in the closed 4-polytope — the same look shell 2+ already uses.'
                 }
               >
                 <button
@@ -588,7 +630,7 @@ export default function Home() {
                   className="rounded-full px-2 py-0.5 transition-colors disabled:cursor-not-allowed"
                   style={{ background: nodeSelection.rcpRoot.view3D ? '#8a3ffc' : 'transparent', color: nodeSelection.rcpRoot.view3D ? '#fff' : '#b388ff' }}
                 >
-                  3D
+                  Open
                 </button>
                 <button
                   type="button"
@@ -597,11 +639,11 @@ export default function Home() {
                   className="rounded-full px-2 py-0.5 transition-colors disabled:cursor-not-allowed"
                   style={{ background: !nodeSelection.rcpRoot.view3D ? '#8a3ffc' : 'transparent', color: !nodeSelection.rcpRoot.view3D ? '#fff' : '#b388ff' }}
                 >
-                  4D
+                  Closed
                 </button>
               </div>
             )}
-            {nodeSelection.rcpRoot && (
+            {nodeSelection.rcpRoot && rcpMainMode4D && (
               // "Show coordinates": purple lines from the root's own
               // center out to each built cell's real generating
               // coordinate (RcpComplex.cells[].coordPoint3D's own doc
@@ -609,7 +651,7 @@ export default function Home() {
               // marking its cells' own vertices, which by construction
               // ARE the dual points (each one a real center of a
               // dodecahedral cell from the original 120-cell). Works
-              // identically in 3D and 4D (coordPoint3D doesn't depend on
+              // identically Open/Closed (coordPoint3D doesn't depend on
               // that toggle), and is never persisted.
               <button
                 type="button"

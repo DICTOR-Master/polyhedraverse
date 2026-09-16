@@ -828,6 +828,60 @@ export default function ShapeViewer({
     const controls = new OrbitControls(camera, renderer.domElement);
     controls.enableDamping = true;
 
+    /**
+     * Zooms the camera so `objects`' own combined geometry fits in
+     * frame, keeping whatever viewing ANGLE is already set (derived
+     * from the camera's current position relative to `controls.target`,
+     * so a fresh scene's default (2.4, 1.9, 2.8) direction is preserved
+     * automatically) AND, deliberately, `controls.target` itself
+     * completely untouched -- only the distance changes. Real bug found
+     * live: an earlier version recentered `controls.target` on the
+     * object's own bounding-box center, which is NOT the world origin
+     * for an asymmetric shape (a graded pyramid's base sits at one
+     * height and its apex at another, so its own bounding box is
+     * genuinely off-center -- confirmed directly: PYRAMID_TRI_G2's own
+     * center sits at (0.14, 0, 0.20), not (0,0,0)). That silently
+     * shifted such shapes' on-screen position away from where every
+     * other part of this app assumes a node's own local origin renders
+     * (dead center, camera aimed at world origin) -- caught by a real
+     * face-attach test sweeping around the expected canvas center and
+     * finding nothing there anymore. Measuring each corner's distance
+     * from `controls.target` (not from the box's own center) and never
+     * moving the target keeps every shape exactly where it already
+     * rendered, just correctly zoomed to its own real size. Direct user
+     * request behind the feature itself: every shape used to start from
+     * the exact same fixed camera position regardless of its own real
+     * size, so a naturally small shape (e.g. the tetrahedron,
+     * circumradius ~0.6) looked tiny and far away next to a naturally
+     * large one (e.g. the dodecahedron, ~1.4) even though nothing about
+     * either shape was actually wrong. Called only when a shape is
+     * first placed or a saved assembly is loaded -- deliberately NOT on
+     * every RCP-C2B cell/shell added during a build, which would fight
+     * with any camera position already set while working.
+     */
+    const fitCameraToObjects = (objects: THREE.Object3D[]) => {
+      if (objects.length === 0) return;
+      const box = new THREE.Box3();
+      for (const obj of objects) box.expandByObject(obj);
+      if (box.isEmpty()) return;
+      const corners = [
+        [box.min.x, box.min.y, box.min.z], [box.min.x, box.min.y, box.max.z],
+        [box.min.x, box.max.y, box.min.z], [box.min.x, box.max.y, box.max.z],
+        [box.max.x, box.min.y, box.min.z], [box.max.x, box.min.y, box.max.z],
+        [box.max.x, box.max.y, box.min.z], [box.max.x, box.max.y, box.max.z],
+      ].map(([x, y, z]) => new THREE.Vector3(x, y, z));
+      const maxRadius = Math.max(...corners.map((c) => c.distanceTo(controls.target)));
+      if (maxRadius <= 1e-6) return;
+      const fovRad = (camera.fov * Math.PI) / 180;
+      const FIT_MARGIN = 1.3; // headroom so the shape doesn't touch the frame edges
+      const distance = (maxRadius / Math.sin(fovRad / 2)) * FIT_MARGIN;
+      const currentDirection = camera.position.clone().sub(controls.target);
+      const direction = currentDirection.lengthSq() > 1e-9 ? currentDirection.normalize() : new THREE.Vector3(2.4, 1.9, 2.8).normalize();
+      camera.position.copy(controls.target).addScaledVector(direction, distance);
+      camera.updateProjectionMatrix();
+      controls.update();
+    };
+
     scene.add(new THREE.AmbientLight(0xffffff, 0.7));
     const dirLight = new THREE.DirectionalLight(0xffffff, 1.1);
     dirLight.position.set(3, 4, 5);
@@ -1877,6 +1931,7 @@ export default function ShapeViewer({
         ],
         connections: [],
       };
+      fitCameraToObjects([placed.object]);
       onSelectionChangeRef.current?.(null);
       reportCageStatus();
     };
@@ -2016,6 +2071,7 @@ export default function ShapeViewer({
       graphRef.current = assembly;
       refreshFoldConnectionsFlag();
       recomputeAllFolds(foldAmountRef.current);
+      fitCameraToObjects(placedRef.current.map((p) => p.object));
       onSelectionChangeRef.current?.(null);
       reportCageStatus();
     };
@@ -3075,7 +3131,16 @@ export default function ShapeViewer({
         return;
       }
 
-      if (selectedNodeRef.current === hoveredNode) {
+      // Toggle off only on a genuine repeat click -- same node AND same
+      // face (both null counts as "same," for a plain node-body click
+      // with no specific face). Real bug found live: comparing only the
+      // node meant clicking a DIFFERENT face of an already-selected node
+      // deselected the whole thing instead of switching which face was
+      // selected -- previously masked by an unrelated bug (a camera-drag
+      // ending in a stray 'click' used to run this same logic and
+      // deselect first, so the next real click always started fresh);
+      // fixing that drag bug exposed this one.
+      if (selectedNodeRef.current === hoveredNode && selectedFaceIndexRef.current === hoveredFaceIndexRef.current) {
         clearNodeSelection();
         return;
       }
