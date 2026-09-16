@@ -18,7 +18,7 @@
  */
 import { POLYHEDRA, POLYHEDRON_IDS } from '../app/lib/polyhedra/index';
 import { MISCELLANEOUS_ADDITION_IDS, GRADED_PYRAMID_ADDITION_IDS } from '../app/lib/polyhedra/miscellaneous';
-import { RVCMG_CONNECTOR_ADDITION_IDS } from '../app/lib/polyhedra/miscellaneous/rvcmg-connectors';
+import { RVCMG_V2_CONNECTOR_ADDITION_IDS } from '../app/lib/polyhedra/miscellaneous/rvcmg-connectors-v2';
 import { facesCongruent, isRegularFace, faceRotationalSymmetry, type PolyhedronSpec } from '../app/lib/polyhedra/core';
 
 let failures = 0;
@@ -86,7 +86,7 @@ check(
 
 // --- Every grade's base face is regular, every non-grade-2 lateral is
 // not, across all three bases -- the general shape of the policy.
-// Scoped to graded pyramids only (RVCMG_CONNECTOR_ADDITION_IDS uses a
+// Scoped to graded pyramids only (RVCMG_V2_CONNECTOR_ADDITION_IDS uses a
 // completely different eligibility mechanism, attachableFaceIndices,
 // checked in its own block below -- their "base" hex face is
 // deliberately NOT a regular polygon at all). ---
@@ -103,15 +103,14 @@ for (const id of GRADED_PYRAMID_ADDITION_IDS) {
   }
 }
 
-// --- RVCMG connector pieces: attachableFaceIndices names exactly the
+// --- RVCMG v2 connector pieces: attachableFaceIndices names exactly the
 // two real ports (hex + target), and both are reachable through
 // attachOptionsFor with at least one real cross-family match -- proving
-// the eligibility gate doesn't just exclude everything by accident. ---
-// RVCMG_RD_HEMI is a genuinely different shape from the other 7 (a real
-// dome with 6 real ports -- the hex plus 5 congruent rhombi -- not a
-// flat hex + one target face), checked separately below with its own
-// expected port count.
-for (const id of RVCMG_CONNECTOR_ADDITION_IDS.filter((i) => i !== 'RVCMG_RD_HEMI')) {
+// the eligibility gate doesn't just exclude everything by accident.
+// v2 has no RD-Hemi piece (direct user instruction, 2026-09-17 -- the
+// hex is no longer tied to a real RD's own native scale), so unlike v1
+// there is no separate "bare dome" case to check here. ---
+for (const id of RVCMG_V2_CONNECTOR_ADDITION_IDS) {
   const spec = POLYHEDRA[id];
   check(`${id}: has attachableFaceIndices set to exactly 2 faces`, Array.isArray(spec.attachableFaceIndices) && spec.attachableFaceIndices.length === 2);
   const [hexIdx, targetIdx] = spec.attachableFaceIndices ?? [-1, -1];
@@ -121,22 +120,6 @@ for (const id of RVCMG_CONNECTOR_ADDITION_IDS.filter((i) => i !== 'RVCMG_RD_HEMI
   });
   const targetOptions = attachOptionsFor(id, targetIdx);
   check(`${id}: target port offers at least one real cross-family match (got ${targetOptions.length}: ${targetOptions.slice(0, 3).join(', ')})`, targetOptions.length > 0);
-}
-
-{
-  const hemi = POLYHEDRA.RVCMG_RD_HEMI;
-  check('RVCMG_RD_HEMI: has attachableFaceIndices set to exactly 6 faces (hex + 5 rhombi)', Array.isArray(hemi.attachableFaceIndices) && hemi.attachableFaceIndices.length === 6);
-  hemi.faces.forEach((_, fi) => {
-    const shouldBeEligible = hemi.attachableFaceIndices!.includes(fi);
-    check(`RVCMG_RD_HEMI: face ${fi} eligibility matches attachableFaceIndices (expected ${shouldBeEligible})`, isFaceEligibleForAttach(hemi, fi) === shouldBeEligible);
-  });
-  // Each rhombus port (including the crown) should offer at least a
-  // self-match (another RVCMG_RD_HEMI, if two get placed) -- the actual
-  // "hourglass" join.
-  for (const fi of hemi.attachableFaceIndices!.filter((f) => f !== 0)) {
-    const options = attachOptionsFor('RVCMG_RD_HEMI', fi);
-    check(`RVCMG_RD_HEMI: rhombus port ${fi} offers at least one match (got ${options.length}: ${options.slice(0, 3).join(', ')})`, options.length > 0);
-  }
 }
 
 // --- Catalan solids must be completely unaffected: their irregular

@@ -1,11 +1,16 @@
 /**
- * Verifies the actual, shipped RVCMG connector registry entries
+ * Verifies the ARCHIVED v1 RVCMG connector registry entries
  * (RVCMG_CONNECTOR_ADDITIONS, app/lib/polyhedra/miscellaneous/
- * rvcmg-connectors/) directly -- not a parallel re-derivation, so this
- * can never silently drift from what the app actually ships (an earlier
- * version of this script rebuilt its own copy via buildAdapterSolid
- * with a stale, hard-coded WALL_HEIGHT and kept passing after the real
- * one changed -- caught live, not hypothetical).
+ * rvcmg-connectors-v1-archived/) directly -- not a parallel
+ * re-derivation, so this can never silently drift from that module's
+ * own real code (an earlier version of this script rebuilt its own
+ * copy via buildAdapterSolid with a stale, hard-coded WALL_HEIGHT and
+ * kept passing after the real one changed -- caught live, not
+ * hypothetical). v1 is superseded as the LIVE/default interface
+ * (2026-09-17, see docs/rvcmg-adapter-pieces-spec.md) but its own code
+ * and tests are kept intact and still verified here -- it is simply no
+ * longer part of the live POLYHEDRA registry. See
+ * scripts/verify-rvcmg-v2-solids.ts for the live v2 set.
  *
  * Checks: Euler's formula, every face planar and outward-wound, no
  * degenerate face, the target cap's own edges matching its Stage 0-7
@@ -16,7 +21,7 @@
  * own header), and that `attachableFaceIndices` names exactly the two
  * real ports (hex + target), never a wall/side triangle.
  */
-import { RVCMG_CONNECTOR_ADDITIONS, RVCMG_CONNECTOR_ADDITION_IDS } from '../app/lib/polyhedra/miscellaneous/rvcmg-connectors';
+import { RVCMG_CONNECTOR_ADDITIONS, RVCMG_CONNECTOR_ADDITION_IDS } from '../app/lib/polyhedra/miscellaneous/rvcmg-connectors-v1-archived';
 import { hemiRdInterfaceFrame } from '../app/lib/rvcmg/hemiRdInterface';
 import { validateAdapterSolid } from '../app/lib/rvcmg/solid';
 import { hemiRdStartState, RD_EDGE_LENGTH } from '../app/lib/rvcmg/adapters/triangleToRdH';

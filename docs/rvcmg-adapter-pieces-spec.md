@@ -1,5 +1,80 @@
 # RVCMG Adapter Pieces — Scoping and Status
 
+## v2, 2026-09-17: a new small universal hex, the LIVE/default interface
+
+**Status: DONE.** The shared hex interface every adapter piece mates
+through has been redesigned and rebuilt. Everything below this section
+(marked "v1, archived, superseded as the default") describes the
+ORIGINAL RD-native-scale set — that code and its tests are kept intact
+and still pass, but it is no longer part of the live app registry.
+
+**Why**: direct user finding, confirmed numerically before acting on it
+— v1's hex (`HEMI_RD_INTERFACE`, the real cross-section of a bisected
+rhombic dodecahedron) reaches vertices out to circumradius 1.0, while a
+unit-edge equilateral triangle's own circumradius is only 0.577 — the
+hex was never going to fit inside the tightest target case, a full
+1.73x too big. It also has only D2h (2-fold) symmetry, which can't
+align cleanly with a triangle's 3-fold symmetry — confirmed
+computationally, not assumed.
+
+**The new hex** (`app/lib/rvcmg/universalHexInterface.ts`,
+`UNIVERSAL_HEX_INTERFACE`): a plain, freestanding REGULAR hexagon (full
+6-fold symmetry, not derived from any existing polyhedron), circumradius
+= edge = `sqrt(2)/2` — direct user decision, sized to sit between the
+old hex's native scale (1.0) and the tight "hexagram" hex you get by
+rotating a unit triangle 60° and intersecting it with itself
+(circumradius exactly 1/3). For unit-edge regular polygons, circumradius
+= `1/(2*sin(pi/n))`: triangle 0.5774, square 0.7071 (exactly the new
+hex's own size), pentagon 0.8507. At `sqrt(2)/2`, the triangle taper is
+a mild 0.82x, the square taper is exactly 1.0x (zero taper), and the
+pentagon taper is a mild 1.20x — no dramatic waisting toward any of the
+three, which was the actual design goal ("close to a neutral circle
+functional for triangle, square, and pentagon without dramatically
+waisting between them" — direct user framing), not merely "smaller than
+before."
+
+**8 new pieces** (`app/lib/rvcmg/adapters/*ToUHex.ts`,
+`app/lib/polyhedra/miscellaneous/rvcmg-connectors-v2/`), **no RD-Hemi**
+(direct user instruction — the hex is no longer tied to a real RD's own
+native scale, so there is no "bare dome" piece in v2):
+
+| Piece | Target face | Notes |
+|---|---|---|
+| Triangle-to-U-Hex | equilateral triangle, edge 1 | direct port of v1 |
+| Square-to-U-Hex | unit square | v1's "align to hex's long edges" hack dropped — the new hex has no distinguishable edges to align to |
+| Pentagon-to-U-Hex | regular pentagon, edge 1 | v1's "pick either symmetric long edge" reasoning no longer applies — every adjacent pair is now equally arbitrary |
+| Golden-Rhombus-to-U-Hex | rhombus, diagonal ratio phi:1 (rhombic triacontahedron) | v1's radius-based tiebreak (which pair gets the long vs short diagonal) no longer applies on a perfectly regular hex — resolved instead via `fitTargetPolygon`'s measured distortion, the same generalization the kite pieces already used |
+| **RD-Native-Rhombus-to-U-Hex** | rhombus matching the RHOMBIC DODECAHEDRON's own native face | **new piece, no v1 counterpart** — the actual confirmed benefit of decoupling the hex from RD's own scale: a UHex adapter can now mate directly onto a real `RHOMBIC_DODECAHEDRON` face, no RD-Hemi needed in between |
+| DI-Kite-to-U-Hex / DH-Kite-to-U-Hex | deltoidal icositetrahedron / hexecontahedron kite | direct port of v1, unchanged structure |
+| Regular-Hexagon-to-U-Hex | regular hexagon, edge 1 | genuinely simpler than v1's version — the SOURCE hex here is already regular, so this is close to a uniform dilation rather than a symmetry correction; still routed through the same coalesce+splitVertex composite for consistency |
+
+**Neck length** (`WALL_HEIGHT_V2`, `rvcmg-connectors-v2/index.ts`): a
+genuinely new design choice with nothing to derive it from (same honest
+framing v1 used for its own `WALL_HEIGHT`) — chosen by preserving v1's
+own wall-height-to-hex-circumradius ratio (`sqrt(2)/4` against a hex
+reaching circumradius 1.0) scaled to the new hex's smaller size, which
+gives exactly `1/4`.
+
+**Verification**: `npm run verify:rvcmg-v2-solids` (the 8 registered
+solids), plus one new/changed `*.test.ts` per adapter file (`npm run
+verify:rvcmg-triangle-to-uhex`, `-square-to-uhex`, `-pentagon-to-uhex`,
+`-rhombus-to-uhex` (both rhombus pieces), `-kite-to-uhex` (both kite
+pieces), `-regular-hex-to-uhex`) — all passing, zero failures, at the
+time this was written. `npm run verify:misc-face-eligibility` and `npm
+run verify:face-attach` were re-run against the new live registry (v1
+removed, v2 added) and still pass.
+
+**Archive**: `rvcmg-connectors-v1-archived/` (renamed via `git mv`, full
+history preserved) keeps v1's code and tests intact and passing, but is
+no longer spread into `MISCELLANEOUS_ADDITIONS`/`POLYHEDRA` — it does
+not appear anywhere in the live app. `scripts/verify-rvcmg-solids.ts`
+still verifies it directly, by its new path, so it can never silently
+bit-rot unnoticed.
+
+---
+
+## v1, archived, superseded as the default (2026-09-15): original scoping and status
+
 **Status (2026-09-15): DONE — the full family is real, placeable, and
 registered.** Stages 0-7 (the core math library, including the general
 "multiply" primitive `splitVertex()`) were done first. Stage 8
