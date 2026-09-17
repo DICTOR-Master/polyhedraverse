@@ -20,6 +20,13 @@
  * hexagon"), which makes all 6 lateral faces genuine squares — no
  * RVCMG coalescence math needed here either (see
  * `polygonPrismSolid.ts`, `app/lib/polyhedra/`).
+ *
+ * Regular-Hexagon-to-U-Hex is the one exception to the shared
+ * `WALL_HEIGHT_V2` neck length — see `REGULAR_HEX_WALL_HEIGHT`'s own
+ * doc comment below for why (a real, play-tested icosahedron
+ * construction, not a cosmetic tweak) and
+ * `scripts/verify-icosahedron-hex-alignment.ts` for the independent
+ * re-derivation.
  */
 
 import { type PolyhedronSpec } from '../../core';
@@ -52,7 +59,45 @@ const NORMAL = universalHexInterfaceFrame().normal;
  */
 const WALL_HEIGHT_V2 = HEX_CIRCUMRADIUS * (Math.SQRT2 / 4);
 
-function buildPiece(id: string, name: string, derive: () => ReturnType<typeof deriveTriangleToUHex>): PolyhedronSpec {
+/**
+ * Regular-Hexagon-to-U-Hex's OWN neck height — direct user request,
+ * 2026-09-17, from real play-testing: build an icosahedron, attach a
+ * unit-edge triangular prism (`PRISM_3`) to each face, then
+ * Triangle-to-U-Hex, then Regular-Hex-to-U-Hex on top of that — the 5
+ * resulting unit-edge regular hexagons meeting around one icosahedron
+ * vertex come out with a tiny (sub-1%-of-scale) OVERLAP at the shared
+ * `WALL_HEIGHT_V2` (0.25), confirmed computationally (real
+ * `computeFaceAttach` placement, not estimated) via the signed distance
+ * of the two nearest hexagon vertices to the real mirror-symmetry plane
+ * shared by two edge-adjacent icosahedron faces (that plane passes
+ * through the shared edge and the icosahedron's own center).
+ *
+ * `0.261522628` is the exact height (found by bisection on that same
+ * real placement math, re-derived independently in
+ * `scripts/verify-icosahedron-hex-alignment.ts` — check there before
+ * trusting this literal, in case the upstream pieces ever change) where
+ * that overlap becomes a perfect edge-to-edge touch instead. Raising
+ * either this piece's own height OR Triangle-to-U-Hex's height by the
+ * same amount produces the IDENTICAL result (confirmed directly) —
+ * both adapters sit on one straight, coaxial chain, so a length
+ * increase anywhere along it has the same effect on where the final
+ * hexagon ends up. This piece was chosen deliberately (direct user
+ * decision) over Triangle-to-U-Hex specifically, and over the shared
+ * `WALL_HEIGHT_V2` constant used by all 8 OTHER v2 pieces (which would
+ * have widened every one of their necks by the same ~4.6% for a fix
+ * that only this one shape combination needs).
+ *
+ * Confirmed NOT to matter for the analogous tetrahedron construction
+ * (direct user check): 3 triangles meeting at a tetrahedron vertex have
+ * a much sharper fold (a bigger angular defect, 3x60=180 degrees vs the
+ * icosahedron's 5x60=300) — its own chains overlap substantially at
+ * EVERY wall height tried (0.05 through 0.95, monotonically worse with
+ * height, never crossing zero), so this narrow +4.6% change neither
+ * fixes nor worsens that already-mismatched case in any meaningful way.
+ */
+const REGULAR_HEX_WALL_HEIGHT = 0.261522628;
+
+function buildPiece(id: string, name: string, derive: () => ReturnType<typeof deriveTriangleToUHex>, wallHeight: number = WALL_HEIGHT_V2): PolyhedronSpec {
   const piece = derive();
   if (piece.problems.length > 0) {
     throw new Error(`${id}: Stage 0-7 derivation has unresolved problems: ${JSON.stringify(piece.problems)}`);
@@ -61,7 +106,7 @@ function buildPiece(id: string, name: string, derive: () => ReturnType<typeof de
     id,
     name,
     normal: NORMAL,
-    wallHeight: WALL_HEIGHT_V2,
+    wallHeight,
   });
   if (problems.length > 0) {
     throw new Error(`${id}: Stage 8 solid construction has unresolved problems: ${JSON.stringify(problems)}`);
@@ -109,7 +154,7 @@ export const RVCMG_V2_CONNECTOR_ADDITIONS: Record<string, PolyhedronSpec> = {
   RVCMG_V2_RD_NATIVE_RHOMBUS_TO_UHEX: buildPiece('RVCMG_V2_RD_NATIVE_RHOMBUS_TO_UHEX', 'RD-native rhombus to U-Hex adapter', deriveRdNativeRhombusToUHex),
   RVCMG_V2_DI_KITE_TO_UHEX: buildPiece('RVCMG_V2_DI_KITE_TO_UHEX', 'DI-kite to U-Hex adapter', deriveDIKiteToUHex),
   RVCMG_V2_DH_KITE_TO_UHEX: buildPiece('RVCMG_V2_DH_KITE_TO_UHEX', 'DH-kite to U-Hex adapter', deriveDHKiteToUHex),
-  RVCMG_V2_REGULAR_HEX_TO_UHEX: buildPiece('RVCMG_V2_REGULAR_HEX_TO_UHEX', 'regular hexagon to U-Hex adapter', deriveRegularHexToUHex),
+  RVCMG_V2_REGULAR_HEX_TO_UHEX: buildPiece('RVCMG_V2_REGULAR_HEX_TO_UHEX', 'regular hexagon to U-Hex adapter', deriveRegularHexToUHex, REGULAR_HEX_WALL_HEIGHT),
   RVCMG_V2_UHEX_SPACER: buildUHexSpacer(),
 };
 

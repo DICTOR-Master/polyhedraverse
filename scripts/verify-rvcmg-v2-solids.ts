@@ -106,7 +106,13 @@ for (const { id, derive } of PIECES) {
   const dotV = (a: Vec3, b: Vec3) => a[0] * b[0] + a[1] * b[1] + a[2] * b[2];
   const cosToNormal = Math.abs(dotV(axisVec, NORMAL)) / axisLen;
   check(`${id}: hex-to-target axis is parallel to the hex interface's own normal (cos=${cosToNormal.toFixed(9)})`, Math.abs(cosToNormal - 1) < 1e-6);
-  check(`${id}: hex-to-target distance equals WALL_HEIGHT_V2 (got ${axisLen.toFixed(9)}, expected ${EXPECTED_WALL_HEIGHT_V2.toFixed(9)})`, Math.abs(axisLen - EXPECTED_WALL_HEIGHT_V2) < 1e-6);
+  // Regular-Hex-to-U-Hex is the one deliberate exception to the shared
+  // WALL_HEIGHT_V2 neck -- see its own REGULAR_HEX_WALL_HEIGHT doc
+  // comment (rvcmg-connectors-v2/index.ts) and
+  // scripts/verify-icosahedron-hex-alignment.ts for the real, re-derived
+  // reason (a play-tested icosahedron construction, not a typo).
+  const expectedWallHeight = id === 'RVCMG_V2_REGULAR_HEX_TO_UHEX' ? 0.261522628 : EXPECTED_WALL_HEIGHT_V2;
+  check(`${id}: hex-to-target distance equals its own expected wall height (got ${axisLen.toFixed(9)}, expected ${expectedWallHeight.toFixed(9)})`, Math.abs(axisLen - expectedWallHeight) < 1e-6);
 
   const hexEdgeLensBuilt = hexPts.map((p, k) => dist(p, hexPts[(k + 1) % hexPts.length])).sort((a, b) => a - b);
   const hexState = uHexStartState();
