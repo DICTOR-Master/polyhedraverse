@@ -9,6 +9,7 @@ import CornerHudWheel from './components/CornerHudWheel';
 import ShapeBrowser from './components/browser/ShapeBrowser';
 import WelcomeOverlay from './components/WelcomeOverlay';
 import ChangelogOverlay from './components/ChangelogOverlay';
+import AssemblyDescriptionPopover from './components/AssemblyDescriptionPopover';
 import { usePrefs } from './lib/prefs';
 import type { FamilyKey } from './lib/polyhedra/families';
 
@@ -42,9 +43,14 @@ export default function Home() {
   // A running, always-on description of the current assembly (see
   // app/lib/assemblyNaming.ts) -- direct user request: "a running total
   // name so far" as pieces get attached. Independent of node selection,
-  // so it stays visible in the persistent header row even with nothing
-  // selected.
+  // so it's available even with nothing selected. Shown via a small tap
+  // icon + AssemblyDescriptionPopover rather than a permanent header
+  // string -- direct user report, 2026-09-17: even truncated, the full
+  // text "taking up useful space across UI" was a real complaint, not a
+  // cosmetic nitpick.
   const [assemblyName, setAssemblyName] = useState('');
+  const [descriptionOpen, setDescriptionOpen] = useState(false);
+  const [descriptionAnchor, setDescriptionAnchor] = useState<{ x: number; y: number } | null>(null);
   const [canUndo, setCanUndo] = useState(false);
   // Bumped whenever the DIRECT wheel (below, opened via CornerHudWheel's
   // medallion) picks "Full Catalog" -- see ShapeBrowser's own
@@ -314,21 +320,27 @@ export default function Home() {
         </div>
         <div className="flex items-center gap-2">
           {assemblyName && (
-            // whitespace-nowrap + truncate: a long generic summary must
-            // never wrap onto a second line -- real regression found
-            // live (persistence.spec.ts): wrapping grows the header's
-            // own height, shifting the canvas (and every pixel-position
-            // a test or the user has already noted) downward on the
-            // very next render. Truncating with an ellipsis keeps the
-            // header a fixed single-line height regardless of how
-            // elaborate the assembly's own description gets.
-            <span
-              className="max-w-xs truncate whitespace-nowrap text-sm font-medium"
-              style={{ color: '#a9f795' }}
-              title={assemblyName}
+            // A small fixed-size icon, never text -- keeps the header a
+            // fixed single-line height regardless of how elaborate the
+            // assembly's own description gets (the real regression a
+            // truncated text span still risked, persistence.spec.ts).
+            // Tapping snapshots the root shape's current on-screen
+            // position (ShapeViewerHandle.getRootScreenPosition()) and
+            // opens AssemblyDescriptionPopover anchored there, rather
+            // than showing the text in the header itself.
+            <button
+              type="button"
+              onClick={() => {
+                setDescriptionAnchor(handleRef.current?.getRootScreenPosition() ?? null);
+                setDescriptionOpen(true);
+              }}
+              title="Assembly description"
+              aria-label="Show assembly description"
+              className="flex h-7 w-7 shrink-0 items-center justify-center rounded-full text-sm font-semibold"
+              style={{ color: '#a9f795', border: '1px solid rgba(71,204,36,.3)' }}
             >
-              {assemblyName}
-            </span>
+              i
+            </button>
           )}
           {cageClosed && (
             <span className="rounded-full bg-fuchsia-900 px-3 py-1 text-xs font-medium text-fuchsia-200">
@@ -867,6 +879,12 @@ export default function Home() {
       )}
       <WelcomeOverlay open={welcomeOpen} onClose={closeWelcome} />
       <ChangelogOverlay open={changelogOpen} onClose={() => setChangelogOpen(false)} />
+      <AssemblyDescriptionPopover
+        open={descriptionOpen && !!assemblyName}
+        text={assemblyName}
+        anchor={descriptionAnchor}
+        onClose={() => setDescriptionOpen(false)}
+      />
       {!welcomeOpen && (
         <CornerHudWheel
           wheelOpen={wheelOpen}

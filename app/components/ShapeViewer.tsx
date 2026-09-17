@@ -298,6 +298,18 @@ export interface ShapeViewerHandle {
    * same as fold4's own foldAmount). No-op if no root is selected.
    */
   setRcpCoordinatesVisible(visible: boolean): void;
+  /**
+   * The root node's current on-screen position (viewport pixel
+   * coordinates), for anchoring a UI element "over the object itself"
+   * rather than in a fixed header/panel position -- e.g. the assembly
+   * description popover (page.tsx). A one-off snapshot at call time, not
+   * a continuously-tracked position: intentionally simple (matches a
+   * discrete "tap to open" action, not a live-following HUD label),
+   * re-call this if the camera moves while the caller's own UI is open
+   * and it should follow. Null if there's no root node yet, or the root
+   * is currently behind the camera.
+   */
+  getRootScreenPosition(): { x: number; y: number } | null;
 }
 
 export interface ShapeSelection {
@@ -2825,6 +2837,17 @@ export default function ShapeViewer({
       recomputeAllFolds(t); // its own trailing updateMatrixWorld(true) covers the immediate-raycast concern too
     };
 
+    const getRootScreenPosition = (): { x: number; y: number } | null => {
+      const rootPlaced = placedRef.current[0];
+      if (!rootPlaced) return null;
+      const worldPos = new THREE.Vector3();
+      rootPlaced.object.getWorldPosition(worldPos);
+      const ndc = worldPos.clone().project(camera);
+      if (ndc.z > 1) return null; // behind the camera
+      const rect = container.getBoundingClientRect();
+      return { x: rect.left + (ndc.x * 0.5 + 0.5) * rect.width, y: rect.top + (-ndc.y * 0.5 + 0.5) * rect.height };
+    };
+
     onReadyRef.current?.({
       reset: placeRoot,
       beginAttach,
@@ -2846,6 +2869,7 @@ export default function ShapeViewer({
       removeLastRcpShell,
       setRcpView3D,
       setRcpCoordinatesVisible,
+      getRootScreenPosition,
     });
 
     let cancelled = false;

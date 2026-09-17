@@ -19,6 +19,18 @@ import type { NextConfig } from "next";
  * `'unsafe-inline'` stays on `script-src`/`style-src`: Next's own
  * hydration data and React's inline `style={{}}` props need it, and
  * this app has no nonce plumbing to avoid it.
+ *
+ * **`unsafe-eval` is dev-only** (2026-09-17 follow-up, a real regression
+ * caught by actually running the e2e suite, not just a manual spot
+ * check): React's OWN dev-mode debugging uses `eval()` to reconstruct
+ * call stacks (its own console message says so directly, and confirms
+ * "React will never use eval() in production mode") -- omitting it
+ * broke every single e2e test via fixtures.ts's zero-tolerance
+ * console-error check, since `npm run test:e2e` runs against `next dev`
+ * (playwright.config.ts's own webServer command), not a production
+ * build. Scoping the exception to development keeps the ACTUAL deployed
+ * CSP exactly as strict as before -- production never needed it, so
+ * production loses nothing.
  */
 const securityHeaders = [
   { key: "Strict-Transport-Security", value: "max-age=63072000; includeSubDomains; preload" },
@@ -30,7 +42,7 @@ const securityHeaders = [
     key: "Content-Security-Policy",
     value: [
       "default-src 'self'",
-      "script-src 'self' 'unsafe-inline'",
+      `script-src 'self' 'unsafe-inline'${process.env.NODE_ENV === "production" ? "" : " 'unsafe-eval'"}`,
       "style-src 'self' 'unsafe-inline'",
       "img-src 'self' data: blob:",
       "connect-src 'self'",
