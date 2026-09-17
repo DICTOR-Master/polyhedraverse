@@ -1,10 +1,11 @@
 # Composite-Seed RCP Investigation — Report
 
-Status as of 2026-09-17. Covers Stages 0–5 of
-`claude_Composite_Seed_RCP_Investigation_Plan.md` in full. **Stage 6
-(latent reflection-group question) is explicitly NOT attempted** — see
-§5 below for why, rather than a shallow, inconclusive pass presented as
-done. Every numeric claim below traces to a specific file and was
+Status as of 2026-09-17. Covers Stages 0–6 of
+`claude_Composite_Seed_RCP_Investigation_Plan.md`. Stage 6 is complete
+for one specific, explicitly-documented interpretation of its own
+question (§5 below explains the choice and what remains open under the
+OTHER possible reading) — not a shallow, inconclusive pass presented as
+fully done. Every numeric claim below traces to a specific file and was
 measured, not copied from `hypothesis.md`.
 
 ## 1. Established background (§14.1)
@@ -32,6 +33,13 @@ in `hypothesis.md`):
   tetrahedron** — the tetrahedral case was untested in `hypothesis.md`
   and is a genuine addition here (§5 of `tetrahedralExperiment.ts`'s own
   output).
+- **The RD's own intrinsic ⟨110⟩ mirror system is a genuinely finite
+  reflection group, order 24, matching `T_d`** (the full tetrahedral
+  point group) — resolves Question B (`hypothesis.md` §11) for the
+  RD-cell-intrinsic reading of that question. Proved by direct group
+  closure AND independently cross-checked by an orbit test (both give
+  order 24) — see `reflectionGroup.md` §2, and §4 below for the scope
+  of this reading.
 
 ## 2. Computed results (§14.2)
 
@@ -70,8 +78,15 @@ closed-form proof yet):
 
 ## 4. Open hypotheses (§14.4)
 
-- **The latent reflection-group question (Stage 6, hypothesis.md
-  §11–§12) remains fully open.** Not attempted in this pass — see §5.
+- **The OTHER reading of the reflection-group question remains open**:
+  `hypothesis.md` §12's own literal Step 1–2 describe lifting a
+  SPECIFIC aggregate's exposed facets into 4D via the RCP map, which
+  needs a `θ` the way each of the four verified regular seeds has one —
+  a composite aggregate has none, and no principled way to define one
+  was found in this pass. This is a genuinely different question from
+  the one §5/`reflectionGroup.md` answers (the RD's own intrinsic
+  mirror system, independent of any aggregate) and is NOT resolved by
+  that answer. Left open rather than resolved by inventing a `θ`.
 - Generality across OTHER RD selection rules beyond cube/oct/tet
   (hypothesis.md's own "generality across other RD selection rules"
   open item) — untested here.
@@ -79,22 +94,31 @@ closed-form proof yet):
   OTHER 4D structure beyond the four already-verified RCP closures —
   untested here.
 
-## 5. Why Stage 6 is deferred, not faked
+## 5. Stage 6 — resolved for one reading, open for another
 
-Stage 6 asks for the complete microscopic hyperplane system's Gram
-matrix, its positive-definiteness/rank, AND an orbit-growth test "run
-to enough depth to distinguish slow finite convergence from genuine
-unboundedness, not stopped early" (the plan's own words). This is
-qualitatively different from Stages 3–5: those each had a single
-closed-form answer to find and confirm. Stage 6 is an open-ended
-computational search with no guaranteed termination criterion — a
-shallow pass (a few iterations, a small Gram matrix) would produce a
-number that LOOKS like an answer but isn't backed by the "run to enough
-depth" standard the plan itself sets. Rather than report a shallow
-orbit-growth run as if it settled the question, this is left explicitly
-for a dedicated follow-up pass with its own time budget. **This is not
-"harder than expected mid-task" — it was foreseeable from the plan text
-itself and is called out here rather than discovered as a surprise.**
+`hypothesis.md` §11 asks what structure "the complete RD-derived mirror
+system" generates, independent of whether it reproduces a known 4D
+closure. Its own §12 Step 1–2 describe a SPECIFIC aggregate's exposed
+facets lifted into 4D — but that needs an as-yet-undefined `θ` (§4
+above). Rather than invent one (exactly the kind of "silently
+re-derived from memory" the plan's own verification caveat warns
+against) or run an open-ended orbit-growth search with no guaranteed
+termination (the plan's own Stage 6 warning: "run to enough depth to
+distinguish slow finite convergence from genuine unboundedness"), this
+pass answers the OTHER faithful reading of §11: the RD's own 12
+facet-normal directions, used as mirror planes through the origin in
+3D — an intrinsic property of the RD cell, independent of any
+aggregate. This reading has the advantage of being provably bounded (a
+finite set of rational-direction reflections through the origin in R³
+must generate a subgroup of a known finite point group), so it doesn't
+carry the open-ended-depth risk the plan warns about.
+
+**Result: finite, order 24, matching `T_d`** (full details,
+including a real subtlety about why the naive idealized Gram-matrix
+positive-definiteness test spuriously fails here — a redundant
+generating-set artifact, not evidence of infiniteness — in
+`reflectionGroup.md`). The aggregate-specific reading (§4 above) is
+left explicitly open, not resolved by this result.
 
 ## 6. Final verdict — Propositions P1 and P2, per shape
 

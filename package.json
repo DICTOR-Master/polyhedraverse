@@ -37,6 +37,7 @@
     "verify:composite-seed-lattice": "tsx scripts/verify-composite-seed-lattice.ts",
     "verify:composite-seed-positional-residual": "tsx app/lib/polyhedra/composite-seed-rcp/positionalResidual.test.ts",
     "verify:composite-seed-angular": "tsx scripts/verify-composite-seed-angular.ts",
+    "verify:composite-seed-reflection-group": "tsx scripts/verify-composite-seed-reflection-group.ts",
     "verify:rvcmg-hemi-rd": "tsx app/lib/rvcmg/hemiRdInterface.test.ts",
     "verify:rvcmg-types": "tsx app/lib/rvcmg/types.test.ts",
     "verify:rvcmg-coalesce": "tsx app/lib/rvcmg/coalesce.test.ts",
