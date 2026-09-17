@@ -13,7 +13,7 @@
 'use client';
 
 import { useCallback, useSyncExternalStore } from 'react';
-import type { LangCode } from './i18n';
+import { LANG_ORDER, type LangCode } from './i18n';
 
 const STORAGE_KEY = 'polyhedraverse:prefs:v1';
 const RECENTS_CAP = 25;
@@ -61,7 +61,12 @@ function isStringArray(v: unknown): v is string[] {
   return Array.isArray(v) && v.every((x) => typeof x === 'string');
 }
 
-const VALID_LANGS: LangCode[] = ['en', 'ja', 'es', 'fr'];
+// Derived from i18n.ts's own LANG_ORDER rather than hand-duplicated --
+// a real bug this project's own "derive, don't duplicate" rule exists
+// for: this list still said just ['en','ja','es','fr'] after i18n.ts
+// grew to 7 languages, silently rejecting a stored 'ko'/'zh'/'ru'
+// preference back to the 'en' default on every load.
+const VALID_LANGS: LangCode[] = LANG_ORDER;
 
 /**
  * Structural validation for untrusted input (localStorage can hold anything,
