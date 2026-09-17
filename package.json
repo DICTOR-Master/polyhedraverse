@@ -34,6 +34,7 @@
     "verify:duoprism": "tsx scripts/verify-duoprism.ts",
     "verify:radial-projection": "tsx scripts/verify-radial-projection.ts",
     "verify:rcp-build": "tsx scripts/verify-rcp-build.ts",
+    "verify:composite-seed-lattice": "tsx scripts/verify-composite-seed-lattice.ts",
     "verify:rvcmg-hemi-rd": "tsx app/lib/rvcmg/hemiRdInterface.test.ts",
     "verify:rvcmg-types": "tsx app/lib/rvcmg/types.test.ts",
     "verify:rvcmg-coalesce": "tsx app/lib/rvcmg/coalesce.test.ts",
