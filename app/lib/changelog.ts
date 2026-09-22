@@ -15,6 +15,13 @@ export interface ChangelogDay {
 
 export const CHANGELOG: ChangelogDay[] = [
   {
+    date: '2026-09-23',
+    entries: [
+      'Added 2 real solids to the Miscellaneous family: a genuine Rhombohedron (one of the 4 congruent pieces a Rhombic Dodecahedron always splits into along its own 4 body-diagonal directions) and the Elongated Dodecahedron (the 4th of the 5 real shapes that tile space by translation alone — 8 ordinary rhombic faces plus 4 real hexagonal ones). Both ported over from Rhombiverse (this project\'s twin), where they already exist as real lattice pieces; every face on both is a genuine attach port, and both are built at Rhombic Dodecahedron\'s own real scale so they attach flush to a real one, not just similarly.',
+      'Fixed the header and welcome-screen shape counts, which had gone stale again since the last time this exact thing was fixed (see 2026-09-17 below) — now computed directly from the registry instead of hand-typed, so this can\'t happen a third time.',
+    ],
+  },
+  {
     date: '2026-09-17',
     entries: [
       'Redesigned RVCMG\'s shared connector joint: the original hex interface was up to 1.73x too big to fit inside its own tightest target (a unit-edge triangle), so it\'s been replaced with a smaller, fully regular hexagon sized to balance the triangle, square, and pentagon connectors instead of favoring the tightest one. 9 pieces now build on it — the original 7 plus two new ones: a rhombus piece that can now attach directly to a real Rhombic Dodecahedron face (no intermediary dome needed), and a plain hex-to-hex spacer for lengthening a chain of connectors. The original 7-piece set (plus its bare dome piece) is kept intact for reference but no longer appears in the catalog.',

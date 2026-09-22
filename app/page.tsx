@@ -11,7 +11,7 @@ import WelcomeOverlay from './components/WelcomeOverlay';
 import ChangelogOverlay from './components/ChangelogOverlay';
 import AssemblyDescriptionPopover from './components/AssemblyDescriptionPopover';
 import { usePrefs } from './lib/prefs';
-import type { FamilyKey } from './lib/polyhedra/families';
+import { FAMILY_ORDER, type FamilyKey } from './lib/polyhedra/families';
 
 const ShapeViewer = dynamic(() => import('./components/ShapeViewer'), {
   ssr: false,
@@ -315,7 +315,17 @@ export default function Home() {
             Polyhedra<span style={{ color: '#47cc24' }}>verse</span>
           </h1>
           <p className="text-sm" style={{ color: '#5ee233', opacity: 0.8 }}>
-            162 shapes across 8 families — vertex ball-joints and face-to-face connections
+            {/* Real bug, direct report ("Entry page is stale... many more
+                shapes than 137"): this used to be a hand-typed "162
+                shapes across 8 families" that quietly went stale again
+                the moment new shapes/families shipped (matches the
+                changelog's own record of fixing this exact class of
+                staleness once already, for a previous hardcoded "137").
+                Derived straight from the same registry the rest of the
+                app already uses (core.ts's own "derive, don't
+                duplicate" rule), so it can never drift out of sync
+                again. */}
+            {POLYHEDRON_IDS.length} shapes across {FAMILY_ORDER.length} families — vertex ball-joints and face-to-face connections
           </p>
         </div>
         <div className="flex items-center gap-2">

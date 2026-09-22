@@ -21,6 +21,10 @@
  *     redesign history.
  *   - "quad-prisms" — 4 prism-like "extender" pieces (done, 2 rhombus
  *     bases + 2 kite bases, square/rectangle lateral faces)
+ *   - "rd-relatives" — 2 real solids ported from Rhombiverse (Elongated
+ *     Dodecahedron, Rhombohedron), both directly related to
+ *     RHOMBIC_DODECAHEDRON (catalan.ts) -- see that sub-group's own
+ *     index.ts for the full construction/verification record.
  * combined here exactly the way index.ts (one level up) combines every
  * other family's own file.
  */
@@ -30,16 +34,19 @@ import { GRADED_PYRAMID_ADDITIONS, GRADED_PYRAMID_ADDITION_IDS } from './pyramid
 import { RVCMG_V2_CONNECTOR_ADDITIONS, RVCMG_V2_CONNECTOR_ADDITION_IDS } from './rvcmg-connectors-v2';
 import { RVCMG_CONNECTOR_ADDITIONS as ARCHIVED_RVCMG_CONNECTOR_ADDITIONS, RVCMG_CONNECTOR_ADDITION_IDS as ARCHIVED_RVCMG_CONNECTOR_ADDITION_IDS } from './rvcmg-connectors-v1-archived';
 import { QUAD_PRISM_ADDITIONS, QUAD_PRISM_ADDITION_IDS } from './quad-prisms';
+import { RD_RELATIVES_ADDITIONS, RD_RELATIVES_ADDITION_IDS } from './rd-relatives';
 
 export { GRADED_PYRAMID_ADDITIONS, GRADED_PYRAMID_ADDITION_IDS } from './pyramids';
 export { RVCMG_V2_CONNECTOR_ADDITIONS, RVCMG_V2_CONNECTOR_ADDITION_IDS } from './rvcmg-connectors-v2';
 export { ARCHIVED_RVCMG_CONNECTOR_ADDITIONS, ARCHIVED_RVCMG_CONNECTOR_ADDITION_IDS };
 export { QUAD_PRISM_ADDITIONS, QUAD_PRISM_ADDITION_IDS } from './quad-prisms';
+export { RD_RELATIVES_ADDITIONS, RD_RELATIVES_ADDITION_IDS } from './rd-relatives';
 
 export const MISCELLANEOUS_ADDITIONS: Record<string, PolyhedronSpec> = {
   ...GRADED_PYRAMID_ADDITIONS,
   ...RVCMG_V2_CONNECTOR_ADDITIONS,
   ...QUAD_PRISM_ADDITIONS,
+  ...RD_RELATIVES_ADDITIONS,
 };
 
-export const MISCELLANEOUS_ADDITION_IDS: string[] = [...GRADED_PYRAMID_ADDITION_IDS, ...RVCMG_V2_CONNECTOR_ADDITION_IDS, ...QUAD_PRISM_ADDITION_IDS];
+export const MISCELLANEOUS_ADDITION_IDS: string[] = [...GRADED_PYRAMID_ADDITION_IDS, ...RVCMG_V2_CONNECTOR_ADDITION_IDS, ...QUAD_PRISM_ADDITION_IDS, ...RD_RELATIVES_ADDITION_IDS];

@@ -20,6 +20,7 @@
 import { useCallback, useEffect, useState } from 'react';
 import ShapePreview from './browser/ShapePreview';
 import { usePrefs } from '../lib/prefs';
+import { POLYHEDRON_IDS } from '../lib/polyhedra';
 
 export interface WelcomeOverlayProps {
   open: boolean;
@@ -96,12 +97,19 @@ export default function WelcomeOverlay({ open, onClose }: WelcomeOverlayProps) {
           Polyhedra<span style={{ color: GREEN }}>verse</span>
         </h1>
         <p style={{ margin: 0, fontSize: 13, opacity: 0.8, fontStyle: 'italic', color: GREEN_BRIGHT }}>
-          137 shapes, one registry — connect them face to face, vertex to vertex.
+          {/* Real bug, direct report ("Entry page is stale... many more
+              shapes than 137"): this hand-typed count went stale the
+              moment new shapes shipped after it was last updated --
+              derived from POLYHEDRON_IDS.length now (the star solids
+              below are a genuinely separate registry, never included in
+              this count in the first place, so no extra subtraction is
+              needed here). */}
+          {POLYHEDRON_IDS.length} shapes, one registry — connect them face to face, vertex to vertex.
         </p>
         {/* Real user catch: the welcome page never mentioned the 4 Kepler-
             Poinsot star solids at all, undersizing what the app actually
             has. Deliberately its own smaller, dimmer line rather than
-            folded into the "137" count above -- these 4 are look-only
+            folded into the count above -- these 4 are look-only
             (self-intersecting faces, no well-defined flush attach), so
             stating them as part of the same "connect them" claim would be
             wrong, not just imprecise. */}
