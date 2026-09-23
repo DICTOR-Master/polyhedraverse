@@ -14,11 +14,27 @@
  *     default/shared interface 2026-09-17 (the RD-native hex was up to
  *     1.73x too big to fit inside the tightest target, a unit-edge
  *     triangle), but kept intact — code and tests still pass — for
- *     reference. Deliberately NOT spread into `MISCELLANEOUS_ADDITIONS`
- *     below, so it no longer appears anywhere in the live app; exported
- *     separately as `ARCHIVED_*` for anyone who wants to reach it
- *     directly. See docs/rvcmg-adapter-pieces-spec.md for the full
- *     redesign history.
+ *     reference. The 7 adapters stay OUT of `MISCELLANEOUS_ADDITIONS`
+ *     below (superseded by v2's own 8 pieces); RVCMG_RD_HEMI alone is
+ *     re-added (2026-09-23, direct user request), since it's a real
+ *     standalone solid (RD's own real dome half) rather than an
+ *     interface-scale-dependent adapter, and its rhombi are exactly
+ *     congruent to `RD_RELATIVES_ADDITIONS.ELONGATED_DODECAHEDRON`'s
+ *     own 8 rhombi (both built at RD's real native scale) -- confirmed
+ *     directly via `facesCongruent`, not assumed. Its hex face is NOT
+ *     congruent to ElongatedDodecahedron's own hexagons, though: same
+ *     alternating-angle sequence (109.47/125.26 degrees, RD's own
+ *     recurring angle pair) but a different edge-length pattern --
+ *     RD-Hemi's hex comes from bisecting RD along one of its 12
+ *     face-normal axes, while ElongatedDodecahedron's elongation runs
+ *     along an unrelated vertex-to-vertex axis of the same RD, so the
+ *     two hexagons were never the same cut to begin with (confirmed:
+ *     every one of ElongatedDodecahedron's own 12 face-normal axes
+ *     either gives no clean bisection of it at all, or a different,
+ *     much larger hexagon -- a matching dome for its own actual hex
+ *     face would need a fresh bespoke derivation, not a re-slice of
+ *     existing geometry). See docs/rvcmg-adapter-pieces-spec.md for the
+ *     full redesign history.
  *   - "quad-prisms" — 4 prism-like "extender" pieces (done, 2 rhombus
  *     bases + 2 kite bases, square/rectangle lateral faces)
  *   - "rd-relatives" — 2 real solids ported from Rhombiverse (Elongated
@@ -47,6 +63,7 @@ export const MISCELLANEOUS_ADDITIONS: Record<string, PolyhedronSpec> = {
   ...RVCMG_V2_CONNECTOR_ADDITIONS,
   ...QUAD_PRISM_ADDITIONS,
   ...RD_RELATIVES_ADDITIONS,
+  RVCMG_RD_HEMI: ARCHIVED_RVCMG_CONNECTOR_ADDITIONS.RVCMG_RD_HEMI,
 };
 
-export const MISCELLANEOUS_ADDITION_IDS: string[] = [...GRADED_PYRAMID_ADDITION_IDS, ...RVCMG_V2_CONNECTOR_ADDITION_IDS, ...QUAD_PRISM_ADDITION_IDS, ...RD_RELATIVES_ADDITION_IDS];
+export const MISCELLANEOUS_ADDITION_IDS: string[] = [...GRADED_PYRAMID_ADDITION_IDS, ...RVCMG_V2_CONNECTOR_ADDITION_IDS, ...QUAD_PRISM_ADDITION_IDS, ...RD_RELATIVES_ADDITION_IDS, 'RVCMG_RD_HEMI'];
