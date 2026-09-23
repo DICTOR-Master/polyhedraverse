@@ -36,6 +36,7 @@ export type FamilyKey =
   | 'PRISMS'
   | 'ANTIPRISMS'
   | 'FOURD'
+  | 'PARALLELOHEDRA'
   | 'MISCELLANEOUS';
 
 export const FAMILY_ORDER: FamilyKey[] = [
@@ -47,6 +48,7 @@ export const FAMILY_ORDER: FamilyKey[] = [
   'PRISMS',
   'ANTIPRISMS',
   'FOURD',
+  'PARALLELOHEDRA',
   'MISCELLANEOUS',
 ];
 
@@ -88,6 +90,17 @@ export const FAMILY_META: Record<FamilyKey, { label: string; symbol: string }> =
   // squares" evokes a tesseract's own classic projection, distinct from
   // every other symbol here.
   FOURD: { label: '4D-Capable', symbol: '⧉' },
+  // Fedorov's 5 real parallelohedra (Cube, Hexagonal Prism, Rhombic
+  // Dodecahedron, Elongated Dodecahedron, Truncated Octahedron) -- the
+  // only convex solids that tile 3D space by translation alone. Like
+  // FOURD, a computed cross-cutting family layered on top of each
+  // shape's own native family (all 5 keep their original membership;
+  // see BASE_IDS.PARALLELOHEDRA below), not a new geometry source. The
+  // orthogonal-crosshatch "mosaic" glyph literally reads as tiled
+  // squares -- the defining property of this family -- and is
+  // deliberately distinct from FOURD's diagonal-crosshatch ⧉ (a
+  // tesseract-projection cue, not a tiling one).
+  PARALLELOHEDRA: { label: 'Parallelohedra', symbol: '▦' },
   // Graded pyramids and, eventually, the RVCMG adapter pieces (see
   // docs/rvcmg-adapter-pieces-spec.md) -- irregular add-ons that don't
   // belong to one of the classical families above. A house/roof
@@ -119,7 +132,20 @@ const BASE_IDS: Record<FamilyKey, string[]> = {
   // per-family data files -- this is the base membership itself, so it
   // belongs here, not there.
   FOURD: FOURD_CAPABLE_IDS,
-  MISCELLANEOUS: MISCELLANEOUS_ADDITION_IDS,
+  // The 5 real Fedorov parallelohedra, by their existing POLYHEDRA ids
+  // (CUBE: platonic.ts: PRISM_6: prisms.ts; RHOMBIC_DODECAHEDRON:
+  // catalan.ts; ELONGATED_DODECAHEDRON: miscellaneous/rd-relatives;
+  // TRUNCATED_OCTAHEDRON: archimedean.ts) -- same cross-cutting pattern
+  // as FOURD above, not a new geometry source. Curated by hand (there's
+  // no "isParallelohedron" computable property here the way FOURD has
+  // closureClass's dihedral-angle math), since there are exactly 5 and
+  // they're a fixed, named mathematical result (Fedorov 1885).
+  PARALLELOHEDRA: ['CUBE', 'PRISM_6', 'RHOMBIC_DODECAHEDRON', 'ELONGATED_DODECAHEDRON', 'TRUNCATED_OCTAHEDRON'],
+  // ELONGATED_DODECAHEDRON moves OUT of Miscellaneous into its real
+  // family above (Miscellaneous was always just a catch-all for shapes
+  // without a proper family, and Parallelohedra is one). Every other
+  // Miscellaneous shape's membership is untouched.
+  MISCELLANEOUS: MISCELLANEOUS_ADDITION_IDS.filter((id) => id !== 'ELONGATED_DODECAHEDRON'),
 };
 
 // Explicit, documented cross-family overlap patch -- encodes facts that

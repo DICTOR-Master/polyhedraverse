@@ -349,6 +349,11 @@ function resolveSlots(
       // badge), just not one the wheel itself navigates to -- the empty
       // array means the loop below simply assigns it no face.
       FOURD: [],
+      // Parallelohedra (families.ts): Fedorov's 5 real space-filling
+      // solids. Same "claims no face" placeholder as FOURD -- every
+      // member already has a face via its own native family, and this
+      // cross-cutting family isn't wired into wheel navigation yet.
+      PARALLELOHEDRA: [],
       // Miscellaneous (families.ts): graded pyramids and, eventually,
       // the RVCMG adapter pieces. Not yet wired into the wheel's own
       // navigation (no UI integration has happened for this family
