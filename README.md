@@ -34,8 +34,9 @@ difference between a 3-dimensional and a 4-dimensional object is
 something you can actually see change in front of you, not just read
 about — and an "RCP-Coordinates" overlay goes a layer deeper, showing the
 literal points the construction generates each cell from. See
-**[Radial Cell Projection](docs/radial-cell-projection.md)** for the
-full mathematical method this is built on.
+**[Radial Cell Projection](docs/radial-cell-projection.md)** for how
+the app implements that classical construction (Coxeter's reflection
+construction, shown as Schlegel-style perspective projections).
 
 Two ways to connect ordinary 3D pieces: click a free vertex and snap on
 a new piece with a free rotational joint (molecular-model-kit style —
@@ -297,9 +298,8 @@ Since then:
   adjacency degrees, exact cell-to-cell angles, and — the decisive check
   — that adjacent cells' shared faces coincide vertex-for-vertex, not
   just share the right angle. `dualize()` additionally implements
-  4-polytope duality as a generic operation (the 600-cell is reached
-  this way, dualizing the already-verified 120-cell, reproducing all 600
-  tetrahedral cells exactly).
+  4-polytope duality as a generic operation, used to cross-check the
+  directly built 600-cell against the dual of the 120-cell.
 - **RCP-C2B (Radial Cell Projection, click-to-build)** — the real 4D system
   above, made interactive: pick any 4D-Capable shape and build its
   actual regular 4-polytope one cell at a time, right in the main scene,
@@ -314,17 +314,13 @@ Since then:
   4-dimensional structure, not just take it on faith. The choice
   persists with the rest of the scene, so reloading a saved build keeps
   the view you left it in. Covers all 6 verified closures, including the
-  600-cell — reached via `dualize()` on the already-verified 120-cell
-  rather than a direct reflection, and rendered from its own true
-  geometry: the 120-cell's perfect vertex-transitivity means every one
-  of its 600 tetrahedral cells is mathematically equivalent, so RCP-C2B
-  shows the real, exact shape rather than an artificially "tidied up"
-  stand-in. An **"RCP-Coordinates" overlay** reveals the construction
+  600-cell, which is built by direct reflection like the others, so its
+  seed cell is an exactly regular tetrahedron. An **"RCP-Coordinates" overlay** reveals the construction
   itself: each built cell's own real generating coordinate, marked with
   a small cross (like a point on an architect's drawing, not a solid
   ball) and joined to the shape's center by a purple laser beam — on the
-  600-cell, a second color also marks its dual points, each one the true
-  center of a dodecahedral cell from the original 120-cell. A dimmer
+  600-cell, a second color also marks its dual points, each in the
+  direction of a dodecahedral cell centre of the dual 120-cell. A dimmer
   preview extends one step further than what's actually built, showing
   exactly where the next click will go, right up to the closure's real
   limit.
@@ -539,8 +535,9 @@ companion, `data/johnson-solids-hard-constructions.json` — every field
 in it cross-checked against this registry's own live `POLYHEDRA` data
 before being recorded, not transcribed from the narrative postmortems
 by hand.
-`docs/radial-cell-projection.md` is the normative write-up of the real
-4D method (author James Baker), extended with a full verification
+`docs/radial-cell-projection.md` is the write-up of how the app
+implements the classical 4D reflection construction (from a proposal by
+James Baker; the mathematics is Coxeter's and Schlegel's), with a full verification
 record for the two closures found after the original four (the 5-cell
 and 600-cell) and the shell/BFS bookkeeping RCP-C2B's click-to-build
 feature hangs off — editorial additions, not a rewrite of the original.

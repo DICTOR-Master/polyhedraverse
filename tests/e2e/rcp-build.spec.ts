@@ -225,19 +225,13 @@ test('a shape with more than one real closure (D4) offers a picker, including 60
 });
 
 /**
- * The 600-cell needed a second, deeper fix (2026-09-16): its own "cell 0"
- * (build600CellFromDodecahedron's dual-derived tetrahedron) is honestly,
- * unavoidably non-regular (the 120-cell's own vertex-transitivity means
- * no dual cell is any less distorted than any other), so unlike every
- * other closure it has no real external registry shape to match -- the
- * ROOT itself is built from cell 0's own real geometry when Closed (the
- * default), and only falls back to the plain, perfectly regular
- * tetrahedron when Open. This checks the root's own mesh actually swaps
- * with the toggle (unlike every other closure, where only the children
- * do), that shell 1 still closes correctly, and that the choice survives
- * a real save/reload.
+ * Since 2026-09-24 the 600-cell is built by direct reflection, so its
+ * cell 0 is the regular registry tetrahedron and the root behaves like
+ * every other closure's (it used to swap its own mesh on Open/Closed,
+ * because the old dual-derived cell 0 was skewed). Checks shell 1
+ * closes, the toggle works both ways, and the view survives save/reload.
  */
-test('D4 -> 600-cell: shell 1 closes correctly, and the ROOT itself (not just children) toggles Open/Closed', async ({ page }) => {
+test('D4 -> 600-cell: shell 1 closes correctly and toggles Open/Closed', async ({ page }) => {
   await resetTo(page, 'D4');
   const { cx, cy } = await getCanvasCenter(page);
   await page.mouse.click(cx, cy);
@@ -251,9 +245,8 @@ test('D4 -> 600-cell: shell 1 closes correctly, and the ROOT itself (not just ch
   }
   await expect(page.getByRole('button', { name: /Add next cell/ })).toHaveCount(0);
 
-  // Toggle Open and back to Closed -- the root's own mesh must survive
-  // both swaps without erroring (fixture's own console-error auto-check)
-  // and the shape stays selected/interactable throughout.
+  // Toggle Open and back to Closed -- no console errors (fixture's own
+  // auto-check) and the root stays selected/interactable throughout.
   await page.getByRole('button', { name: 'Open', exact: true }).click();
   await page.waitForTimeout(200);
   await expect(page.locator('text=/Selected D4 node/')).toBeVisible();

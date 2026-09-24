@@ -15,8 +15,6 @@ import {
   buildCellComplex,
   cellVertices,
   dualize,
-  dualToCellLikeComplex,
-  build600CellFromDodecahedron,
   buildRadialProjectionScene,
   dot4,
   bisectingMirror,
@@ -70,8 +68,8 @@ for (const id of FOURD_CAPABLE_IDS) {
 }
 
 // (2) For every REAL CLOSURE (one seed can have more than one -- D4 has
-// 2 direct-theta closures here, the 5-cell and 16-cell; the 600-cell is
-// checked separately in (4)/(4b) via dualize), the GENERIC engine (on
+// 3: the 5-cell, 16-cell and 600-cell; the 600-cell is also cross-checked
+// against dualize(120-cell) in (4b)), the GENERIC engine (on
 // the app's own real vertex/face data) must reproduce the already-
 // verified cell count and per-cell adjacency degree.
 for (const [id, options] of Object.entries(FOUR_D_SHAPE_PARAMS)) {
@@ -217,41 +215,41 @@ for (const [id, options] of Object.entries(FOUR_D_SHAPE_PARAMS)) {
   assert(radiusSpread < 1e-6, `dualize(120-cell): all 600 dual vertices (original cell centroids) are equidistant from the origin (spread=${radiusSpread})`);
 }
 
-// (4b) dualToCellLikeComplex/build600CellFromDodecahedron: the adapter
-// that lets the shell-build feature treat the 600-cell's own
-// dualize()-derived path uniformly with the other 5 direct-theta
-// closures. Checks the adapter preserves (4)'s own combinatorics (600
-// cells, degree 4, 1200 adjacent pairs) and adds real shell/BFS
-// coverage the raw DualCellComplex has no notion of.
+// (4b) Two independent routes to the 600-cell must agree: the direct
+// D4 reflection build (theta ~= 15.52deg) and dualize() on the
+// dodecahedron's 120-cell. Same cell and adjacency counts, and the same
+// vertex set up to rotation and scale -- checked via the sorted multiset
+// of pairwise angles between (normalized) vertices, which any rotation
+// preserves and a different polytope with matching counts would not.
+// This is what catches a theta that closes, but into the wrong shape
+// (the trap docs/radial-cell-projection.md section 21.2 records).
 {
-  const adapted = build600CellFromDodecahedron();
-  assert(adapted.seedSpecId === 'D4' && adapted.targetName === '600-cell', `build600CellFromDodecahedron: labeled seedSpecId='D4', targetName='600-cell', got seedSpecId=${adapted.seedSpecId}, targetName=${adapted.targetName}`);
-  assert(adapted.cells.length === 600, `build600CellFromDodecahedron: 600 cells, got ${adapted.cells.length}`);
-  assert(adapted.cells.every((c) => c.vertices4D.length === 4), `build600CellFromDodecahedron: every cell has exactly 4 vertices`);
+  const direct = buildCellComplex(POLYHEDRA.D4, '600-cell');
+  const dual = dualize(buildCellComplex(POLYHEDRA.DODECAHEDRON, '120-cell'));
+  assert(direct.cells.length === dual.cells.length, `600-cell cross-check: direct ${direct.cells.length} cells vs dualize ${dual.cells.length}`);
+  assert(direct.adjacency.length === dual.adjacency.length, `600-cell cross-check: direct ${direct.adjacency.length} adjacent pairs vs dualize ${dual.adjacency.length}`);
 
-  const degree = new Array(adapted.cells.length).fill(0);
-  for (const [a, b] of adapted.adjacency) {
-    degree[a]++;
-    degree[b]++;
-  }
-  assert(degree.every((d) => d === 4), `build600CellFromDodecahedron: every cell has degree 4, got degrees ${[...new Set(degree)]}`);
-  assert(adapted.adjacency.length === 1200, `build600CellFromDodecahedron: 1200 adjacent pairs, got ${adapted.adjacency.length}`);
-
-  // shell must actually be computed (not left at a default), cover
-  // every cell reachable from cell 0 (the whole complex, since it's
-  // connected), and never jump by more than 1 across a real edge.
-  const shells = new Set(adapted.cells.map((c) => c.shell));
-  assert(shells.size > 1, `build600CellFromDodecahedron: shell is real BFS-ring data, not a constant (distinct values: ${shells.size})`);
-  const cell0 = adapted.cells.find((c) => c.id === 0)!;
-  assert(cell0.shell === 0, `build600CellFromDodecahedron: cell 0 is shell 0, got ${cell0.shell}`);
-  const cellsById = new Map(adapted.cells.map((c) => [c.id, c]));
-  const shellJumpOk = adapted.adjacency.every(([x, y]) => Math.abs(cellsById.get(x)!.shell - cellsById.get(y)!.shell) <= 1);
-  assert(shellJumpOk, `build600CellFromDodecahedron: shell never jumps by more than 1 across a real adjacency edge`);
-
-  // Calling dualToCellLikeComplex directly on a fresh dualize() result
-  // must agree with the convenience wrapper -- same combinatorics either way.
-  const direct = dualToCellLikeComplex(dualize(buildCellComplex(POLYHEDRA.DODECAHEDRON, '120-cell')), 'D4', '600-cell');
-  assert(direct.cells.length === adapted.cells.length && direct.adjacency.length === adapted.adjacency.length, `dualToCellLikeComplex: direct call agrees with build600CellFromDodecahedron's own convenience wrapper`);
+  const uniqueUnit = (points: Vec4[]): Vec4[] => {
+    const out: Vec4[] = [];
+    for (const p of points) {
+      const r = Math.hypot(...p);
+      const u = p.map((c) => c / r) as Vec4;
+      if (!out.some((q) => Math.hypot(q[0] - u[0], q[1] - u[1], q[2] - u[2], q[3] - u[3]) < 1e-6)) out.push(u);
+    }
+    return out;
+  };
+  const sortedDots = (vs: Vec4[]): number[] => {
+    const dots: number[] = [];
+    for (let i = 0; i < vs.length; i++) for (let j = i + 1; j < vs.length; j++) dots.push(dot4(vs[i], vs[j]));
+    return dots.sort((x, y) => x - y);
+  };
+  const directVerts = uniqueUnit(direct.cells.flatMap((c) => cellVertices(direct, c)));
+  const dualVerts = uniqueUnit(dual.cells.flatMap((c) => c.vertices));
+  assert(directVerts.length === 120 && dualVerts.length === 120, `600-cell cross-check: 120 distinct vertices each (direct ${directVerts.length}, dualize ${dualVerts.length})`);
+  const a = sortedDots(directVerts);
+  const b = sortedDots(dualVerts);
+  const worst = Math.max(...a.map((x, i) => Math.abs(x - b[i])));
+  assert(worst < 1e-6, `600-cell cross-check: direct and dualize vertex sets are congruent (worst pairwise-angle cosine difference ${worst})`);
 }
 
 // (5) Stage 7's rendering bridge: buildRadialProjectionScene must

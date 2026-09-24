@@ -133,8 +133,7 @@ export interface FourDShapeParams {
 /**
  * One entry PER REAL CLOSURE, not per seed shape -- a seed can have more
  * than one (D4/tetrahedron genuinely closes into 3 different regular
- * 4-polytopes: the 5-cell, the 16-cell, and, via `dualize` on the
- * 120-cell rather than a direct theta, the 600-cell -- see
+ * 4-polytopes: the 5-cell, the 16-cell, and the 600-cell -- see
  * docs/radial-cell-projection.md section 21 and
  * scripts/verify-radial-projection.ts for how each was independently
  * verified). `buildCellComplex`'s own `choice` parameter picks among a
@@ -153,13 +152,27 @@ export interface FourDShapeParams {
  */
 const FIVE_CELL_THETA_DEG = (Math.acos(-1 / 4) * 180) / Math.PI;
 
+/**
+ * The 600-cell's theta, also derived: its dihedral angle is the standard
+ * arccos(-(1+3*sqrt5)/8) ~= 164.4775deg, and theta here is the angle
+ * between two adjacent cells' outward normals, i.e. 180deg minus the
+ * dihedral: arccos((1+3*sqrt5)/8) ~= 15.5225deg. Verified directly against
+ * `buildCellComplex` (2026-09-24): 600 cells, every one degree-4, 1200
+ * adjacent pairs, 120 distinct vertices, every cell an undistorted
+ * regular tetrahedron, every adjacent pair sharing exactly 3 vertices.
+ * An earlier version of this file built the 600-cell only by dualizing
+ * the 120-cell, on the untested assumption that no direct theta existed;
+ * the real obstacle was MAX_CELLS_GUARD, then 200 (see its own comment).
+ * `dualize` is kept as an independent cross-check of this closure in
+ * scripts/verify-radial-projection.ts.
+ */
+const SIX_HUNDRED_CELL_THETA_DEG = (Math.acos((1 + 3 * Math.sqrt(5)) / 8) * 180) / Math.PI;
+
 export const FOUR_D_SHAPE_PARAMS: Record<string, FourDShapeParams[]> = {
   D4: [
     { name: '16-cell', thetaDeg: 60, cellCount: 16, adjacencyDegree: 4 }, // tetrahedron -> 16-cell (original, kept first = default)
     { name: '5-cell', thetaDeg: FIVE_CELL_THETA_DEG, cellCount: 5, adjacencyDegree: 4 }, // tetrahedron -> 5-cell
-    // 600-cell is NOT here -- it has no direct theta closure from D4 in
-    // this engine's own reflection model; it's built via `dualize()` on
-    // the already-closed 120-cell instead (see `build600CellFromDodecahedron`).
+    { name: '600-cell', thetaDeg: SIX_HUNDRED_CELL_THETA_DEG, cellCount: 600, adjacencyDegree: 4 }, // tetrahedron -> 600-cell
   ],
   CUBE: [{ name: 'tesseract', thetaDeg: 90, cellCount: 8, adjacencyDegree: 6 }], // cube -> tesseract
   D8: [{ name: '24-cell', thetaDeg: 60, cellCount: 24, adjacencyDegree: 8 }], // octahedron -> 24-cell
@@ -203,10 +216,13 @@ export interface FourDCellComplex {
   adjacency: [cellIdA: number, cellIdB: number, viaFaceOfA: number][];
 }
 
-// No target 4-polytope in FOUR_D_SHAPE_PARAMS exceeds 120 cells -- this
-// is a safety cap against a runaway orbit (e.g. a wrong theta that never
-// closes), not a tuned limit.
-const MAX_CELLS_GUARD = 200;
+// The largest target in FOUR_D_SHAPE_PARAMS is the 600-cell -- this is a
+// safety cap against a runaway orbit (e.g. a wrong theta that never
+// closes), not a tuned limit. It was 200 until 2026-09-24, which silently
+// ruled out any direct 600-cell closure: a correct theta hit the cap and
+// was reported as "never closes". Keep it well above every real target so
+// a future closure search can't be misled the same way.
+const MAX_CELLS_GUARD = 1000;
 
 function normalKey(n: Vec4): string {
   return n.map((c) => Math.round(c * 1e6) / 1e6).join(',');
@@ -361,7 +377,7 @@ export interface DualCell {
   id: number;
   vertices: Vec4[]; // this dual cell's own embedded vertices (one per original polytope CELL incident to the corresponding original VERTEX) -- these ARE the "dual points" (each one a center of an original-complex cell), not a separate quantity to compute.
   normal: Vec4; // this dual cell's own outward direction -- equal to the corresponding original polytope vertex's own direction
-  originalVertex: Vec4; // the real (un-normalized) original-polytope vertex position this dual cell corresponds to -- its own "coordinate point" (see rcpBuild.ts's own RcpComplex.cells[].coordPoint3D doc comment)
+  originalVertex: Vec4; // the real (un-normalized) original-polytope vertex position this dual cell corresponds to 
 }
 
 export interface DualCellComplex {
@@ -389,6 +405,11 @@ function keyOf4(v: Vec4): string {
  * seed. Checked in scripts/verify-radial-projection.ts against the
  * already-known 600-cell combinatorics (120 cells, all regular
  * tetrahedra, degree 4, matching V=120,E=720,F=1200,C=600).
+ *
+ * Verification-only since 2026-09-24: the app builds the 600-cell
+ * directly by reflection (SIX_HUNDRED_CELL_THETA_DEG), and
+ * scripts/verify-radial-projection.ts checks that dualizing the 120-cell
+ * gives the same polytope -- two independent routes to one answer.
  */
 export function dualize(complex: FourDCellComplex): DualCellComplex {
   const vertexIndexByKey = new Map<string, number>();
@@ -461,89 +482,4 @@ export function dualize(complex: FourDCellComplex): DualCellComplex {
   }
 
   return { cells: dualCells, adjacency };
-}
-
-/** A cell as consumed by the shell-build feature -- deliberately the same shape for both build paths (direct `buildCellComplex` and `dualize`-derived), so downstream code (Step 2+ of the RCP-C2B plan) doesn't need to know which path produced a given closure. */
-export interface CellLikeCell {
-  id: number;
-  vertices4D: Vec4[];
-  shell: number;
-  /** This cell's own "coordinate point" source (see rcpBuild.ts's RcpComplex.cells[].coordPoint3D) -- for a dual-derived cell, the real original-polytope vertex it corresponds to (DualCell.originalVertex); undefined for a non-dual CellLikeComplex (none exists yet, but the type stays honest about it being dual-only data). */
-  coordPoint4D?: Vec4;
-}
-
-export interface CellLikeComplex {
-  seedSpecId: string;
-  targetName: string;
-  cells: CellLikeCell[];
-  adjacency: [number, number][];
-}
-
-/**
- * Adapts a DualCellComplex onto the same `{cells, adjacency}` shape
- * `buildCellComplex`'s own `FourDCellComplex` already provides for every
- * other closure, so the shell-build feature can treat all 6 verified
- * closures (docs/radial-cell-projection.md section 21) uniformly instead
- * of special-casing the 600-cell's own dualize()-based path.
- *
- * `shell` is computed fresh here via BFS over the dual's own adjacency
- * list from cell 0, mirroring `buildCellComplex`'s own BFS -- the dual
- * complex has no `transform`/`normal` chain to inherit it from, but the
- * same "ring distance from a fixed start cell" meaning applies.
- *
- * Every dual cell here is a regular tetrahedron (each 120-cell vertex
- * has degree exactly 4, so each dual cell has exactly 4 vertices) and
- * the tetrahedron seed's own face list (`POLYHEDRA.D4.faces`) already
- * contains all C(4,3)=4 possible 3-vertex subsets of a 4-point set --
- * so ANY assignment of a dual cell's 4 vertices to indices 0..3
- * produces the same combinatorial tetrahedron via that face list (at
- * worst a global winding/outward-normal flip, never a topological
- * defect). This is what makes reusing D4's own topology safe here
- * without first proving a specific vertex correspondence -- a concern
- * that would matter for a lower-symmetry seed, but not for a shape
- * whose face list is already "every possible face."
- */
-export function dualToCellLikeComplex(dual: DualCellComplex, seedSpecId: string, targetName: string): CellLikeComplex {
-  const neighborsOf = new Map<number, number[]>(dual.cells.map((c) => [c.id, []]));
-  for (const [a, b] of dual.adjacency) {
-    neighborsOf.get(a)?.push(b);
-    neighborsOf.get(b)?.push(a);
-  }
-
-  const shellOf = new Map<number, number>([[0, 0]]);
-  const queue = [0];
-  while (queue.length > 0) {
-    const id = queue.shift()!;
-    for (const neighborId of neighborsOf.get(id) ?? []) {
-      if (!shellOf.has(neighborId)) {
-        shellOf.set(neighborId, shellOf.get(id)! + 1);
-        queue.push(neighborId);
-      }
-    }
-  }
-
-  const cells: CellLikeCell[] = dual.cells.map((c) => ({
-    id: c.id,
-    vertices4D: c.vertices,
-    shell: shellOf.get(c.id) ?? 0,
-    coordPoint4D: c.originalVertex,
-  }));
-
-  return { seedSpecId, targetName, cells, adjacency: dual.adjacency };
-}
-
-/**
- * The 600-cell's own real path: dualize the already-verified
- * dodecahedron -> 120-cell complex rather than reflecting D4 directly
- * (D4 has no direct-theta closure into the 600-cell -- see
- * docs/radial-cell-projection.md section 21.3). `seedSpecId` is 'D4'
- * (not 'DODECAHEDRON') because the resulting cells are tetrahedra, and
- * downstream synthetic-spec construction (RCP-C2B plan Step 3) needs
- * to know which seed's topology to copy for THOSE cells, not the
- * dodecahedron used only as an intermediate.
- */
-export function build600CellFromDodecahedron(maxCells = MAX_CELLS_GUARD): CellLikeComplex {
-  const complex = buildCellComplex(POLYHEDRA.DODECAHEDRON, '120-cell', maxCells);
-  const dual = dualize(complex);
-  return dualToCellLikeComplex(dual, 'D4', '600-cell');
 }

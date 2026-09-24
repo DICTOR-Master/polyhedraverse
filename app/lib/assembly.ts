@@ -294,18 +294,18 @@ export function isValidAssembly(v: unknown): v is Assembly {
     }
     // RCP-C2B: nodeA must be a real root (rcpPolytope set, pointing at
     // a real closure of a real seed), cellId must be a real cell of that
-    // closure, and nodeB's own shape must match whichever seed that
-    // closure's cells actually are (the 600-cell's own cells are always
-    // tetrahedra, i.e. 'D4', regardless of which D4-congruent shape the
-    // root itself used — see rcpBuild.ts's buildRcpComplex doc comment).
+    // closure, and nodeB's own shape must match the root's own seed.
+    // Saves from before 2026-09-24 stored every 600-cell child as 'D4'
+    // (the 600-cell was then built by dualizing the 120-cell, whose
+    // cells were always labelled 'D4'), so that label stays valid there.
     if (conn.kind === 'rcp4d') {
       const rp = a.rcpPolytope;
       if (!rp || !(rp.seedSpecId in POLYHEDRA)) return false;
       const cellCount = closureCellCount(rp.seedSpecId, rp.target);
       if (cellCount === undefined) return false;
       if (conn.cellId === undefined || conn.cellId < 0 || conn.cellId >= cellCount) return false;
-      const cellShapeId = rp.target === '600-cell' ? 'D4' : rp.seedSpecId;
-      if (b.shape !== cellShapeId) return false;
+      const legacy600CellChild = rp.target === '600-cell' && b.shape === 'D4';
+      if (b.shape !== rp.seedSpecId && !legacy600CellChild) return false;
     }
   }
   // No duplicate cellId under the same rcp4d root.
@@ -320,14 +320,11 @@ export function isValidAssembly(v: unknown): v is Assembly {
   return true;
 }
 
-/** The real cell count of `target` (one of an rcp4d root's real closures for `seedSpecId`), or undefined if it's not a real closure of that seed. Reuses radialProjection.ts's own resolveParamsKey (the exact congruence check buildCellComplex itself uses, e.g. for PYRAMID_TRI_G2 resolving to D4's params) rather than duplicating it. The 600-cell isn't in FOUR_D_SHAPE_PARAMS (it's built via dualize(), not a direct theta) so its cell count (600, the standard, independently-verified 600-cell count — see docs/radial-cell-projection.md section 21.3) is hardcoded here, gated on seedSpecId actually being D4-congruent. */
+/** The real cell count of `target` (one of an rcp4d root's real closures for `seedSpecId`), or undefined if it's not a real closure of that seed. Reuses radialProjection.ts's own resolveParamsKey (the exact congruence check buildCellComplex itself uses, e.g. for PYRAMID_TRI_G2 resolving to D4's params) rather than duplicating it. */
 function closureCellCount(seedSpecId: string, target: string): number | undefined {
   const seed = POLYHEDRA[seedSpecId];
   if (!seed) return undefined;
   const key = resolveParamsKey(seed);
-  if (target === '600-cell') {
-    return key === 'D4' ? 600 : undefined;
-  }
   if (!key) return undefined;
   return FOUR_D_SHAPE_PARAMS[key].find((o) => o.name === target)?.cellCount;
 }

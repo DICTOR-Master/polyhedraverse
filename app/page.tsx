@@ -703,15 +703,15 @@ export default function Home() {
               // center out to each built cell's real generating
               // coordinate (RcpComplex.cells[].coordPoint3D's own doc
               // comment), plus -- 600-cell only -- a second color
-              // marking its cells' own vertices, which by construction
-              // ARE the dual points (each one a real center of a
-              // dodecahedral cell from the original 120-cell). Works
+              // marking its cells' own vertices -- the dual points (each
+              // in the direction of a dodecahedral cell centre of the
+              // dual 120-cell). Works
               // identically Open/Closed (coordPoint3D doesn't depend on
               // that toggle), and is never persisted.
               <button
                 type="button"
                 onClick={() => handleRef.current?.setRcpCoordinatesVisible(!nodeSelection.rcpRoot!.coordinatesVisible)}
-                title="Show each built cell's own real generating coordinate as a purple point, joined to the root's center by a line -- plus, for the 600-cell, its dual points (each vertex is a real center of an original 120-cell dodecahedron)"
+                title="Show each built cell's own real generating coordinate as a purple point, joined to the root's center by a line -- plus, for the 600-cell, its dual points (each vertex lines up with a dodecahedral cell centre of the dual 120-cell)"
                 className="rounded-full px-3 py-1 text-xs font-medium transition-colors"
                 style={
                   nodeSelection.rcpRoot.coordinatesVisible

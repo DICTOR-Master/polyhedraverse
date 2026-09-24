@@ -1,6 +1,6 @@
 # Radial Cell Projection (RCP)
 
-### A Cell-First Method for Constructing and Projecting Four-Dimensional Polyhedral Cell Complexes
+### A Cell-First Implementation of the Reflection Construction and Projection of Four-Dimensional Polytopes
 
 **James Baker — 2026**
 
@@ -8,20 +8,20 @@
 
 ## Abstract
 
-Radial Cell Projection (RCP) is a computational method conceived and developed by James Baker during the development of Polyhedraverse in 2026.
+Radial Cell Projection (RCP) is Polyhedraverse's name for its implementation of two classical techniques: generating a regular four-dimensional polytope by repeatedly reflecting one cell across its faces (the reflection, or kaleidoscope, construction of the regular polytopes set out by H. S. M. Coxeter in *Regular Polytopes*, 1948, building on Wythoff), and displaying the result as a perspective projection into three dimensions (a Schlegel diagram, after Victor Schlegel, 1886). James Baker proposed building this into Polyhedraverse in 2026. Neither the construction nor the projection is new.
 
 RCP begins with a regular three-dimensional polyhedral cell and constructs a four-dimensional cell complex by recursively reflecting copies of that cell across its faces in four-dimensional space. The construction is **cell-first**: the three-dimensional seed cell, its faces, their orientations, and a verified dihedral parameter are supplied; the four-dimensional embedding, face-positioned reflection hyperplanes, neighbouring cell transforms, cell adjacency, closure, and final radial projection are derived by a single generic computational procedure.
 
 Four regular seed cells have been implemented and verified, one of them — the tetrahedron — admitting three distinct closures of its own (§21.1):
 
-- tetrahedron → 16-cell, 5-cell, or 600-cell (via dualization, §21.3)
+- tetrahedron → 16-cell, 5-cell, or 600-cell (§21.3)
 - cube → tesseract
 - octahedron → 24-cell
 - dodecahedron → 120-cell
 
 The resulting complexes contain 16, 5, or 600 congruent three-dimensional cells for the tetrahedron's three closures respectively, and 8, 24, and 120 for the cube, octahedron, and dodecahedron. Their adjacency degrees are 4 (all three tetrahedron closures), 6, 8, and 12 respectively. §21.5 gives the complete, updated table of all six verified closures.
 
-RCP does not claim the discovery of these four-dimensional regular polytopes, nor does it claim the invention of radial projection itself. The contribution described here is the particular cell-first computational formulation in which a regular three-dimensional seed is embedded in four dimensions, its actual face geometry determines origin-centred reflection hyperplanes, the complete four-dimensional complex is generated recursively, finite closure is detected computationally, and the resulting structure is subsequently represented through radial projection into three dimensions.
+RCP does not claim the discovery of these polytopes, the reflection construction that generates them, or the projection that displays them. This document describes how Polyhedraverse implements and verifies that construction: embedding a regular seed in four dimensions, deriving each face's reflection hyperplane from the seed's own face geometry, generating the complex until it closes, and checking the result against the known polytopes. What is specific to Polyhedraverse is the interactive side (RCP-C2B, §18): building the polytope cell by cell inside a face-snapping construction kit, with an Open/Closed view that shows the first shell both flat and in its projected position.
 
 ---
 
@@ -61,7 +61,7 @@ Radial Cell Projection arose from a specific question within this system:
 
 > Can a three-dimensional polyhedral cell be used as the fundamental computational unit for constructing its corresponding four-dimensional regular cell complex, rather than treating the four-dimensional object as a separately stored object?
 
-RCP answers this by making the three-dimensional cell the starting point and deriving the four-dimensional structure through face reflections.
+The answer is a classical one. Reflecting a regular cell across the hyperplanes of its faces, and repeating, generates the regular polytope with that cell: this is the reflection construction of the regular polytopes (Coxeter, *Regular Polytopes*, 1948). RCP implements that construction with the three-dimensional cell as its starting point.
 
 The essential computational sequence is:
 
@@ -462,7 +462,7 @@ The dual has:
 
 This provides an additional independent structural test of the generated 120-cell.
 
-Dualization is not required for RCP's primary construction. It is an operation that can be applied to the generated complex after construction.
+Dualization is not required for RCP's primary construction. It is an operation that can be applied to the generated complex after construction. Since 2026-09-24 the 600-cell is built directly (§21.3), and dualizing the 120-cell is kept as an independent check that the direct build is the right polytope.
 
 ## 16. Computational Architecture
 
@@ -568,50 +568,43 @@ For the four currently supported shapes, the same interface invokes the same gen
 
 This interface reflects the underlying computational architecture: the user is selecting a four-dimensional representation of a supported three-dimensional cell, not selecting among four independently authored four-dimensional models.
 
+*Update (2026-09-16): the view-only preview above has been joined by RCP-C2B, an interactive click-to-build mode. Starting from a placed seed, the user adds the first shell one cell at a time and later shells one whole shell at a time. An Open/Closed toggle shows the first shell either as ordinary flat face-attached copies of the seed (Open) or at their projected four-dimensional positions (Closed).*
+
 ## 19. Relationship to Established Four-Dimensional Geometry
 
 The four resulting structures correspond to well-established regular four-dimensional polytopes: the tesseract, the 16-cell, the 24-cell, and the 120-cell.
 
 Radial projection of higher-dimensional polytopes into three dimensions is also an established mathematical technique.
 
-Likewise, the mathematical work of Coxeter and Wythoff provides important established context for regular polytopes and their constructions.
+The construction RCP implements is itself established: generating a regular polytope from one cell by reflections across its faces is the reflection (kaleidoscope) construction of Coxeter's *Regular Polytopes* (1948), which builds on Wythoff's construction. Displaying a four-dimensional polytope as a cell-first perspective projection is a Schlegel diagram.
 
 RCP does not claim authorship of:
 
-- the tesseract;
-- the 16-cell;
-- the 24-cell;
-- the 120-cell;
+- the tesseract, 5-cell, 16-cell, 24-cell, 120-cell or 600-cell;
 - four-dimensional Euclidean geometry;
-- reflection geometry as a mathematical concept;
-- radial projection itself;
+- reflection geometry, or the reflection construction of regular polytopes;
+- radial (perspective) projection or Schlegel diagrams;
 - Coxeter or Wythoff constructions.
 
-Coxeter/Wythoff methods are instead relevant as independent mathematical context and as a means of validating the identity of structures produced by RCP.
-
-The conceptual workflow is therefore:
+RCP is an implementation of the Coxeter reflection construction, and its outputs are validated by comparing them against the known polytopes:
 
 ```
-RCP construction
+Coxeter reflection construction
+      ↓
+RCP implementation
       ↓
 generated structure
       ↓
-independent comparison
+comparison against the known polytope
       ↓
 validation
 ```
 
-and **not**
-
-```
-Coxeter/Wythoff → RCP implementation
-```
-
 ## 20. Nature of the Contribution
 
-The contribution of RCP is the particular computational formulation in which a regular three-dimensional polyhedral cell is treated as the primary object from which a four-dimensional cell complex can be generated.
+The mathematics is classical (§19). What this document contributes is a worked, verified implementation of it inside Polyhedraverse, with the regular three-dimensional cell as the object the user starts from.
 
-The method combines:
+The implementation combines:
 
 1. explicit embedding of the three-dimensional cell in four dimensions;
 2. derivation of the embedding depth from the supplied dihedral parameter;
@@ -620,7 +613,7 @@ The method combines:
 5. recursive generation of neighbouring cells through four-dimensional reflection;
 6. detection of finite closure;
 7. independent geometric verification;
-8. optional dualization;
+8. dualization, used as an independent cross-check (§21.3);
 9. radial projection of the resulting four-dimensional complex into three-dimensional space.
 
 The central construction can therefore be summarized as:
@@ -635,7 +628,7 @@ recursive closure
 radial projection
 ```
 
-This is the RCP formulation developed for Polyhedraverse.
+This is the construction as implemented in Polyhedraverse.
 
 ## 21. Extended Verification: Additional Closures (Polyhedraverse implementation, 2026-09-15)
 
@@ -668,9 +661,21 @@ This was then verified directly against the real implementation, not merely trus
 
 One candidate value was tried and rejected during this process: a plausible-looking angle (also derived from a facet-normal argument, but for the wrong combinatorial object) closed into a real but irrelevant 12-cell structure rather than the 5-cell. This is recorded because it demonstrates the same principle §11 and §13 already state — a value that produces *some* finite closure is not thereby confirmed correct; only a match against the *independently known* target combinatorics (cell count, degree, undistorted copies, shared-face coincidence) counts as verification.
 
-### 21.3 The 600-cell: not a new $\theta$, but the existing dualization operation
+### 21.3 The 600-cell: a direct $\theta$, cross-checked by dualization
 
-No direct $\theta$ was sought for a tetrahedron-seeded 600-cell closure. Instead, §15's own dualization operation was applied to the already-verified dodecahedron→120-cell complex: dualizing exchanges vertices and cells (§15), and the 120-cell's own 600 vertices, each with exactly 4 incident dodecahedral cells, become the 600-cell's own 600 tetrahedral cells under this operation — reproducing the known duality between these two regular 4-polytopes exactly, using the general `dualize()` operation already implemented for any complex, not a case built specifically for this pair.
+*Updated 2026-09-24.* The 600-cell is now built directly from the tetrahedron seed, like the other closures. Its $\theta$ is the angle between adjacent cells' outward normals, i.e. $180°$ minus the 600-cell's standard dihedral angle $\arccos\left(-\frac{1+3\sqrt5}{8}\right) \approx 164.4775°$:
+
+$$\theta_{\text{600-cell}} = \arccos\left(\frac{1+3\sqrt5}{8}\right) \approx 15.5225°.$$
+
+With this $\theta$ the reflection recursion (§10) closes at exactly 600 cells, every cell has degree 4, there are 1200 adjacent pairs and 120 distinct vertices, every cell is an undistorted regular tetrahedron (worst deviation $2 \times 10^{-15}$), and every adjacent pair shares exactly one face's 3 vertices.
+
+The earlier version of this section said that no direct $\theta$ had been sought, and the code carried an untested comment that none existed. Two things kept the direct closure hidden: nobody had tried the angle, and the engine's safety cap on cell count (then 200, now 1000) would have stopped a correct 600-cell run and reported it as never closing. A cap below the target's real cell count makes a correct $\theta$ look wrong, so any future closure search must keep the cap well above its target.
+
+The build used before 2026-09-24 was different: §15's dualization applied to the dodecahedron→120-cell complex. It produced the right polytope, but not a usable seed. Every 600-cell cell comes from a 120-cell vertex, and since the 120-cell is projected cell-first, no 120-cell vertex sits on the projection axis. So the seed tetrahedron was skewed, like every other cell. The direct build puts the seed cell on the axis, so it is exactly regular in projection.
+
+That dualization is now kept as a cross-check: `scripts/verify-radial-projection.ts` checks that the direct build and the dual of the 120-cell have the same cell and adjacency counts and congruent vertex sets (the same sorted multiset of pairwise vertex angles).
+
+The history of that earlier dualization check is kept below.
 
 This was re-verified directly (not merely trusted from the original implementation), including tracing down and ruling out an apparent irregularity: an early diagnostic script measured the resulting dual cells as consistently non-regular tetrahedra (a repeatable 3-short/3-long edge split). Extensive elimination — checking the dual cell's vertex *membership* against an independently-recomputed version (identical), checking that every cell centroid sits at a uniform distance from the origin (uniform to 6 decimal places), and testing the smallest possible case (cube→tesseract→16-cell) to see whether the same pattern appeared there too (it did) — eventually located the actual cause: the diagnostic script itself was computing pairwise distance with a three-dimensional distance function applied to four-dimensional points, silently discarding the fourth coordinate. Reproducing the exact reported discrepancy by deliberately reintroducing that specific error confirmed the diagnosis. The dualization implementation itself was correct throughout; every dual cell, in both the tesseract→16-cell case and the dodecahedron→120-cell→600-cell case, is a genuinely regular tetrahedron once measured correctly in four dimensions.
 
@@ -688,7 +693,7 @@ Extending §11.2's own table with the two additional verified tetrahedron closur
 |---|---|---|---|---|
 | Tetrahedron | $60°$ | 16 | 4 | 16-cell |
 | Tetrahedron | $\arccos(-1/4) \approx 104.4775°$ | 5 | 4 | 5-cell |
-| Tetrahedron (dualizing the dodecahedron→120-cell result) | — | 600 | 4 | 600-cell |
+| Tetrahedron | $\arccos\left(\frac{1+3\sqrt5}{8}\right) \approx 15.5225°$ | 600 | 4 | 600-cell |
 | Cube | $90°$ | 8 | 6 | Tesseract |
 | Octahedron | $60°$ | 24 | 8 | 24-cell |
 | Dodecahedron | $36°$ | 120 | 12 | 120-cell |
@@ -699,19 +704,17 @@ Polyhedraverse separately maintains a "graded pyramid" seed (registry id `PYRAMI
 
 ## 22. Provenance
 
-Radial Cell Projection was conceived and developed by James Baker during the development of Polyhedraverse in 2026.
+The construction and the projection are classical (§19): the reflection construction of the regular polytopes (Coxeter, *Regular Polytopes*, 1948, building on Wythoff) and perspective projection in the manner of Schlegel diagrams.
 
-The method was developed as part of the computational exploration of polyhedral geometry within Polyhedraverse.
+James Baker proposed building this construction into Polyhedraverse in 2026, including the 120-cell and 600-cell, at a point when an earlier Claude Code session had concluded they couldn't be reached with the approach it was then using. The implementation, and the interactive cell-by-cell build around it, were developed in Polyhedraverse from that proposal.
 
-The known mathematical objects produced by the method are not claimed as new objects. The authorship claim concerns the RCP method and its implementation as a cell-first computational construction within Polyhedraverse.
-
-The subsequent comparison of generated structures against established four-dimensional geometry serves as validation of the implementation.
+The polytopes produced are not new objects, and the method is not claimed as new mathematics. Comparing the generated structures against established four-dimensional geometry validates the implementation.
 
 ## 23. Current Scope and Limitations
 
 The present implementation has four verified regular seed cells: tetrahedron, cube, octahedron, dodecahedron.
 
-*Editorial update (Polyhedraverse implementation, 2026-09-15, see §21): the tetrahedron seed is now verified to have three real closures rather than one (5-cell, 16-cell, 600-cell-via-dualization), for six verified closures in total across the four original seed cells. This does not add a new seed cell — it corrects an undercount of how many of this method's own closures a single already-verified seed actually produces.*
+*Editorial update (Polyhedraverse implementation, 2026-09-15, see §21): the tetrahedron seed is now verified to have three real closures rather than one (5-cell, 16-cell, 600-cell), for six verified closures in total across the four original seed cells. The 600-cell was first built by dualization and, since 2026-09-24, directly (§21.3). This does not add a new seed cell — it corrects an undercount of how many of this method's own closures a single already-verified seed actually produces.*
 
 The method should not presently be described as a universal generator for every three-dimensional polyhedron or every possible four-dimensional polytope. In particular:
 
@@ -735,12 +738,12 @@ For the four validated cases, the construction produces:
 - octahedron → 24-cell,
 - dodecahedron → 120-cell.
 
-*Editorial update (Polyhedraverse implementation, 2026-09-15, see §21): the tetrahedron seed also closes, at two further verified $\theta$/operation choices, to the 5-cell and — by dualizing the already-validated dodecahedron → 120-cell complex — the 600-cell, bringing the validated total to six closures. See §21.5 for the full updated table.*
+*Editorial update (Polyhedraverse implementation, 2026-09-15, updated 2026-09-24, see §21): the tetrahedron seed also closes, at two further verified values of $\theta$, to the 5-cell and the 600-cell, bringing the validated total to six closures. See §21.5 for the full updated table.*
 
 The resulting four-dimensional structures are then available for radial projection, visualization, interaction, and further computational operations such as dualization.
 
-The defining principle is therefore not the invention of a new four-dimensional polytope, nor the invention of radial projection, but the construction of a generic computational bridge between three-dimensional polyhedral cells and their validated four-dimensional cell complexes:
+RCP invents neither the polytopes, nor the reflection construction, nor the projection. It is a generic, verified implementation of the classical construction, connecting three-dimensional polyhedral cells to their four-dimensional cell complexes inside Polyhedraverse:
 
 > **Cell first. Reflection generates. Closure verifies. Projection reveals.**
 
-Radial Cell Projection was conceived and developed by James Baker during the development of Polyhedraverse in 2026.
+Implemented in Polyhedraverse from a proposal by James Baker, 2026. Construction after Coxeter (*Regular Polytopes*, 1948); projection after Schlegel.

@@ -20,10 +20,8 @@ import { buildConnectors } from './core';
 import { POLYHEDRA } from './index';
 import {
   buildCellComplex,
-  build600CellFromDodecahedron,
   cellVertices,
   projectVec4ToVec3,
-  type CellLikeComplex,
   type FourDCellComplex,
   type Vec4,
 } from './radialProjection';
@@ -36,10 +34,8 @@ export interface RcpComplex {
   // (same indexing as POLYHEDRA[seedSpecId].vertices/faces) already
   // perspective-projected to 3D, plus its shell (BFS ring distance) and
   // its own "coordinate point" -- the real 4D point the generation
-  // algorithm actually tracks this cell by (for a direct reflection
-  // closure: its own outward `normal` scaled to the seed's embedding
-  // depth; for a dualize()-derived closure like the 600-cell: the real
-  // original-polytope vertex it corresponds to), projected through this
+  // algorithm actually tracks this cell by (its own outward `normal`
+  // scaled to the seed's embedding depth), projected through this
   // same shared perspective frame. Deliberately NOT the same as this
   // cell's own vertex centroid: the two are equal before projection
   // (every reflection here is a pure linear map, so centroid-of-
@@ -98,66 +94,16 @@ function projectAll(
   // an earlier, WRONG attempt at this fix that rescaled each cell's own
   // centroid independently and broke that same shared-vertex
   // coincidence between different cells.
-  //
-  // 600-cell EXCLUDED from this rescale (2026-09-16, second real bug
-  // found live): its own cell 0 (build600CellFromDodecahedron's
-  // dual-derived tetrahedron) is NOT a pure uniform scale of the real
-  // registry seed at all -- it's genuinely non-regular (edge lengths do
-  // NOT all match, confirmed directly), because the 120-cell is
-  // vertex-transitive: EVERY one of its 600 vertices (hence every dual
-  // cell) is geometrically equivalent, so there is no "nicer" choice of
-  // cell 0 that would be undistorted -- this is a real, unavoidable
-  // mathematical fact of the dualize()-derived complex, not a fixable
-  // artifact of which vertex happened to get index 0. Comparing a
-  // single vertex's length ratio against the real seed here would
-  // produce an arbitrary, meaningless scale rather than a real
-  // correction. See effectiveSeedSpec's own doc comment for how this is
-  // actually handled: the 600-cell has no external "real seed" to
-  // match at all -- the whole complex (including its own root) is
-  // self-consistent on its own terms instead.
-  if (targetName !== '600-cell') {
-    const seedSpec = POLYHEDRA[seedSpecId];
-    const cell0 = cells.find((c) => c.id === 0);
-    if (seedSpec && cell0 && cell0.vertices3D.length === seedSpec.vertices.length) {
-      const realLen = Math.hypot(...seedSpec.vertices[0]);
-      const internalLen = Math.hypot(...cell0.vertices3D[0]);
-      if (internalLen > 1e-9) {
-        const scale = realLen / internalLen;
-        for (const cell of cells) {
-          cell.vertices3D = cell.vertices3D.map((v) => [v[0] * scale, v[1] * scale, v[2] * scale] as Vec3);
-          cell.coordPoint3D = [cell.coordPoint3D[0] * scale, cell.coordPoint3D[1] * scale, cell.coordPoint3D[2] * scale];
-        }
-      }
-    }
-  } else {
-    // The 600-cell's own cell 0 (unlike every other closure's) isn't
-    // centered at the shared frame's local origin -- dual-cell vertices
-    // are ORIGINAL-complex cell centroids, absolute points with no
-    // reason to average to zero for any particular dual cell. Every
-    // OTHER placed node in this app (including the root ShapeViewer.tsx
-    // places this complex's own cell 0 as, via effectiveSeedSpec) has
-    // its own vertices centered on its local origin -- so cell 0's own
-    // centroid must be subtracted from EVERY cell's vertices here (one
-    // uniform translation for the whole complex, not just cell 0):
-    // real bug found live, confirmed by measurement, not assumed --
-    // recentering ONLY cell 0 (in an earlier version of this fix) left
-    // every OTHER cell's own vertices still offset by that exact
-    // centroid relative to the now-recentered root, a real ~0.25-unit
-    // residual error. A uniform translation, like the uniform scale
-    // above, preserves every relative relationship in the complex
-    // exactly (shared vertices between adjacent cells stay shared).
-    const cell0 = cells.find((c) => c.id === 0);
-    if (cell0 && cell0.vertices3D.length > 0) {
-      const n = cell0.vertices3D.length;
-      const centroid: Vec3 = [0, 0, 0];
-      for (const v of cell0.vertices3D) {
-        centroid[0] += v[0] / n;
-        centroid[1] += v[1] / n;
-        centroid[2] += v[2] / n;
-      }
+  const seedSpec = POLYHEDRA[seedSpecId];
+  const cell0 = cells.find((c) => c.id === 0);
+  if (seedSpec && cell0 && cell0.vertices3D.length === seedSpec.vertices.length) {
+    const realLen = Math.hypot(...seedSpec.vertices[0]);
+    const internalLen = Math.hypot(...cell0.vertices3D[0]);
+    if (internalLen > 1e-9) {
+      const scale = realLen / internalLen;
       for (const cell of cells) {
-        cell.vertices3D = cell.vertices3D.map((v) => [v[0] - centroid[0], v[1] - centroid[1], v[2] - centroid[2]] as Vec3);
-        cell.coordPoint3D = [cell.coordPoint3D[0] - centroid[0], cell.coordPoint3D[1] - centroid[1], cell.coordPoint3D[2] - centroid[2]];
+        cell.vertices3D = cell.vertices3D.map((v) => [v[0] * scale, v[1] * scale, v[2] * scale] as Vec3);
+        cell.coordPoint3D = [cell.coordPoint3D[0] * scale, cell.coordPoint3D[1] * scale, cell.coordPoint3D[2] * scale];
       }
     }
   }
@@ -182,35 +128,14 @@ function fromFourDCellComplex(complex: FourDCellComplex): RcpComplex {
   return projectAll(complex.seedSpecId, complex.targetName, cellsWithVerts, adjacency);
 }
 
-function fromCellLikeComplex(complex: CellLikeComplex): RcpComplex {
-  const cellsWithVerts = complex.cells.map((cell) => ({
-    id: cell.id,
-    shell: cell.shell,
-    verts4D: cell.vertices4D,
-    // Always populated by dualToCellLikeComplex (its own doc comment) --
-    // the CellLikeCell type keeps it optional only because a non-dual
-    // CellLikeComplex is a real possibility the type shouldn't rule out,
-    // not because this call site can actually see one.
-    coordPoint4D: cell.coordPoint4D!,
-  }));
-  return projectAll(complex.seedSpecId, complex.targetName, cellsWithVerts, complex.adjacency);
-}
-
 /**
  * The one entry point the UI/render layer needs: given a real seed id
- * and a target closure name (e.g. 'D4' + '16-cell', or 'D4' + '600-cell'
- * — the 600-cell's own seedSpecId is always 'D4' regardless of which
- * seed the caller passes, since its cells are tetrahedra built by
- * dualizing the dodecahedron -> 120-cell complex, not by reflecting the
- * passed seed directly; see build600CellFromDodecahedron's own doc
- * comment), returns every cell's projected 3D vertices in one shared
+ * and a target closure name (e.g. 'D4' + '16-cell'), returns every
+ * cell's projected 3D vertices in one shared
  * perspective frame plus the shell/adjacency bookkeeping the shell-build
  * feature needs.
  */
 export function buildRcpComplex(seedSpecId: string, targetName: string): RcpComplex {
-  if (targetName === '600-cell') {
-    return fromCellLikeComplex(build600CellFromDodecahedron());
-  }
   const seedSpec = POLYHEDRA[seedSpecId];
   if (!seedSpec) throw new Error(`buildRcpComplex: unknown seed id ${seedSpecId}`);
   return fromFourDCellComplex(buildCellComplex(seedSpec, targetName));
@@ -239,37 +164,6 @@ export function buildSyntheticCellSpec(seedSpec: PolyhedronSpec, cellId: number,
     faces: seedSpec.faces,
     connectors: buildConnectors(vertices, seedSpec.edges),
   };
-}
-
-/**
- * The EFFECTIVE seed spec for RCP-C2B's own root-placement and
- * ordinary-self-attach ("3D view") purposes. For 5 of the 6 closures
- * this is simply the real registry seed unchanged -- their own cell 0
- * already exactly equals it (see projectAll's own rescale). For the
- * 600-cell specifically, there IS no real registry shape to match:
- * every dual cell (including whichever the construction happens to
- * label "0") is equally, unavoidably non-regular under this projection
- * (the 120-cell's own vertex-transitivity means no cell is any more
- * "central" or undistorted than any other — confirmed directly, not
- * assumed). Rather than force a fake match against a shape it doesn't
- * actually equal, the 600-cell's own root is built from cell 0's real,
- * self-consistent geometry instead — a genuine, valid cell of the true
- * 600-cell, honestly slightly non-regular (confirmed: edge lengths
- * differ by ~5%), exactly the same kind of real, expected distortion
- * every non-reference cell in this whole feature already shows. This
- * keeps the WHOLE complex internally consistent (every adjacent pair's
- * shared face still coincides exactly, since nothing here rescales
- * cells relative to each other, only recenters cell 0 on its own
- * centroid) rather than correct-looking-but-actually-inconsistent.
- */
-export function effectiveSeedSpec(complex: RcpComplex): PolyhedronSpec {
-  const registrySpec = POLYHEDRA[complex.seedSpecId];
-  if (complex.targetName !== '600-cell') return registrySpec;
-  // projectAll has already recentered the WHOLE complex (not just cell
-  // 0) so cell 0 sits at local origin, exactly like every other placed
-  // node's own spec -- no further adjustment needed here.
-  const cell0 = complex.cells.find((c) => c.id === 0)!;
-  return buildSyntheticCellSpec(registrySpec, 0, cell0.vertices3D);
 }
 
 /** Every cell at exactly `shell` in `complex`. */
