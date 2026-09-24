@@ -1,0 +1,20 @@
+{
+  "_comment": "Wording that must never reach Polyhedraverse's user-visible text again: the old project name, superseded feature names, and scope claims the app has outgrown. scripts/verify-copy.mjs checks every user-facing string against these (case-insensitive, whole words). `allowLiterals` are exact string values that are data keys, not text -- e.g. 'fold4' is still how old saved assemblies are recognized and migrated. Add a term whenever you spot a new leftover.",
+  "terms": [
+    "Deltahedraverse",
+    "fold4",
+    "fold 4",
+    "RPC-build",
+    "RPC build",
+    "RPC-C2B",
+    "three-dimensional only",
+    "3D only",
+    "3D / 4D toggle"
+  ],
+  "allowLiterals": [
+    "fold4",
+    "rpc4d",
+    "rpcPolytope",
+    "rpcRoot"
+  ]
+}

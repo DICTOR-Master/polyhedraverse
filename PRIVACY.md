@@ -16,7 +16,7 @@ on a server. There are no accounts, no analytics, and no cookies.
   browser's site data. Real server-side, cross-device sync (see
   `docs/vercel-deployment-plan.md`) is a possible future change — this
   policy will be revisited before that happens.
-- **Standard web server logs.** Once deployed, the hosting provider
+- **Standard web server logs.** The hosting provider
   (Vercel) may log ordinary access data (IP address, timestamp,
   requested file) as part of normal web hosting operation. The app
   itself has no access to or control over the provider's own
@@ -24,7 +24,7 @@ on a server. There are no accounts, no analytics, and no cookies.
 
 ## Third parties
 
-Once deployed, the app is served as static files/serverless functions
+The app is served as static files/serverless functions
 from a hosting provider (Vercel). This project does not add any
 tracking, analytics, or third-party scripts beyond what that provider
 needs to serve the page.

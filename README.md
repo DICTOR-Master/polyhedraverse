@@ -16,19 +16,19 @@ your browser, nothing to install.
 > transforming, and interconnecting polyhedral forms in three dimensions
 > — and, uniquely, in four.
 
-A browser-based construction kit spanning 162 shapes across 8 families
-— the 137 classical convex polyhedra (Platonic, Archimedean, Johnson,
+A browser-based construction kit with over 160 shapes, browsable in 11
+families — the classical convex polyhedra (Platonic, Archimedean, Johnson,
 Catalan, prisms, antiprisms, and the original Deltahedra set this
-project started from) plus a 25-shape "Miscellaneous" family (graded
-pyramids, RVCMG connector pieces, and quad-prism extenders — see "What's
-here now" below) — plus a genuine interactive path into the fourth
+project started from), Parallelohedra, Space-Filling Pairs, the 4D-capable
+seeds, and a "Miscellaneous" family (graded pyramids, RVCMG connector
+pieces, and quad-prism extenders — see "What's here now" below) — plus a genuine interactive path into the fourth
 dimension: **RCP-C2B
 (Radial Cell Projection, Click-to-Build)** lets you construct a real
 regular 4-polytope — the 5-cell, tesseract, 16-cell, 24-cell, 120-cell,
 or 600-cell — one 3D cell at a time, built from the actual
 Wythoff/Coxeter reflection construction mathematicians use to define
-these objects, not an animation or approximation. A one-click "3D / 4D"
-toggle shows the same cell either as an ordinary undistorted shape or
+these objects, not an animation or approximation. A one-click "Open / Closed"
+view toggle shows the same cell either as an ordinary undistorted shape or
 at its real, warped position in the closed 4D structure, so the
 difference between a 3-dimensional and a 4-dimensional object is
 something you can actually see change in front of you, not just read
@@ -306,9 +306,9 @@ Since then:
   not just as a passive reference view. The first ring of cells (every
   direct face-neighbor of the seed) builds one click at a time; once
   that ring is complete, further rings build a whole shell per click. A
-  per-root **3D / 4D toggle** switches every built cell between an
-  ordinary, undistorted flush-attached copy of the seed ("3D") and its
-  real, warped position in the closed 4-polytope ("4D", the same true
+  per-root **Open / Closed toggle** switches every built cell between an
+  ordinary, undistorted flush-attached copy of the seed ("Open") and its
+  real, warped position in the closed 4-polytope ("Closed", the same true
   perspective-projected geometry the reference view uses) — letting you
   watch the actual difference between a 3-dimensional and a
   4-dimensional structure, not just take it on faith. The choice

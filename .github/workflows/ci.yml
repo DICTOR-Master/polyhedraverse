@@ -18,6 +18,9 @@ jobs:
           cache: npm
       - run: npm ci
       - run: npm run lint
+      # Stale-wording guard: fails if an old name or outgrown claim
+      # (scripts/stale-terms.json) reaches user-visible text again.
+      - run: npm run verify:copy
       # LayoutProps/PageProps are ambient types Next.js generates into
       # .next/types/ from a dev/build run -- a fresh checkout never has
       # them otherwise, so tsc fails on app/layout.tsx without this.

@@ -12,9 +12,9 @@ const geistMono = Geist_Mono({
   subsets: ["latin"],
 });
 
-const title = "Polyhedraverse";
+const title = "Polyhedraverse — Build Polyhedra in 3D and 4D";
 const description =
-  "An open-source spatial geometry environment for constructing, transforming, and interconnecting polyhedral forms in three dimensions.";
+  "Snap together over 160 polyhedra in your browser — Platonic, Archimedean, Johnson, Catalan and more — and build real 4D polytopes one cell at a time. Free and open source.";
 
 export const metadata: Metadata = {
   title,

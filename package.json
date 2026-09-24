@@ -63,7 +63,8 @@
     "verify:rvcmg-kite-to-uhex": "tsx app/lib/rvcmg/adapters/kiteToUHex.test.ts",
     "verify:rvcmg-regular-hex-to-uhex": "tsx app/lib/rvcmg/adapters/regularHexToUHex.test.ts",
     "test:rvcmg": "tsx app/lib/rvcmg/rvcmg.test.ts",
-    "test:e2e": "playwright test"
+    "test:e2e": "playwright test",
+    "verify:copy": "node scripts/verify-copy.mjs"
   },
   "dependencies": {
     "next": "16.3.4",
