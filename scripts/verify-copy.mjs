@@ -1,7 +1,8 @@
 // Stale-copy guard (2026-09-24, same design as Rhombiverse's): checks ONLY
 // user-visible text -- string literals and JSX text in shipped app code
 // (TypeScript stripped and comments dropped by esbuild, JSX turned into
-// plain strings, tests skipped), the README and the legal/security pages
+// plain strings, tests skipped), the README, the How-to guide and the
+// legal/security pages
 // -- against scripts/stale-terms.json.
 import fs from 'node:fs';
 import path from 'node:path';
@@ -74,7 +75,7 @@ const check = (file, text, where) => {
 };
 
 for (const f of walk(path.join(root, 'app'))) for (const s of jsStrings(fs.readFileSync(f, 'utf8'), f)) check(f, s);
-for (const f of ['README.md', 'TERMS.md', 'PRIVACY.md', 'SECURITY.md']) {
+for (const f of ['README.md', 'docs/guide.md', 'TERMS.md', 'PRIVACY.md', 'SECURITY.md']) {
   if (!fs.existsSync(path.join(root, f))) continue;
   // Markdown: prose only -- fenced code blocks and `inline code` (real
   // file and function names, e.g. `fold4.ts`) are facts, not wording.

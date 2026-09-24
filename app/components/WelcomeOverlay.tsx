@@ -29,6 +29,7 @@ export interface WelcomeOverlayProps {
    *  only controls whether it comes back on a FUTURE visit, handled
    *  internally here via usePrefs(), not by the caller). */
   onClose: () => void;
+  onOpenGuide: () => void;
 }
 
 const GREEN = '#47cc24';
@@ -37,7 +38,7 @@ const GREEN_PALE = '#a9f795';
 const PANEL_BG = '#0e1209';
 const PANEL_BORDER = 'rgba(71,204,36,.3)';
 
-export default function WelcomeOverlay({ open, onClose }: WelcomeOverlayProps) {
+export default function WelcomeOverlay({ open, onClose, onOpenGuide }: WelcomeOverlayProps) {
   const { setWelcomeSeen } = usePrefs();
   const [dontShowAgain, setDontShowAgain] = useState(false);
 
@@ -104,7 +105,7 @@ export default function WelcomeOverlay({ open, onClose }: WelcomeOverlayProps) {
               below are a genuinely separate registry, never included in
               this count in the first place, so no extra subtraction is
               needed here). */}
-          {POLYHEDRON_IDS.length} shapes, one registry — connect them face to face, vertex to vertex.
+          The portrait gallery: {POLYHEDRON_IDS.length} shapes up close — connect them face to face, vertex to vertex.
         </p>
         {/* Real user catch: the welcome page never mentioned the 4 Kepler-
             Poinsot star solids at all, undersizing what the app actually
@@ -116,6 +117,23 @@ export default function WelcomeOverlay({ open, onClose }: WelcomeOverlayProps) {
         <p style={{ margin: 0, fontSize: 11, opacity: 0.6, color: GREEN_BRIGHT }}>
           + 4 impossible star solids to explore in Full Catalog — look, don&apos;t build.
         </p>
+
+        <button
+          type="button"
+          onClick={onOpenGuide}
+          style={{
+            minHeight: 36,
+            padding: '4px 14px',
+            background: 'none',
+            border: `1px solid ${PANEL_BORDER}`,
+            borderRadius: 18,
+            color: GREEN_BRIGHT,
+            fontSize: 13,
+            cursor: 'pointer',
+          }}
+        >
+          How to use &rarr;
+        </button>
 
         <div style={{ position: 'relative', width: 180, height: 180 }}>
           <ShapePreview specId="DODECAHEDRON" size={180} spin />

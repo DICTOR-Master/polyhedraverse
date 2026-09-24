@@ -8,6 +8,7 @@ import PolyhedralWheel from './components/PolyhedralWheel';
 import CornerHudWheel from './components/CornerHudWheel';
 import ShapeBrowser from './components/browser/ShapeBrowser';
 import WelcomeOverlay from './components/WelcomeOverlay';
+import GuideOverlay from './components/GuideOverlay';
 import ChangelogOverlay from './components/ChangelogOverlay';
 import AssemblyDescriptionPopover from './components/AssemblyDescriptionPopover';
 import { usePrefs } from './lib/prefs';
@@ -145,6 +146,7 @@ export default function Home() {
   // without permanently marking it seen.
   const { welcomeSeen } = usePrefs();
   const [welcomeForceOpen, setWelcomeForceOpen] = useState(false);
+  const [guideOpen, setGuideOpen] = useState(false);
   const [welcomeDismissedThisSession, setWelcomeDismissedThisSession] = useState(false);
   const welcomeOpen = welcomeForceOpen || (!welcomeDismissedThisSession && !welcomeSeen);
   const closeWelcome = () => {
@@ -905,7 +907,8 @@ export default function Home() {
           </button>
         </div>
       )}
-      <WelcomeOverlay open={welcomeOpen} onClose={closeWelcome} />
+      <WelcomeOverlay open={welcomeOpen} onClose={closeWelcome} onOpenGuide={() => setGuideOpen(true)} />
+      <GuideOverlay open={guideOpen} onClose={() => setGuideOpen(false)} />
       <ChangelogOverlay open={changelogOpen} onClose={() => setChangelogOpen(false)} />
       <AssemblyDescriptionPopover
         open={descriptionOpen && !!assemblyName}
