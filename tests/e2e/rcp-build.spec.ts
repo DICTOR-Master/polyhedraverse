@@ -294,6 +294,12 @@ test('D4 -> 600-cell (vertex-first): 19 cells complete the icosahedral cluster, 
   }
   await expect(page.getByRole('button', { name: /Add next cell/ })).toHaveCount(0);
 
+  // Shell colours on and off again (Open view also draws the gap overlay);
+  // the fixture's console-error check covers both.
+  await page.getByRole('button', { name: 'Shell colours' }).click();
+  await page.waitForTimeout(150);
+  await page.getByRole('button', { name: 'Shell colours' }).click();
+
   const openBtn = page.getByRole('button', { name: 'Open', exact: true });
   const closedBtn = page.getByRole('button', { name: 'Closed', exact: true });
   await closedBtn.click();

@@ -11,7 +11,7 @@
  */
 import { POLYHEDRA } from '../app/lib/polyhedra';
 import { triangulateFace, type Vec3 } from '../app/lib/polyhedra/core';
-import { buildRcpComplex, buildSyntheticCellSpec, cellsAtShell, maxShell, rootSpecForView } from '../app/lib/polyhedra/rcpBuild';
+import { buildRcpComplex, buildSyntheticCellSpec, cellsAtShell, maxShell, rootSpecForView, windingOutwardness } from '../app/lib/polyhedra/rcpBuild';
 
 let failures = 0;
 function check(label: string, condition: boolean) {
@@ -239,11 +239,29 @@ for (const { label, seedSpecId, target } of CASES) {
     return other >= 0 && other < c.id && shares(openOf(c.id), openOf(other)) === 3;
   }));
   check('vertex-first 600-cell: every Open cell shares a whole face with an earlier-built one (buildable in id order)', attached);
-  const winding = (vs: Vec3[]) => Math.sign(dot(sub(vs[1], vs[0]), cross(sub(vs[2], vs[0]), sub(vs[3], vs[0]))));
-  check('vertex-first 600-cell: every Open cell keeps the seed\'s handedness (renders outside-out)', shell1.every((c) => winding(c.openVertices3D!) === winding(seedVerts)));
   const clusterPairs = complex.adjacency.filter(([a, b]) => complex.cells[a].shell <= 1 && complex.cells[b].shell <= 1);
   const gaps = clusterPairs.filter(([a, b]) => shares(openOf(a), openOf(b)) < 3).length;
   check(`vertex-first 600-cell: flat Open cluster can't close (${gaps} of ${clusterPairs.length} cluster joints left as gaps)`, clusterPairs.length === 30 && gaps === 11);
+  const openGaps = complex.openGaps ?? [];
+  const gapPairKeys = new Set(openGaps.map((g) => [...g.cells].sort((x, y) => x - y).join(':')));
+  const expectedKeys = new Set(clusterPairs.filter(([a, b]) => shares(openOf(a), openOf(b)) < 3).map(([a, b]) => [a, b].sort((x, y) => x - y).join(':')));
+  check(`vertex-first 600-cell: openGaps lists exactly those ${expectedKeys.size} joints`, gapPairKeys.size === expectedKeys.size && [...expectedKeys].every((k) => gapPairKeys.has(k)));
+  const gapFacesRight = openGaps.every((g) => g.faceA.length === 3 && g.faceA.every((p) => openOf(g.cells[0]).some((q) => length(sub(p, q)) < 1e-9)) && g.faceB.every((p) => openOf(g.cells[1]).some((q) => length(sub(p, q)) < 1e-9)));
+  const pivotShared = openGaps.every((g) => g.faceA.some((p, i) => length(sub(p, seedVerts[3])) < 1e-9 && length(sub(g.faceB[i], seedVerts[3])) < 1e-9));
+  check('vertex-first 600-cell: each gap\'s two faces lie on their own cells\' Open layouts and meet at the pivot', gapFacesRight && pivotShared);
+}
+
+// Inside-out cells (fixed 2026-09-24): about half of every complex's
+// cells project mirrored, and used to keep the seed's winding, so their
+// faces pointed inward and Solid view rendered them inside-out. Every
+// synthetic spec, Closed and Open, must now be wound outward.
+for (const [seedSpecId, target] of [['D4', '5-cell'], ['D4', '16-cell'], ['D4', '600-cell'], ['D4', '600-cell (vertex-first)'], ['CUBE', 'tesseract'], ['D8', '24-cell'], ['DODECAHEDRON', '120-cell']]) {
+  const complex = buildRcpComplex(seedSpecId, target);
+  const seed = POLYHEDRA[seedSpecId];
+  const layouts = complex.cells.flatMap((c) => [c.vertices3D, ...(c.openVertices3D ? [c.openVertices3D] : [])]);
+  const mirrored = layouts.filter((vs) => windingOutwardness(vs, seed.faces) < 0).length;
+  const inward = layouts.filter((vs, i) => windingOutwardness(vs, buildSyntheticCellSpec(seed, i, vs).faces) <= 0).length;
+  check(`${seedSpecId} -> ${target}: all ${layouts.length} synthetic cells wound outward (${mirrored} were mirrored and got reversed faces)`, inward === 0);
 }
 
 console.log(failures === 0 ? '\nAll checks passed.' : `\n${failures} FAILURE(S).`);

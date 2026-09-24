@@ -79,6 +79,27 @@ const RCP_DUAL_POINT_COLOR = 0xff33cc;
 // the real, built points, just dimmed -- reads as "not built yet"
 // rather than being mistaken for real progress.
 const RCP_PREVIEW_OPACITY = 0.35;
+// Every placed shape's ordinary base color (brand green, see
+// buildPlacedShape) -- what an RCP-C2B cell returns to when "Shell
+// colours" is switched off.
+const NODE_BASE_COLOR = 0x47cc24;
+// Open-view gaps of a vertex-first cluster (RcpComplex.openGaps): red, so
+// the places flat space can't close read as a warning, not a cell.
+const RCP_GAP_COLOR = 0xff3355;
+const RCP_GAP_OPACITY = 0.45;
+
+/**
+ * "Shell colours": a repeating palette of 6 strongly contrasting colours,
+ * one per shell, so neighbouring shells always differ. A smooth ramp over
+ * the whole closure was tried first and left the first few shells (the
+ * ones actually built most) nearly the same orange/yellow on the
+ * 600-cell's 13-15 shells. Avoids yellow (the seed), red (Open-view
+ * gaps) and the base green.
+ */
+const RCP_SHELL_PALETTE = [0xf28c28, 0x22c3e6, 0xe0409a, 0x3d6be0, 0x9be03a, 0x9b3dde];
+function rcpShellColor(shell: number): THREE.Color {
+  return new THREE.Color(RCP_SHELL_PALETTE[(shell - 1) % RCP_SHELL_PALETTE.length]);
+}
 // Applied as a ratio of each cell's own actual rendered scale (never a
 // fixed absolute size -- see rebuildRcpCoordOverlay's own comment on
 // why), so it scales correctly across every closure. First calibrated
@@ -298,6 +319,8 @@ export interface ShapeViewerHandle {
    * same as fold4's own foldAmount). No-op if no root is selected.
    */
   setRcpCoordinatesVisible(visible: boolean): void;
+  /** Toggles the selected RCP-C2B root's "Shell colours": every built cell tinted by its shell (rcpShellColor), the seed staying yellow. Session-only. No-op if no root is selected. */
+  setRcpShellColorsVisible(visible: boolean): void;
   /**
    * The root node's current on-screen position (viewport pixel
    * coordinates), for anchoring a UI element "over the object itself"
@@ -390,6 +413,8 @@ export interface NodeSelection {
     view3D: boolean;
     /** Whether the "show coordinates" overlay (purple coordinate-point lasers, plus dual-point markers for the 600-cell) is currently on for this root -- session-only, never persisted, same as fold4's own foldAmount. */
     coordinatesVisible: boolean;
+    /** Whether "Shell colours" (one hue per shell, rcpShellColor) is on for this root -- session-only, like coordinatesVisible. */
+    shellColorsVisible: boolean;
   } | null;
 }
 
@@ -462,7 +487,7 @@ function buildPlacedShape(spec: PolyhedronSpec, nodeId: string): PlacedShape {
     // a leftover generic blue -- applies uniformly across every view
     // mode (Solid/Translucent/Inside) since applyViewMode only ever
     // touches opacity/side/depthWrite, never the base color itself.
-    new THREE.MeshStandardMaterial({ color: 0x47cc24, flatShading: true, side: THREE.FrontSide }),
+    new THREE.MeshStandardMaterial({ color: NODE_BASE_COLOR, flatShading: true, side: THREE.FrontSide }),
   );
 
   // See PlacedShape's own doc comment for why mesh + lines live inside
@@ -665,6 +690,10 @@ export default function ShapeViewer({
   // re-derived"), so this is empty again after every reload.
   const rcpCoordVisibleRef = useRef<Set<string>>(new Set());
   const rcpCoordGroupRef = useRef<Map<string, THREE.Group>>(new Map());
+  // "Shell colours" roots (session-only, same precedent as rcpCoordVisibleRef)
+  // and each vertex-first root's Open-view gap overlay.
+  const rcpShellColorsRef = useRef<Set<string>>(new Set());
+  const rcpGapGroupRef = useRef<Map<string, THREE.Group>>(new Map());
   const hoveredRef = useRef<THREE.Mesh | null>(null);
   const selectedRef = useRef<THREE.Mesh | null>(null);
   const hoveredNodeRef = useRef<PlacedShape | null>(null);
@@ -962,6 +991,17 @@ export default function ShapeViewer({
       const { nodeId } = placed.object.userData as ShapeObjectUserData;
       const shell = rcpShellOf(nodeId);
       if (shell !== null) applyRcpShellOpacity(placed, shell);
+      if (shell !== null && shell > 0) {
+        // Shell colour (or back to the base green) -- the root keeps its
+        // own seed yellow either way (applyRcpSeedColor).
+        const conn = graphRef.current.connections.find((c) => !c.orphaned && c.kind === 'rcp4d' && c.nodeB === nodeId);
+        const material = placed.mesh.material as THREE.MeshStandardMaterial;
+        if (conn && rcpShellColorsRef.current.has(conn.nodeA)) {
+          material.color.copy(rcpShellColor(shell));
+        } else {
+          material.color.setHex(NODE_BASE_COLOR);
+        }
+      }
     };
 
     const placedOwningVertexSphere = (sphere: THREE.Mesh): PlacedShape | undefined => {
@@ -1268,6 +1308,88 @@ export default function ShapeViewer({
       rcpCoordGroupRef.current.set(nodeId, group);
     };
 
+    /**
+     * Rebuilds `nodeId`'s own Open-view gap overlay (RcpComplex.openGaps):
+     * for every gap whose two cells are both built, a translucent red
+     * wedge bridging the two flat copies of their shared face, plus red
+     * outlines of both copies. Shown only while the root is Open -- in
+     * Closed view every joint meets. A no-op for cell-first closures,
+     * which have no openGaps.
+     */
+    const rebuildRcpGapOverlay = (nodeId: string) => {
+      const old = rcpGapGroupRef.current.get(nodeId);
+      if (old) {
+        old.parent?.remove(old);
+        old.traverse((child) => {
+          if (child instanceof THREE.Mesh || child instanceof THREE.LineSegments) {
+            child.geometry.dispose();
+            (child.material as THREE.Material).dispose();
+          }
+        });
+        rcpGapGroupRef.current.delete(nodeId);
+      }
+      const node = graphRef.current.nodes.find((n) => n.id === nodeId);
+      const placed = findPlaced(nodeId);
+      if (!node?.rcpPolytope || !placed || node.rcpPolytope.view3D !== true) return;
+      const complex = getRcpComplex(node.rcpPolytope.seedSpecId, node.rcpPolytope.target);
+      if (!complex.openGaps) return;
+      const built = new Set(
+        graphRef.current.connections.filter((c) => !c.orphaned && c.kind === 'rcp4d' && c.nodeA === nodeId).map((c) => c.cellId!),
+      );
+      built.add(0);
+      const gaps = complex.openGaps.filter((g) => built.has(g.cells[0]) && built.has(g.cells[1]));
+      if (gaps.length === 0) return;
+
+      const wedge: number[] = [];
+      const outline: number[] = [];
+      for (const { faceA, faceB } of gaps) {
+        for (let i = 0; i < faceA.length; i++) {
+          const j = (i + 1) % faceA.length;
+          // Quad between the two copies of edge (i, j); degenerate where
+          // the copies share vertices (always at the pivot), which is fine.
+          wedge.push(...faceA[i], ...faceA[j], ...faceB[j], ...faceA[i], ...faceB[j], ...faceB[i]);
+          outline.push(...faceA[i], ...faceA[j], ...faceB[i], ...faceB[j]);
+        }
+      }
+      const group = new THREE.Group();
+      const wedgeGeom = new THREE.BufferGeometry();
+      wedgeGeom.setAttribute('position', new THREE.Float32BufferAttribute(wedge, 3));
+      const wedgeMesh = new THREE.Mesh(
+        wedgeGeom,
+        new THREE.MeshBasicMaterial({ color: RCP_GAP_COLOR, transparent: true, opacity: RCP_GAP_OPACITY, side: THREE.DoubleSide, depthWrite: false }),
+      );
+      wedgeMesh.renderOrder = 5;
+      wedgeMesh.raycast = () => {}; // display only -- never steals a click from the cells
+      group.add(wedgeMesh);
+      const outlineGeom = new THREE.BufferGeometry();
+      outlineGeom.setAttribute('position', new THREE.Float32BufferAttribute(outline, 3));
+      const outlineLines = new THREE.LineSegments(outlineGeom, new THREE.LineBasicMaterial({ color: RCP_GAP_COLOR }));
+      outlineLines.raycast = () => {};
+      group.add(outlineLines);
+      placed.object.add(group);
+      rcpGapGroupRef.current.set(nodeId, group);
+    };
+
+    /** Rebuilds every per-root RCP overlay (coordinates + Open-view gaps) -- called after any build/remove/view change or root mesh swap. */
+    const refreshRcpOverlays = (nodeId: string) => {
+      rebuildRcpCoordOverlay(nodeId);
+      rebuildRcpGapOverlay(nodeId);
+    };
+
+    const setRcpShellColorsVisible = (visible: boolean) => {
+      const placed = selectedNodeRef.current;
+      if (!placed) return;
+      const { nodeId } = placed.object.userData as ShapeObjectUserData;
+      if (visible) rcpShellColorsRef.current.add(nodeId);
+      else rcpShellColorsRef.current.delete(nodeId);
+      for (const conn of graphRef.current.connections) {
+        if (conn.orphaned || conn.kind !== 'rcp4d' || conn.nodeA !== nodeId) continue;
+        const child = findPlaced(conn.nodeB);
+        if (child) applyViewModeToPlaced(child, viewModeRef.current);
+      }
+      publishNodeSelection(placed);
+    };
+
     const setRcpCoordinatesVisible = (visible: boolean) => {
       const placed = selectedNodeRef.current;
       if (!placed) return;
@@ -1431,7 +1553,7 @@ export default function ShapeViewer({
       }
       // The old overlay group (if any) was disposed with oldPlaced.object --
       // rebuild it under the new one rather than leaving a stale ref.
-      rebuildRcpCoordOverlay(nodeId);
+      refreshRcpOverlays(nodeId);
     };
 
     const beginRcpBuild = (seedSpecId: string, target: string) => {
@@ -1502,7 +1624,7 @@ export default function ShapeViewer({
       // applyViewModeToPlaced reads) resolves this cell's own shell from
       // the graph, not a parameter, so the connection must already exist.
       applyViewModeToPlaced(childPlaced, viewModeRef.current);
-      rebuildRcpCoordOverlay(nodeId);
+      refreshRcpOverlays(nodeId);
 
       reportCageStatus();
       publishNodeSelection(placed);
@@ -1533,7 +1655,7 @@ export default function ShapeViewer({
       selectedNodeRef.current = placed;
       selectedFaceIndexRef.current = null;
       applyNodeAppearance(placed, true);
-      rebuildRcpCoordOverlay(nodeId);
+      refreshRcpOverlays(nodeId);
       publishNodeSelection(placed);
     };
 
@@ -1610,7 +1732,7 @@ export default function ShapeViewer({
         // After the connection is registered -- see buildNextRcpCell's own comment.
         applyViewModeToPlaced(childPlaced, viewModeRef.current);
       }
-      rebuildRcpCoordOverlay(nodeId);
+      refreshRcpOverlays(nodeId);
 
       reportCageStatus();
       publishNodeSelection(placed);
@@ -1640,7 +1762,7 @@ export default function ShapeViewer({
       selectedNodeRef.current = placed;
       selectedFaceIndexRef.current = null;
       applyNodeAppearance(placed, true);
-      rebuildRcpCoordOverlay(nodeId);
+      refreshRcpOverlays(nodeId);
       publishNodeSelection(placed);
     };
 
@@ -1724,6 +1846,7 @@ export default function ShapeViewer({
       }
 
       scene.updateMatrixWorld(true);
+      rebuildRcpGapOverlay(rootId);
       publishNodeSelection(currentRootPlaced);
     };
 
@@ -1813,6 +1936,7 @@ export default function ShapeViewer({
           viewToggleLocked: maxBuiltShell > 1,
           view3D: node.rcpPolytope.view3D === true,
           coordinatesVisible: rcpCoordVisibleRef.current.has(nodeId),
+          shellColorsVisible: rcpShellColorsRef.current.has(nodeId),
         };
       }
 
@@ -1884,6 +2008,8 @@ export default function ShapeViewer({
       duoprismMeshesRef.current.clear();
       rcpCoordVisibleRef.current.clear();
       rcpCoordGroupRef.current.clear();
+      rcpShellColorsRef.current.clear();
+      rcpGapGroupRef.current.clear();
       graphRef.current = emptyAssembly();
       hoveredRef.current = null;
       selectedRef.current = null;
@@ -2064,6 +2190,7 @@ export default function ShapeViewer({
       for (const placed of placedRef.current) applyNodeAppearance(placed, false);
 
       graphRef.current = assembly;
+      for (const node of assembly.nodes) if (node.rcpPolytope) rebuildRcpGapOverlay(node.id);
       refreshFoldConnectionsFlag();
       recomputeAllFolds(foldAmountRef.current);
       fitCameraToObjects(placedRef.current.map((p) => p.object));
@@ -2656,6 +2783,8 @@ export default function ShapeViewer({
         // just drop the now-stale tracking entries.
         rcpCoordVisibleRef.current.delete(id);
         rcpCoordGroupRef.current.delete(id);
+        rcpShellColorsRef.current.delete(id);
+        rcpGapGroupRef.current.delete(id);
 
         // This node's OWN incoming connection (if duoprism) may own
         // several wall-prism meshes -- one per [vertexA,
@@ -2833,6 +2962,7 @@ export default function ShapeViewer({
       removeLastRcpShell,
       setRcpView3D,
       setRcpCoordinatesVisible,
+      setRcpShellColorsVisible,
       getRootScreenPosition,
     });
 

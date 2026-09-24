@@ -52,6 +52,11 @@ export interface RcpComplex {
   // projection: the root shows the registry seed when Open and cell 0's
   // own vertices3D when Closed.
   cell0IsSeed: boolean;
+  // Vertex-first only: the Open view's gaps -- each pair of cluster cells
+  // that share a face in 4D but whose flat Open layouts don't meet, with
+  // that face's position in each layout (corresponding vertices in the
+  // same order, so faceA[i] and faceB[i] are the same 4D vertex).
+  openGaps?: { cells: [number, number]; faceA: Vec3[]; faceB: Vec3[] }[];
 }
 
 // Vertex-first mode (2026-09-24, 600-cell only by user choice): the build
@@ -313,13 +318,27 @@ function buildVertexFirstComplex(seedSpecId: string, targetName: string, complex
     const reflected = sub3(apex, scale3(normal, 2 * dot3(sub3(apex, shared[0]), normal)));
     flat.set(id, own.map((_, i) => (i === loneOwn ? reflected : parentFlat[matchInParent[i]])));
   }
-  // A reflected copy has the opposite handedness, which would render
-  // inside-out under the seed's face winding; swapping two non-pivot
-  // positions restores it (a tetrahedron's faces are every vertex triple).
-  const [s1, s2] = [0, 1, 2, 3].filter((i) => i !== VERTEX_FIRST_PIVOT_INDEX);
-  const seedHandedness = Math.sign(tetOrientation(seedVerts));
-  for (const [id, vs] of flat) {
-    if (Math.sign(tetOrientation(vs)) !== seedHandedness) flat.set(id, vs.map((v, i) => (i === s1 ? vs[s2] : i === s2 ? vs[s1] : v)));
+  // Gaps: 4D-adjacent cluster pairs whose flat copies of their shared
+  // face don't coincide.
+  const openGaps: NonNullable<RcpComplex['openGaps']> = [];
+  for (const [a, b] of complex.adjacency) {
+    const flatA = flat.get(a);
+    const flatB = flat.get(b);
+    if (!flatA || !flatB) continue;
+    const sharedA: number[] = [];
+    const sharedB: number[] = [];
+    verts4D[a].forEach((v, i) => {
+      const j = verts4D[b].findIndex((q) => same4(v, q));
+      if (j !== -1) {
+        sharedA.push(i);
+        sharedB.push(j);
+      }
+    });
+    const faceA = sharedA.map((i) => flatA[i]);
+    const faceB = sharedB.map((j) => flatB[j]);
+    if (faceA.some((p, i) => Math.hypot(...sub3(p, faceB[i])) > 1e-9)) {
+      openGaps.push({ cells: [newIdOf.get(a)!, newIdOf.get(b)!], faceA, faceB });
+    }
   }
 
   const cells = order.map((old, id) => ({
@@ -330,7 +349,7 @@ function buildVertexFirstComplex(seedSpecId: string, targetName: string, complex
     ...(id > 0 && flat.has(old) ? { openVertices3D: flat.get(old)! } : {}),
   }));
   const adjacency = complex.adjacency.map(([a, b]) => [newIdOf.get(a)!, newIdOf.get(b)!] as [number, number]);
-  return { seedSpecId, targetName, viewDistance, cells, adjacency, cell0IsSeed: false };
+  return { seedSpecId, targetName, viewDistance, cells, adjacency, cell0IsSeed: false, openGaps };
 }
 
 /** The root's own spec for the given view: the registry seed, except a Closed vertex-first root, which shows cell 0's projected (skewed) shape. */
@@ -349,20 +368,52 @@ export function rootSpecForView(complex: RcpComplex, view3D: boolean): Polyhedro
  * has changed) and are rebuilt via buildConnectors against the new
  * positions instead. Never registered in POLYHEDRA — constructed fresh
  * whenever a cell needs to be placed or re-derived on load.
+ *
+ * Mirrored cells: every 4D reflection flips handedness, so roughly half
+ * of any complex's cells project as mirror images of the seed, and the
+ * seed's face winding then points INTO them -- they rendered inside-out
+ * under Solid view's FrontSide material (found 2026-09-24: 294 of the
+ * 600-cell's 600 cells, 11 of the 16-cell's 16). The vertex positions are
+ * right; only the winding is wrong, so such a cell gets every face
+ * reversed (same faces, same indices, opposite orientation).
  */
 export function buildSyntheticCellSpec(seedSpec: PolyhedronSpec, cellId: number, vertices: Vec3[]): PolyhedronSpec {
   if (vertices.length !== seedSpec.vertices.length) {
     throw new Error(`buildSyntheticCellSpec: ${seedSpec.id} has ${seedSpec.vertices.length} vertices, got ${vertices.length} projected positions`);
   }
+  const faces = windingOutwardness(vertices, seedSpec.faces) < 0 ? seedSpec.faces.map((f) => [...f].reverse()) : seedSpec.faces;
   return {
     id: `${seedSpec.id}::rcp:${cellId}`,
     name: `${seedSpec.name} (RCP-C2B cell ${cellId})`,
     faceCount: seedSpec.faceCount,
     vertices,
     edges: seedSpec.edges,
-    faces: seedSpec.faces,
+    faces,
     connectors: buildConnectors(vertices, seedSpec.edges),
   };
+}
+
+/**
+ * Positive when `faces` are wound outward around `vertices` (the solid's
+ * convention, core.ts), negative when every face points inward. Sums each
+ * face's Newell normal against its offset from the solid's centroid, so
+ * it's robust for any convex cell, not just triangles.
+ */
+export function windingOutwardness(vertices: Vec3[], faces: number[][]): number {
+  const center = centroid3(vertices);
+  let total = 0;
+  for (const face of faces) {
+    const normal: Vec3 = [0, 0, 0];
+    for (let i = 0; i < face.length; i++) {
+      const a = vertices[face[i]];
+      const b = vertices[face[(i + 1) % face.length]];
+      normal[0] += (a[1] - b[1]) * (a[2] + b[2]);
+      normal[1] += (a[2] - b[2]) * (a[0] + b[0]);
+      normal[2] += (a[0] - b[0]) * (a[1] + b[1]);
+    }
+    total += dot3(normal, sub3(centroid3(face.map((i) => vertices[i])), center));
+  }
+  return total;
 }
 
 /** Every cell at exactly `shell` in `complex`. */

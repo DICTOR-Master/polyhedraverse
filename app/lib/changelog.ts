@@ -17,6 +17,8 @@ export const CHANGELOG: ChangelogDay[] = [
   {
     date: '2026-09-24',
     entries: [
+      'RCP-C2B has a new "Shell colours" button: each ring of cells gets its own colour from a set of 6 that contrast with their neighbours, so you can see how the 4D shape grows outward shell by shell.',
+      'In the vertex-first 600-cell\'s Open view, the places where the flat tetrahedra can\'t meet are now filled in red, so the gap that only 4D can close is easy to see.',
       'New in RCP-C2B: build the 600-cell vertex-first. Pick "600-cell (vertex-first)" and the first 19 clicks add the tetrahedra around one corner of the seed, completing an icosahedron of 20. In Open view they lie flat and can\'t close (the gaps are real: flat space leaves no room for all 20), and switching to Closed shows them meeting perfectly in 4D.',
       'The 600-cell in RCP-C2B now starts from a perfectly regular tetrahedron, like every other 4D shape. It used to be derived from the 120-cell, which left its starting cell slightly skewed; it is now built directly by reflection, and the Open/Closed toggle behaves the same as for the other shapes.',
       'Added a Space-Filling Pairs family: seven pairs of shapes that can\'t fill space on their own but do together, each shown as a row naming the structure they build -- Octet truss (tetrahedron + octahedron), Pyrochlore (tetrahedron + truncated tetrahedron), Rectified cubic (octahedron + cuboctahedron), Truncated cubic (octahedron + truncated cube), and three prism pairs. Every pair was checked geometrically, not taken on reputation.',

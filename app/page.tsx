@@ -722,6 +722,24 @@ export default function Home() {
                 RCP-Coordinates
               </button>
             )}
+            {nodeSelection.rcpRoot && rcpMainMode4D && (
+              // "Shell colours": tints every built cell by its shell
+              // (ShapeViewer's rcpShellColor), seed staying yellow.
+              // Session-only, like RCP-Coordinates.
+              <button
+                type="button"
+                onClick={() => handleRef.current?.setRcpShellColorsVisible(!nodeSelection.rcpRoot!.shellColorsVisible)}
+                title="Colour each built cell by its shell, from a repeating set of 6 contrasting colours, so neighbouring shells always stand apart"
+                className="rounded-full px-3 py-1 text-xs font-medium transition-colors"
+                style={
+                  nodeSelection.rcpRoot.shellColorsVisible
+                    ? { background: 'linear-gradient(90deg, #f28c28, #22c3e6, #e0409a, #3d6be0, #9be03a, #9b3dde)', color: '#fff' }
+                    : { background: 'none', border: '1px solid #f28c28', color: '#f28c28' }
+                }
+              >
+                Shell colours
+              </button>
+            )}
           </>
         ) : selection ? (
           <>

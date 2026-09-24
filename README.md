@@ -318,7 +318,9 @@ Since then:
   seed cell is an exactly regular tetrahedron. The 600-cell also has a
   vertex-first mode: its first shell is the 19 tetrahedra around one seed
   corner, completing an icosahedron of 20, which lies flat with visible
-  gaps in Open view and closes up in Closed view. An **"RCP-Coordinates" overlay** reveals the construction
+  gaps in Open view (the gaps are drawn in red) and closes up in Closed
+  view. A **"Shell colours"** toggle tints each built ring of cells with
+  its own colour. An **"RCP-Coordinates" overlay** reveals the construction
   itself: each built cell's own real generating coordinate, marked with
   a small cross (like a point on an architect's drawing, not a solid
   ball) and joined to the shape's center by a purple laser beam — on the
