@@ -49,7 +49,52 @@ interface NamedSignature {
  * own distinct shape, and "Tetrahedral Star" is the user's own chosen
  * name for it, not a claimed classical term.
  */
+/**
+ * One central shape with a given shape face-attached to EVERY face in
+ * `faceSize`-gon set of it, and nothing else -- independent of which
+ * node the build started from (either side of a face connection can be
+ * the parent), unlike Tetrahedral Star's root-based check.
+ */
+function centralWithCaps(nodes: AssemblyNode[], connections: AssemblyConnection[], centerShape: string, capShape: string, capCount: number, faceSize: number): boolean {
+  if (nodes.length !== capCount + 1) return false;
+  const centers = nodes.filter((n) => n.shape === centerShape);
+  const caps = nodes.filter((n) => n.shape === capShape);
+  if (centers.length !== 1 || caps.length !== capCount) return false;
+  const center = centers[0];
+  const faces = POLYHEDRA[centerShape]?.faces ?? [];
+  const live = connections.filter((c) => !c.orphaned);
+  if (live.length !== capCount || !live.every((c) => c.kind === 'face')) return false;
+  const used = new Set<number>();
+  for (const c of live) {
+    const centerFace = c.nodeA === center.id ? c.vertexA : c.nodeB === center.id ? c.vertexB : -1;
+    const other = c.nodeA === center.id ? c.nodeB : c.nodeA;
+    if (centerFace < 0 || !caps.some((n) => n.id === other)) return false;
+    if (faces[centerFace]?.length !== faceSize) return false;
+    used.add(centerFace);
+  }
+  return used.size === capCount;
+}
+
 const NAMED_ASSEMBLIES: NamedSignature[] = [
+  /**
+   * Confirmed 2026-09-24, direct user request: a truncated tetrahedron with
+   * a regular tetrahedron (D4) face-attached to all 4 of its TRIANGLE
+   * faces -- one big tetrahedron, the repeating block of the pyrochlore
+   * (quarter cubic) honeycomb. User-chosen name.
+   */
+  {
+    name: 'Pyrochlore Cell',
+    match: (_root, nodes, connections) => centralWithCaps(nodes, connections, 'TRUNCATED_TETRAHEDRON', 'D4', 4, 3),
+  },
+  /**
+   * Confirmed 2026-09-24: an octahedron (D8) with a regular tetrahedron
+   * face-attached to all 8 faces -- Kepler's stella octangula (a genuine
+   * classical name), the building block of the octet truss.
+   */
+  {
+    name: 'Stella Octangula',
+    match: (_root, nodes, connections) => centralWithCaps(nodes, connections, 'D8', 'D4', 8, 3),
+  },
   {
     name: 'Tetrahedral Star',
     match: (root, nodes, connections) => {

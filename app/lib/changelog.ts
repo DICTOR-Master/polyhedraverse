@@ -15,6 +15,14 @@ export interface ChangelogDay {
 
 export const CHANGELOG: ChangelogDay[] = [
   {
+    date: '2026-09-24',
+    entries: [
+      'Added a Space-Filling Pairs family: seven pairs of shapes that can\'t fill space on their own but do together, each shown as a row naming the structure they build -- Octet truss (tetrahedron + octahedron), Pyrochlore (tetrahedron + truncated tetrahedron), Rectified cubic (octahedron + cuboctahedron), Truncated cubic (octahedron + truncated cube), and three prism pairs. Every pair was checked geometrically, not taken on reputation.',
+      'Two new recognized builds for the running assembly name: "Pyrochlore Cell" -- a truncated tetrahedron with a tetrahedron on each of its 4 triangle faces, the repeating block of the pyrochlore (3D Kagome) structure -- and "Stella Octangula", Kepler\'s name for an octahedron with a tetrahedron on all 8 faces.',
+      'Parallelohedra (the five shapes that fill space on their own) and the new Space-Filling Pairs now sit right after the classical families instead of down beside Miscellaneous.',
+    ],
+  },
+  {
     date: '2026-09-23',
     entries: [
       'Added 2 real solids to the Miscellaneous family: a genuine Rhombohedron (one of the 4 congruent pieces a Rhombic Dodecahedron always splits into along its own 4 body-diagonal directions) and the Elongated Dodecahedron (the 4th of the 5 real shapes that tile space by translation alone — 8 ordinary rhombic faces plus 4 real hexagonal ones). Both ported over from Rhombiverse (this project\'s twin), where they already exist as real lattice pieces; every face on both is a genuine attach port, and both are built at Rhombic Dodecahedron\'s own real scale so they attach flush to a real one, not just similarly.',

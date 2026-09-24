@@ -15,6 +15,7 @@
     "validate:prisms": "tsx scripts/validate-prisms.ts",
     "validate:graded-pyramids": "tsx scripts/validate-graded-pyramids.ts",
     "validate:rd-relatives": "tsx scripts/validate-rd-relatives.ts",
+    "verify:space-filling-pairs": "tsx scripts/verify-space-filling-pairs.ts",
     "validate:star": "tsx scripts/validate-star-polyhedra.ts",
     "validate:star-triangulation": "tsx scripts/validate-star-triangulation.ts",
     "verify:attach": "tsx scripts/verify-attach.ts",

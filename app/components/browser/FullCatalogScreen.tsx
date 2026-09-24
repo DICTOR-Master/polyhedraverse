@@ -18,7 +18,7 @@
  */
 
 import { useEffect } from 'react';
-import { FAMILY_ORDER, FAMILY_META, familyIds, type FamilyKey } from '../../lib/polyhedra/families';
+import { FAMILY_ORDER, FAMILY_META, familyIds, SPACE_FILLING_PAIR_LIST, type FamilyKey } from '../../lib/polyhedra/families';
 import { STAR_POLYHEDRON_IDS } from '../../lib/polyhedra/starPolyhedra';
 import { t, type LangCode } from '../../lib/i18n';
 import ShapePreviewCard from './ShapePreviewCard';
@@ -82,6 +82,49 @@ export default function FullCatalogScreen({
         const meta = FAMILY_META[fam];
         const ids = filterIds ? familyIds(fam).filter((id) => filterIds.includes(id)) : familyIds(fam);
         if (ids.length === 0) return null;
+        if (fam === 'SPACE_FILLING_PAIRS') {
+          // One row per pair (direct decision): the honeycomb's own name,
+          // then both shapes side by side. Under filterIds (attach flow)
+          // only compatible shapes are shown, and a pair with none left
+          // is dropped -- same "leave incompatible out" convention as
+          // every other section here.
+          const pairs = SPACE_FILLING_PAIR_LIST.map((p) => ({ ...p, shown: filterIds ? p.ids.filter((id) => filterIds.includes(id)) : p.ids })).filter((p) => p.shown.length > 0);
+          return (
+            <div key={fam} id={sectionDomId(fam)}>
+              <div style={{ display: 'flex', alignItems: 'baseline', gap: 8, marginBottom: 10 }}>
+                <span style={{ fontSize: 18, color: '#47cc24' }}>{meta.symbol}</span>
+                <span style={{ fontSize: 13, fontWeight: 700, color: '#a9f795', letterSpacing: '.02em' }}>{meta.label}</span>
+                <span style={{ fontFamily: 'monospace', fontSize: 11, color: '#3a9e1f' }}>{pairs.length}</span>
+              </div>
+              <div style={{ display: 'flex', flexDirection: 'column', gap: 14 }}>
+                {pairs.map((p) => (
+                  <div key={p.ids.join('+')} data-testid="space-filling-pair">
+                    <div style={{ fontSize: 12, color: '#5ee233', marginBottom: 6 }}>{p.honeycomb}</div>
+                    <div style={{ display: 'flex', alignItems: 'center', gap: 8, flexWrap: 'wrap' }}>
+                      {p.shown.map((id, i) => (
+                        <div key={id} style={{ display: 'flex', alignItems: 'center', gap: 8 }}>
+                          {i > 0 && <span style={{ fontSize: 18, color: '#3a9e1f' }}>+</span>}
+                          <div style={{ width: 120 }}>
+                            <ShapePreviewCard
+                              specId={id}
+                              lang={lang}
+                              activeFamilies={[fam]}
+                              isFavorite={isFavorite(id)}
+                              inCompare={isInCompare(id)}
+                              onOpen={onOpenShape}
+                              onToggleFavorite={onToggleFavorite}
+                              onToggleCompare={onToggleCompare}
+                            />
+                          </div>
+                        </div>
+                      ))}
+                    </div>
+                  </div>
+                ))}
+              </div>
+            </div>
+          );
+        }
         return (
           <div key={fam} id={sectionDomId(fam)}>
             <div style={{ display: 'flex', alignItems: 'baseline', gap: 8, marginBottom: 10 }}>

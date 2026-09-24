@@ -173,6 +173,14 @@ export default function ShapeBrowser({
   };
 
   const selectFamily = (family: FamilyKey) => {
+    // Space-Filling Pairs is about PAIRS, not a flat shape list (direct
+    // decision: pair rows) -- open Full Catalog at its own section, which
+    // renders it as one row per pair, instead of a flat filtered search.
+    if (family === 'SPACE_FILLING_PAIRS') {
+      setFocusSection(family);
+      setShowFullCatalog(true);
+      return;
+    }
     setSearchSeed({ families: [family] });
     setTab('search');
   };

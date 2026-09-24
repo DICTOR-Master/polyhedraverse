@@ -37,18 +37,26 @@ export type FamilyKey =
   | 'ANTIPRISMS'
   | 'FOURD'
   | 'PARALLELOHEDRA'
+  | 'SPACE_FILLING_PAIRS'
   | 'MISCELLANEOUS';
 
+// Parallelohedra + Space-Filling Pairs moved up next to the classical
+// families (direct request 2026-09-24: "should be higher up list rather
+// than next to miscellaneous") -- Fedorov's five and their pair
+// companions are headline results, not catch-all add-ons. Wheel faces are
+// keyed by FamilyKey (PolyhedralWheel's FAMILY_FACE_SLOTS), not by this
+// order, so the wheel is unaffected.
 export const FAMILY_ORDER: FamilyKey[] = [
   'DELTAHEDRA',
   'PLATONIC',
   'ARCHIMEDEAN',
   'JOHNSON',
   'CATALAN',
+  'PARALLELOHEDRA',
+  'SPACE_FILLING_PAIRS',
   'PRISMS',
   'ANTIPRISMS',
   'FOURD',
-  'PARALLELOHEDRA',
   'MISCELLANEOUS',
 ];
 
@@ -101,6 +109,12 @@ export const FAMILY_META: Record<FamilyKey, { label: string; symbol: string }> =
   // deliberately distinct from FOURD's diagonal-crosshatch ⧉ (a
   // tesseract-projection cue, not a tiling one).
   PARALLELOHEDRA: { label: 'Parallelohedra', symbol: '▦' },
+  // Space-Filling Pairs (2026-09-24, direct request: "complementary space
+  // fillers... pairs that fill space together") -- the companion to
+  // Parallelohedra: shapes that can't tile space alone but DO as a pair.
+  // A half-filled circle reads as "two halves make a whole", and the
+  // circle is a base shape no other family symbol uses.
+  SPACE_FILLING_PAIRS: { label: 'Space-Filling Pairs', symbol: '◐' },
   // Graded pyramids and, eventually, the RVCMG adapter pieces (see
   // docs/rvcmg-adapter-pieces-spec.md) -- irregular add-ons that don't
   // belong to one of the classical families above. A house/roof
@@ -115,6 +129,25 @@ export const FAMILY_META: Record<FamilyKey, { label: string; symbol: string }> =
 // merged array from prisms.ts (built from both PRISM_<n>/ANTIPRISM_<n>
 // keys) -- split it by id prefix so Prisms and Antiprisms are two
 // separate, independently browsable families.
+/**
+ * Space-Filling Pairs: two convex shapes that together tile 3D space
+ * face-to-face, each a classical uniform honeycomb (confirmed with the
+ * user 2026-09-24, all 7; the 12-gonal prism + triangular prism pair also
+ * qualifies but this registry's prisms stop at 10 sides). Every pair is
+ * re-checked by scripts/verify-space-filling-pairs.py (dihedral angles
+ * closing to 360 degrees around each edge type) -- not taken on
+ * reputation alone.
+ */
+export const SPACE_FILLING_PAIR_LIST: Array<{ ids: [string, string]; honeycomb: string }> = [
+  { ids: ['D4', 'D8'], honeycomb: 'Octet truss (tetrahedral-octahedral)' },
+  { ids: ['D4', 'TRUNCATED_TETRAHEDRON'], honeycomb: 'Pyrochlore (quarter cubic)' },
+  { ids: ['D8', 'CUBOCTAHEDRON'], honeycomb: 'Rectified cubic' },
+  { ids: ['D8', 'TRUNCATED_CUBE'], honeycomb: 'Truncated cubic' },
+  { ids: ['CUBE', 'PRISM_3'], honeycomb: 'Elongated triangular prismatic' },
+  { ids: ['PRISM_3', 'PRISM_6'], honeycomb: 'Trihexagonal prismatic' },
+  { ids: ['CUBE', 'PRISM_8'], honeycomb: 'Truncated square prismatic' },
+];
+
 const BASE_IDS: Record<FamilyKey, string[]> = {
   DELTAHEDRA: DELTAHEDRON_IDS,
   PLATONIC: PLATONIC_ADDITION_IDS,
@@ -141,6 +174,10 @@ const BASE_IDS: Record<FamilyKey, string[]> = {
   // closureClass's dihedral-angle math), since there are exactly 5 and
   // they're a fixed, named mathematical result (Fedorov 1885).
   PARALLELOHEDRA: ['CUBE', 'PRISM_6', 'RHOMBIC_DODECAHEDRON', 'ELONGATED_DODECAHEDRON', 'TRUNCATED_OCTAHEDRON'],
+  // Every shape appearing in SPACE_FILLING_PAIRS below (deduped) -- the
+  // pair structure itself is what the browser shows (pair rows), this is
+  // just membership for counts/search/cross-family badges.
+  SPACE_FILLING_PAIRS: Array.from(new Set(SPACE_FILLING_PAIR_LIST.flatMap((p) => p.ids))),
   // ELONGATED_DODECAHEDRON moves OUT of Miscellaneous into its real
   // family above (Miscellaneous was always just a catch-all for shapes
   // without a proper family, and Parallelohedra is one). Every other
