@@ -315,7 +315,10 @@ Since then:
   persists with the rest of the scene, so reloading a saved build keeps
   the view you left it in. Covers all 6 verified closures, including the
   600-cell, which is built by direct reflection like the others, so its
-  seed cell is an exactly regular tetrahedron. An **"RCP-Coordinates" overlay** reveals the construction
+  seed cell is an exactly regular tetrahedron. The 600-cell also has a
+  vertex-first mode: its first shell is the 19 tetrahedra around one seed
+  corner, completing an icosahedron of 20, which lies flat with visible
+  gaps in Open view and closes up in Closed view. An **"RCP-Coordinates" overlay** reveals the construction
   itself: each built cell's own real generating coordinate, marked with
   a small cross (like a point on an architect's drawing, not a solid
   ball) and joined to the shape's center by a purple laser beam — on the

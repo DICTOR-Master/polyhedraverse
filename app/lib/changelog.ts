@@ -17,6 +17,7 @@ export const CHANGELOG: ChangelogDay[] = [
   {
     date: '2026-09-24',
     entries: [
+      'New in RCP-C2B: build the 600-cell vertex-first. Pick "600-cell (vertex-first)" and the first 19 clicks add the tetrahedra around one corner of the seed, completing an icosahedron of 20. In Open view they lie flat and can\'t close (the gaps are real: flat space leaves no room for all 20), and switching to Closed shows them meeting perfectly in 4D.',
       'The 600-cell in RCP-C2B now starts from a perfectly regular tetrahedron, like every other 4D shape. It used to be derived from the 120-cell, which left its starting cell slightly skewed; it is now built directly by reflection, and the Open/Closed toggle behaves the same as for the other shapes.',
       'Added a Space-Filling Pairs family: seven pairs of shapes that can\'t fill space on their own but do together, each shown as a row naming the structure they build -- Octet truss (tetrahedron + octahedron), Pyrochlore (tetrahedron + truncated tetrahedron), Rectified cubic (octahedron + cuboctahedron), Truncated cubic (octahedron + truncated cube), and three prism pairs. Every pair was checked geometrically, not taken on reputation.',
       'Two new recognized builds for the running assembly name: "Pyrochlore Cell" -- a truncated tetrahedron with a tetrahedron on each of its 4 triangle faces, the repeating block of the pyrochlore (3D Kagome) structure -- and "Stella Octangula", Kepler\'s name for an octahedron with a tetrahedron on all 8 faces.',

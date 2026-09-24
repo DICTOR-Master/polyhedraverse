@@ -702,6 +702,16 @@ Extending §11.2's own table with the two additional verified tetrahedron closur
 
 Polyhedraverse separately maintains a "graded pyramid" seed (registry id `PYRAMID_TRI_G2`) that is geometrically identical to the tetrahedron seed above — same vertices, same regular-tetrahedron shape — but registered under its own distinct id because it belongs to a different shape family in the UI. The classifier that flags a seed as 4D-capable (§18) tests shape, not id, so it correctly flags `PYRAMID_TRI_G2` as capable; the parameter lookup that supplies $\theta$ for a given closure, however, had been keyed by id, so a shape flagged capable by the classifier could still have no usable $\theta$ despite being geometrically the same tetrahedron as an already-verified seed. This is recorded as a found-and-fixed implementation gap, not a limitation of the RCP method itself (§20's own distinction between the method and its particular implementation applies directly here): the fix looks up parameters by matching a candidate seed's own vertex set against each verified seed's vertex set (to the same numerical tolerance §17 already uses elsewhere), so any future geometrically-tetrahedral duplicate registered under a new id inherits the tetrahedron's three verified closures automatically rather than silently losing them.
 
+### 21.7 Vertex-first mode for the 600-cell
+
+*Added 2026-09-24.* The 600-cell can also be built vertex-first (target `600-cell (vertex-first)`). The 4D cells are the same as in §21.3; what changes is where the build starts and how it is projected:
+
+- **Shells.** Shell 1 is the 19 other tetrahedra that share one seed vertex (the pivot, seed vertex 3), ordered so each is face-adjacent to one built before it. With the seed they form the 600-cell's vertex figure, a regular icosahedron of 20 tetrahedra. Later shells are rings of distance from that whole cluster: 20, 30, 60, 60, 60, 80, 80, 60, 60, 30, 20, 20, ending in the icosahedral cluster around the opposite vertex.
+- **Projection.** The pivot is placed on the projection axis (vertex-first, rather than cell-first), so all 20 cells of the cluster project identically, each with an edge-length spread of 1.051, the seed included. Cell-first projection keeps the seed exact but makes the cluster lopsided (spread up to 1.32). The projected seed is aligned onto the registry tetrahedron, pivot direction first, to within 0.032 edge lengths.
+- **Open view.** Each shell-1 cell is shown as a flat, regular copy of the seed, unfolded across the face it shares with its parent. In flat 3D the 20 cannot close around the pivot: 11 of the cluster's 30 face joints stay open, because 5 regular tetrahedra around an edge leave the 7.36° gap recorded in §21.1. Closed view shows the same cells at their projected positions, where every joint meets.
+
+Checked in `scripts/verify-rcp-build.ts`.
+
 ## 22. Provenance
 
 The construction and the projection are classical (§19): the reflection construction of the regular polytopes (Coxeter, *Regular Polytopes*, 1948, building on Wythoff) and perspective projection in the manner of Schlegel diagrams.

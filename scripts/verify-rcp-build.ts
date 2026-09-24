@@ -11,7 +11,7 @@
  */
 import { POLYHEDRA } from '../app/lib/polyhedra';
 import { triangulateFace, type Vec3 } from '../app/lib/polyhedra/core';
-import { buildRcpComplex, buildSyntheticCellSpec, cellsAtShell, maxShell } from '../app/lib/polyhedra/rcpBuild';
+import { buildRcpComplex, buildSyntheticCellSpec, cellsAtShell, maxShell, rootSpecForView } from '../app/lib/polyhedra/rcpBuild';
 
 let failures = 0;
 function check(label: string, condition: boolean) {
@@ -205,6 +205,45 @@ for (const { label, seedSpecId, target } of CASES) {
   // A D4-congruent seed with its own registry id builds the same closure.
   const viaPyramid = buildRcpComplex('PYRAMID_TRI_G2', '600-cell');
   check(`PYRAMID_TRI_G2 -> 600-cell: 600 cells (got ${viaPyramid.cells.length})`, viaPyramid.cells.length === 600);
+}
+
+// Vertex-first 600-cell (2026-09-24): shell 1 is the other 19 cells
+// around seed vertex 3, completing the icosahedral cluster.
+{
+  const complex = buildRcpComplex('D4', '600-cell (vertex-first)');
+  const seedVerts = POLYHEDRA.D4.vertices;
+  const edgeLen = length(sub(seedVerts[0], seedVerts[1]));
+  const edges = (vs: Vec3[]) => [[0, 1], [0, 2], [0, 3], [1, 2], [1, 3], [2, 3]].map(([i, j]) => length(sub(vs[i], vs[j])));
+  const shares = (a: Vec3[], b: Vec3[]) => a.filter((v) => b.some((q) => length(sub(v, q)) < 1e-9)).length;
+  const shellSizes = [...Array(maxShell(complex) + 1).keys()].map((k) => cellsAtShell(complex, k).length);
+  check(`vertex-first 600-cell: 600 cells in shells ${shellSizes.join(',')}`, complex.cells.length === 600 && shellSizes[0] === 1 && shellSizes[1] === 19);
+  check('vertex-first 600-cell: cell 0 is not the registry seed (root swaps on Open/Closed)', !complex.cell0IsSeed);
+
+  const cell0 = complex.cells[0];
+  const shell1 = cellsAtShell(complex, 1);
+  const pivotClosed = cell0.vertices3D[3];
+  check('vertex-first 600-cell: every shell-1 cell contains the pivot (Closed)', shell1.every((c) => c.vertices3D.some((v) => length(sub(v, pivotClosed)) < 1e-9)));
+  const spreads = [cell0, ...shell1].map((c) => Math.max(...edges(c.vertices3D)) / Math.min(...edges(c.vertices3D)));
+  check(`vertex-first 600-cell: all 20 cluster cells equally skewed in Closed view (spread ${Math.min(...spreads).toFixed(4)}-${Math.max(...spreads).toFixed(4)})`, Math.max(...spreads) - Math.min(...spreads) < 1e-9);
+  const rootOffset = Math.max(...cell0.vertices3D.map((v, i) => length(sub(v, seedVerts[i]))));
+  check(`vertex-first 600-cell: Closed root aligned onto the registry seed (worst vertex offset ${rootOffset.toFixed(4)}, under 5% of an edge)`, rootOffset < 0.05 * edgeLen);
+  check('vertex-first 600-cell: Closed root spec is cell 0, Open root spec is the registry seed', rootSpecForView(complex, false).vertices === cell0.vertices3D && rootSpecForView(complex, true) === POLYHEDRA.D4);
+  const closedBad = complex.adjacency.filter(([a, b]) => shares(complex.cells[a].vertices3D, complex.cells[b].vertices3D) !== 3).length;
+  check(`vertex-first 600-cell: every adjacent pair shares exactly 3 vertices in Closed view (${closedBad} bad)`, closedBad === 0);
+
+  const openOf = (id: number): Vec3[] => (id === 0 ? seedVerts : complex.cells[id].openVertices3D!);
+  check('vertex-first 600-cell: exactly the shell-1 cells carry an Open layout', complex.cells.every((c) => (c.shell === 1) === !!c.openVertices3D));
+  check('vertex-first 600-cell: every Open cell is a regular, unit-edge copy of the seed containing the pivot', shell1.every((c) => edges(c.openVertices3D!).every((l) => Math.abs(l - edgeLen) < 1e-9) && c.openVertices3D!.some((v) => length(sub(v, seedVerts[3])) < 1e-9)));
+  const attached = shell1.every((c) => complex.adjacency.some(([a, b]) => {
+    const other = a === c.id ? b : b === c.id ? a : -1;
+    return other >= 0 && other < c.id && shares(openOf(c.id), openOf(other)) === 3;
+  }));
+  check('vertex-first 600-cell: every Open cell shares a whole face with an earlier-built one (buildable in id order)', attached);
+  const winding = (vs: Vec3[]) => Math.sign(dot(sub(vs[1], vs[0]), cross(sub(vs[2], vs[0]), sub(vs[3], vs[0]))));
+  check('vertex-first 600-cell: every Open cell keeps the seed\'s handedness (renders outside-out)', shell1.every((c) => winding(c.openVertices3D!) === winding(seedVerts)));
+  const clusterPairs = complex.adjacency.filter(([a, b]) => complex.cells[a].shell <= 1 && complex.cells[b].shell <= 1);
+  const gaps = clusterPairs.filter(([a, b]) => shares(openOf(a), openOf(b)) < 3).length;
+  check(`vertex-first 600-cell: flat Open cluster can't close (${gaps} of ${clusterPairs.length} cluster joints left as gaps)`, clusterPairs.length === 30 && gaps === 11);
 }
 
 console.log(failures === 0 ? '\nAll checks passed.' : `\n${failures} FAILURE(S).`);

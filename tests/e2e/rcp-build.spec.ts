@@ -217,7 +217,7 @@ test('a shape with more than one real closure (D4) offers a picker, including 60
   await expect(page.locator('text=/Build which 4-polytope/')).toBeVisible();
   await expect(page.getByRole('button', { name: '5-cell' })).toBeVisible();
   await expect(page.getByRole('button', { name: '16-cell' })).toBeVisible();
-  await expect(page.getByRole('button', { name: '600-cell' })).toBeVisible();
+  await expect(page.getByRole('button', { name: '600-cell', exact: true })).toBeVisible();
 
   // Pick the smallest (5-cell, k=3 -- 5 total cells) for a fast full-closure check.
   await page.getByRole('button', { name: '5-cell' }).click();
@@ -237,7 +237,7 @@ test('D4 -> 600-cell: shell 1 closes correctly and toggles Open/Closed', async (
   await page.mouse.click(cx, cy);
   await expect(page.locator('text=/Selected D4 node/')).toBeVisible();
   await clickMain4D(page);
-  await page.getByRole('button', { name: '600-cell' }).click();
+  await page.getByRole('button', { name: '600-cell', exact: true }).click();
 
   for (let i = 0; i < 4; i++) {
     await page.getByRole('button', { name: new RegExp(`Add next cell \\(${i} / 4\\)`) }).click();
@@ -271,6 +271,65 @@ test('D4 -> 600-cell: shell 1 closes correctly and toggles Open/Closed', async (
   const reloaded = await getSavedAssembly(page);
   expect(reloaded.nodes).toHaveLength(5);
   expect(reloaded.nodes.find((n) => n.rcpPolytope)?.rcpPolytope?.view3D).toBe(true);
+});
+
+/**
+ * Vertex-first 600-cell (2026-09-24): shell 1 is the 19 other cells
+ * around one seed vertex (completing an icosahedral cluster), built one
+ * per click. Open shows them as a flat fan with gaps, Closed at their
+ * projected positions, and in this mode the root's own mesh swaps too
+ * (verify-rcp-build.ts checks the geometry; this checks the flow).
+ */
+test('D4 -> 600-cell (vertex-first): 19 cells complete the icosahedral cluster, toggle Open/Closed, persist, then shell 2', async ({ page }) => {
+  await resetTo(page, 'D4');
+  const { cx, cy } = await getCanvasCenter(page);
+  await page.mouse.click(cx, cy);
+  await expect(page.locator('text=/Selected D4 node/')).toBeVisible();
+  await clickMain4D(page);
+  await page.getByRole('button', { name: '600-cell (vertex-first)', exact: true }).click();
+
+  for (let i = 0; i < 19; i++) {
+    await page.getByRole('button', { name: new RegExp(`Add next cell \\(${i} / 19\\)`) }).click();
+    await page.waitForTimeout(100);
+  }
+  await expect(page.getByRole('button', { name: /Add next cell/ })).toHaveCount(0);
+
+  const openBtn = page.getByRole('button', { name: 'Open', exact: true });
+  const closedBtn = page.getByRole('button', { name: 'Closed', exact: true });
+  await closedBtn.click();
+  await page.waitForTimeout(200);
+  await expect(page.locator('text=/Selected D4 node/')).toBeVisible(); // root still selected after its own mesh swap
+  await openBtn.click();
+  await page.waitForTimeout(200);
+  await expect(page.locator('text=/Selected D4 node/')).toBeVisible();
+
+  await page.getByRole('button', { name: 'Save', exact: true }).click();
+  await expect(page.locator('text=Saved')).toBeVisible();
+  const saved = await getSavedAssembly(page);
+  expect(saved.nodes).toHaveLength(20); // the whole icosahedral cluster
+  const root = saved.nodes.find((n) => n.rcpPolytope);
+  expect(root?.rcpPolytope?.target).toBe('600-cell (vertex-first)');
+  expect(root?.rcpPolytope?.view3D).toBe(true);
+
+  // Shell 2 (the 20 cells around the cluster) forces Closed and locks the
+  // toggle. Built before reloading, while the root is still selected --
+  // after a reload a canvas-centre click lands on a cluster cell instead.
+  await page.getByRole('button', { name: 'Build next shell' }).click();
+  await page.waitForTimeout(300);
+  await expect(openBtn).toBeDisabled();
+  await expect(async () => {
+    await page.getByRole('button', { name: 'Save', exact: true }).click();
+    await expect(page.locator('text=Saved')).toBeVisible({ timeout: 1500 });
+  }).toPass({ timeout: 15000 });
+  const afterShell2 = await getSavedAssembly(page);
+  expect(afterShell2.nodes).toHaveLength(40);
+  expect(afterShell2.nodes.find((n) => n.rcpPolytope)?.rcpPolytope?.view3D).toBe(false);
+
+  await page.reload();
+  await page.waitForTimeout(500);
+  await expect(page.getByRole('main').locator('canvas')).toBeVisible();
+  const reloaded = await getSavedAssembly(page);
+  expect(reloaded.nodes).toHaveLength(40);
 });
 
 test('a non-4D-capable shape (RHOMBIC_DODECAHEDRON) never offers the RCP-C2B main toggle', async ({ page }) => {

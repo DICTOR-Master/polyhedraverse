@@ -22,7 +22,7 @@ import { describeAssembly } from '../lib/assemblyNaming';
 import { FOURD_CAPABLE_IDS } from '../lib/polyhedra/fourD';
 import { edgeClosingCorrection } from '../lib/polyhedra/fold4';
 import { buildWallPrism, duoprismBuildDepth } from '../lib/polyhedra/duoprism';
-import { buildRcpComplex, buildSyntheticCellSpec, cellsAtShell, maxShell, type RcpComplex } from '../lib/polyhedra/rcpBuild';
+import { buildRcpComplex, buildSyntheticCellSpec, cellsAtShell, maxShell, parseRcpTarget, rcpTargetOptions, rootSpecForView, type RcpComplex } from '../lib/polyhedra/rcpBuild';
 import { resolveParamsKey, FOUR_D_SHAPE_PARAMS } from '../lib/polyhedra/radialProjection';
 
 /**
@@ -939,7 +939,10 @@ export default function ShapeViewer({
      * RCP-C2B build controls (whole-node selection, never a specific
      * vertex/face) are valid interactions. Shell 2+ is unconditionally
      * warped (it has no 3D-open alternative); the root and shell 1 follow
-     * the root's own view3D toggle.
+     * the root's own view3D toggle -- except a vertex-first cluster's Open
+     * shell-1 cells, which are flat but still synthetic (openVertices3D)
+     * and overlap around the pivot, so they get the same RCP-only
+     * interaction.
      */
     const isRcpWarpedNode = (nodeId: string): boolean => {
       const node = graphRef.current.nodes.find((n) => n.id === nodeId);
@@ -948,7 +951,9 @@ export default function ShapeViewer({
       if (!conn) return false;
       if (conn.shell !== 1) return true;
       const rootNode = graphRef.current.nodes.find((n) => n.id === conn.nodeA);
-      return rootNode?.rcpPolytope?.view3D !== true;
+      const rp = rootNode?.rcpPolytope;
+      if (rp?.view3D !== true) return true;
+      return !!getRcpComplex(rp.seedSpecId, rp.target).cells.find((c) => c.id === conn.cellId)?.openVertices3D;
     };
 
     /** applyViewMode plus the RCP-C2B per-shell opacity falloff (applyRcpShellOpacity's own doc comment) for whichever node `placed` belongs to -- the one wrapper every call site below should use instead of calling applyViewMode directly, so no creation/reload path has to remember the extra step. */
@@ -1151,12 +1156,11 @@ export default function ShapeViewer({
       const node = graphRef.current.nodes.find((n) => n.id === nodeId);
       if (!node?.rcpPolytope) return [];
       const { seedSpecId, target } = node.rcpPolytope;
-      const seedSpec = POLYHEDRA[seedSpecId];
       const complex = getRcpComplex(seedSpecId, target);
       const rootConns = graphRef.current.connections.filter((c) => !c.orphaned && c.kind === 'rcp4d' && c.nodeA === nodeId);
       const shell1BuiltCount = rootConns.filter((c) => c.shell === 1).length;
       const builtCellIds = new Set(rootConns.map((c) => c.cellId!));
-      const nextShell = shell1BuiltCount < seedSpec.faces.length ? 1 : Math.max(0, ...rootConns.map((c) => c.shell!)) + 1;
+      const nextShell = shell1BuiltCount < cellsAtShell(complex, 1).length ? 1 : Math.max(0, ...rootConns.map((c) => c.shell!)) + 1;
       return cellsAtShell(complex, nextShell).filter((c) => !builtCellIds.has(c.id));
     };
 
@@ -1250,7 +1254,7 @@ export default function ShapeViewer({
         line.renderOrder = 10;
         group.add(line);
 
-        if (target === '600-cell') {
+        if (parseRcpTarget(target).closure === '600-cell') {
           for (const v of cell.vertices3D) {
             const dualMarker = new THREE.LineSegments(crossGeom, isBuilt ? dualMat : previewDualMat);
             dualMarker.position.set(...v);
@@ -1363,9 +1367,16 @@ export default function ShapeViewer({
     ): { spec: PolyhedronSpec; position: THREE.Vector3; quaternion: THREE.Quaternion } | null => {
       const complex = getRcpComplex(seedSpecId, target);
       if (view3D) {
-        // "3D" is always the real, ordinary, perfectly regular registry
-        // seed self-attach; "4D" is this complex's own cell data. The
-        // root is the registry seed in both, since cell 0 equals it.
+        // "3D" is always real, undistorted copies of the registry seed:
+        // a vertex-first cluster's own flat unfolding (openVertices3D,
+        // placed like any synthetic cell), otherwise an ordinary flush
+        // self-attach onto the root's face. "4D" is this complex's own
+        // projected cell data.
+        const openCell = complex.cells.find((c) => c.id === cellId);
+        if (openCell?.openVertices3D) {
+          const openSpec = buildSyntheticCellSpec(POLYHEDRA[seedSpecId], openCell.id, openCell.openVertices3D);
+          return { spec: openSpec, position: rootPosition.clone(), quaternion: rootQuaternion.clone() };
+        }
         const registrySpec = POLYHEDRA[seedSpecId];
         const transform = computeSelfAttachTransform(rootWorldMatrix, registrySpec, faceIndex);
         if (!transform) return null;
@@ -1374,13 +1385,53 @@ export default function ShapeViewer({
       const cell = complex.cells.find((c) => c.id === cellId);
       if (!cell) return null;
       const cellSpec = POLYHEDRA[seedSpecId];
-      // buildRcpComplex's own vertices3D are already rescaled (once, for
-      // the whole complex) so cell 0 exactly matches the real registry
-      // seed -- see its own doc comment. No per-cell adjustment needed
-      // here: every cell, including this one, is already correctly
-      // registered against the ACTUAL rendered root's real scale/frame.
+      // buildRcpComplex's own vertices3D are already registered (once,
+      // for the whole complex) against the root's own local frame -- see
+      // projectAll / buildVertexFirstComplex. No per-cell adjustment
+      // needed here.
       const syntheticSpec = buildSyntheticCellSpec(cellSpec, cell.id, cell.vertices3D);
       return { spec: syntheticSpec, position: rootPosition.clone(), quaternion: rootQuaternion.clone() };
+    };
+
+    /**
+     * Swaps the root's own mesh to match `view3D` -- only a vertex-first
+     * root ever changes (rootSpecForView's own doc comment): Open shows
+     * the registry seed, Closed its projected, slightly skewed cell 0,
+     * so the root keeps sharing exact faces with its Closed neighbours.
+     * A no-op for every cell-first closure, whose cell 0 IS the seed.
+     */
+    const applyRootMeshForView = (nodeId: string, seedSpecId: string, target: string, view3D: boolean) => {
+      const complex = getRcpComplex(seedSpecId, target);
+      if (complex.cell0IsSeed) return;
+      const oldPlaced = findPlaced(nodeId);
+      const node = graphRef.current.nodes.find((n) => n.id === nodeId);
+      if (!oldPlaced || !node) return;
+      const spec = rootSpecForView(complex, view3D);
+
+      const oldPosition = oldPlaced.object.position.clone();
+      const oldQuaternion = oldPlaced.object.quaternion.clone();
+      scene.remove(oldPlaced.object);
+      disposePlacedShape(oldPlaced);
+      const replacement = buildPlacedShape(spec, nodeId);
+      replacement.object.position.copy(oldPosition);
+      replacement.object.quaternion.copy(oldQuaternion);
+      applyViewModeToPlaced(replacement, viewModeRef.current);
+      applyRcpSeedColor(replacement);
+      scene.add(replacement.object);
+
+      const index = placedRef.current.indexOf(oldPlaced);
+      if (index !== -1) placedRef.current[index] = replacement;
+      else placedRef.current.push(replacement);
+      if (selectedNodeRef.current === oldPlaced) selectedNodeRef.current = replacement;
+      if (hoveredRef.current && (hoveredRef.current.parent as THREE.Group | null)?.parent === oldPlaced.object) {
+        hoveredRef.current = null;
+      }
+      if (selectedRef.current && (selectedRef.current.parent as THREE.Group | null)?.parent === oldPlaced.object) {
+        selectedRef.current = null;
+      }
+      // The old overlay group (if any) was disposed with oldPlaced.object --
+      // rebuild it under the new one rather than leaving a stale ref.
+      rebuildRcpCoordOverlay(nodeId);
     };
 
     const beginRcpBuild = (seedSpecId: string, target: string) => {
@@ -1391,7 +1442,7 @@ export default function ShapeViewer({
       if (findParentConnection(graphRef.current.connections, nodeId)) return; // must be a real, unattached root
       const key = resolveParamsKey(POLYHEDRA[specId]);
       if (!key) return;
-      const isRealClosure = FOUR_D_SHAPE_PARAMS[key]?.some((o) => o.name === target) ?? false;
+      const isRealClosure = rcpTargetOptions((FOUR_D_SHAPE_PARAMS[key] ?? []).map((o) => o.name)).includes(target);
       if (!isRealClosure) return;
 
       const node = graphRef.current.nodes.find((n) => n.id === nodeId);
@@ -1411,15 +1462,12 @@ export default function ShapeViewer({
       const node = graphRef.current.nodes.find((n) => n.id === nodeId);
       if (!node?.rcpPolytope) return;
       const { seedSpecId, target, view3D } = node.rcpPolytope;
-      const spec = POLYHEDRA[seedSpecId];
       const shell1Conns = graphRef.current.connections.filter((c) => !c.orphaned && c.kind === 'rcp4d' && c.nodeA === nodeId && c.shell === 1);
       const builtCount = shell1Conns.length;
-      if (builtCount >= spec.faces.length) return; // shell 1 already complete
-
       const complex = getRcpComplex(seedSpecId, target);
       const shell1Cells = cellsAtShell(complex, 1).slice().sort((a, b) => a.id - b.id);
       const cellId = shell1Cells[builtCount]?.id;
-      if (cellId === undefined) return; // shouldn't happen -- shell1Cells.length should equal spec.faces.length
+      if (cellId === undefined) return; // shell 1 already complete
 
       scene.updateMatrixWorld(true);
       const derived = deriveShell1Cell(seedSpecId, target, cellId, builtCount, view3D === true, placed.object.matrixWorld, placed.object.position, placed.object.quaternion);
@@ -1501,7 +1549,7 @@ export default function ShapeViewer({
 
       const rootConns = graphRef.current.connections.filter((c) => !c.orphaned && c.kind === 'rcp4d' && c.nodeA === nodeId);
       const shell1Count = rootConns.filter((c) => c.shell === 1).length;
-      if (shell1Count < spec.faces.length) return; // shell 1 must be complete first
+      if (shell1Count < cellsAtShell(complex, 1).length) return; // shell 1 must be complete first
 
       // Shell 2+ cells' own vertices are baked once against shell 1's real
       // "4D" (warped/projected) position -- built while shell 1 sits in
@@ -1630,6 +1678,10 @@ export default function ShapeViewer({
       const shell1Cells = cellsAtShell(complex, 1).slice().sort((a, b) => a.id - b.id);
 
       rootNode.rcpPolytope.view3D = view3D;
+      // Root first: a vertex-first root's mesh swap replaces its placed
+      // object, so re-fetch it before reading its matrices below.
+      applyRootMeshForView(rootId, seedSpecId, target, view3D);
+      const currentRootPlaced = findPlaced(rootId)!;
       scene.updateMatrixWorld(true);
 
       for (const conn of shell1Conns) {
@@ -1639,7 +1691,7 @@ export default function ShapeViewer({
         const faceIndex = shell1Cells.findIndex((c) => c.id === conn.cellId);
         if (faceIndex === -1) continue;
 
-        const derived = deriveShell1Cell(seedSpecId, target, conn.cellId, faceIndex, view3D, rootPlaced.object.matrixWorld, rootPlaced.object.position, rootPlaced.object.quaternion);
+        const derived = deriveShell1Cell(seedSpecId, target, conn.cellId, faceIndex, view3D, currentRootPlaced.object.matrixWorld, currentRootPlaced.object.position, currentRootPlaced.object.quaternion);
         if (!derived) continue;
 
         scene.remove(oldPlaced.object);
@@ -1672,7 +1724,7 @@ export default function ShapeViewer({
       }
 
       scene.updateMatrixWorld(true);
-      publishNodeSelection(rootPlaced);
+      publishNodeSelection(currentRootPlaced);
     };
 
     /**
@@ -1737,16 +1789,15 @@ export default function ShapeViewer({
       // doc comment.
       const rcpParamsKey = resolveParamsKey(POLYHEDRA[specId]);
       const hasNoIncoming = !findParentConnection(graphRef.current.connections, nodeId);
-      const rcpClosureOptions = rcpParamsKey ? (FOUR_D_SHAPE_PARAMS[rcpParamsKey] ?? []).map((o) => o.name) : [];
+      const rcpClosureOptions = rcpParamsKey ? rcpTargetOptions((FOUR_D_SHAPE_PARAMS[rcpParamsKey] ?? []).map((o) => o.name)) : [];
       const rcpBuildEligible = hasNoIncoming && rcpClosureOptions.length > 0;
 
       let rcpRoot: NodeSelection['rcpRoot'] = null;
       if (node?.rcpPolytope) {
         const { seedSpecId, target } = node.rcpPolytope;
-        const seedSpec = POLYHEDRA[seedSpecId];
         const complex = getRcpComplex(seedSpecId, target);
         const rootConns = graphRef.current.connections.filter((c) => !c.orphaned && c.kind === 'rcp4d' && c.nodeA === nodeId);
-        const shell1Size = seedSpec.faces.length;
+        const shell1Size = cellsAtShell(complex, 1).length;
         const shell1BuiltCount = rootConns.filter((c) => c.shell === 1).length;
         const maxBuiltShell = rootConns.length > 0 ? Math.max(...rootConns.map((c) => c.shell!)) : 0;
         rcpRoot = {
@@ -1902,7 +1953,11 @@ export default function ShapeViewer({
         if (c.orphaned || c.kind !== 'rcp4d') continue;
         if (c.shell === 1) {
           const rootNode = nodeById.get(c.nodeA);
-          if (rootNode?.rcpPolytope?.view3D === true) continue; // falls through to the ordinary registry-spec branch below
+          // Open shell-1 cells are ordinary registry shapes at their saved
+          // self-attach pose -- except a vertex-first cluster's, which are
+          // synthetic flat copies (openVertices3D) re-derived below.
+          const rp = rootNode?.rcpPolytope;
+          if (rp?.view3D === true && !getRcpComplex(rp.seedSpecId, rp.target).cells.find((cell) => cell.id === c.cellId)?.openVertices3D) continue;
         }
         rcp4dParentByNode.set(c.nodeB, c);
       }
@@ -1916,8 +1971,13 @@ export default function ShapeViewer({
             const complex = getRcpComplex(rootNode.rcpPolytope.seedSpecId, rootNode.rcpPolytope.target);
             const cell = complex.cells.find((c) => c.id === rcpConn.cellId);
             const cellSpec = POLYHEDRA[rootNode.rcpPolytope.seedSpecId];
-            if (cell && cellSpec) spec = buildSyntheticCellSpec(cellSpec, cell.id, cell.vertices3D);
+            const open = rcpConn.shell === 1 && rootNode.rcpPolytope.view3D === true;
+            const verts = open ? cell?.openVertices3D : cell?.vertices3D;
+            if (cell && cellSpec && verts) spec = buildSyntheticCellSpec(cellSpec, cell.id, verts);
           }
+        } else if (node.rcpPolytope) {
+          const { seedSpecId, target, view3D } = node.rcpPolytope;
+          spec = rootSpecForView(getRcpComplex(seedSpecId, target), view3D === true);
         } else {
           spec = POLYHEDRA[node.shape];
         }

@@ -8,6 +8,7 @@
 import { POLYHEDRA } from './polyhedra';
 import { FOURD_CAPABLE_IDS } from './polyhedra/fourD';
 import { FOUR_D_SHAPE_PARAMS, resolveParamsKey } from './polyhedra/radialProjection';
+import { parseRcpTarget, rcpTargetOptions } from './polyhedra/rcpBuild';
 
 export interface AssemblyNode {
   id: string;
@@ -326,5 +327,8 @@ function closureCellCount(seedSpecId: string, target: string): number | undefine
   if (!seed) return undefined;
   const key = resolveParamsKey(seed);
   if (!key) return undefined;
-  return FOUR_D_SHAPE_PARAMS[key].find((o) => o.name === target)?.cellCount;
+  const closureNames = FOUR_D_SHAPE_PARAMS[key].map((o) => o.name);
+  if (!rcpTargetOptions(closureNames).includes(target)) return undefined;
+  const { closure } = parseRcpTarget(target);
+  return FOUR_D_SHAPE_PARAMS[key].find((o) => o.name === closure)?.cellCount;
 }
