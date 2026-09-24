@@ -97,8 +97,18 @@ const RCP_GAP_OPACITY = 0.45;
  * gaps) and the base green.
  */
 const RCP_SHELL_PALETTE = [0xf28c28, 0x22c3e6, 0xe0409a, 0x3d6be0, 0x9be03a, 0x9b3dde];
-function rcpShellColor(shell: number): THREE.Color {
-  return new THREE.Color(RCP_SHELL_PALETTE[(shell - 1) % RCP_SHELL_PALETTE.length]);
+// Each closure starts its shell 1 on a different palette colour AND ends
+// its last shell on a different one (direct request: "beginning and end
+// color are different across" the closures). Starts count down from the
+// 600-cell as far as that allows; the real last shells (maxShell: 600-cell
+// 15, 120-cell 5, 16-cell 4, 24-cell 3, tesseract 2, 5-cell 1) then land
+// on 2, 5, 4, 1, 0, 3 -- all different. The 600-cell's vertex-first
+// variant (13 shells) shares its closure's start. Unknown counts fall
+// back to the 600-cell's start.
+const RCP_SHELL_START_BY_CELL_COUNT: Record<number, number> = { 600: 0, 120: 1, 24: 2, 16: 4, 8: 5, 5: 3 };
+function rcpShellColor(shell: number, closureCellCount: number): THREE.Color {
+  const start = RCP_SHELL_START_BY_CELL_COUNT[closureCellCount] ?? 0;
+  return new THREE.Color(RCP_SHELL_PALETTE[(start + shell - 1) % RCP_SHELL_PALETTE.length]);
 }
 // Applied as a ratio of each cell's own actual rendered scale (never a
 // fixed absolute size -- see rebuildRcpCoordOverlay's own comment on
@@ -996,8 +1006,9 @@ export default function ShapeViewer({
         // own seed yellow either way (applyRcpSeedColor).
         const conn = graphRef.current.connections.find((c) => !c.orphaned && c.kind === 'rcp4d' && c.nodeB === nodeId);
         const material = placed.mesh.material as THREE.MeshStandardMaterial;
-        if (conn && rcpShellColorsRef.current.has(conn.nodeA)) {
-          material.color.copy(rcpShellColor(shell));
+        const rootRp = conn ? graphRef.current.nodes.find((n) => n.id === conn.nodeA)?.rcpPolytope : undefined;
+        if (conn && rootRp && rcpShellColorsRef.current.has(conn.nodeA)) {
+          material.color.copy(rcpShellColor(shell, getRcpComplex(rootRp.seedSpecId, rootRp.target).cells.length));
         } else {
           material.color.setHex(NODE_BASE_COLOR);
         }
