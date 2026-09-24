@@ -297,7 +297,13 @@ export default function Home() {
         backgroundRepeat: 'repeat',
       }}
     >
-      <header className="flex items-start justify-between px-6 py-4">
+      {/* flex-wrap + the left block's max-w-full: on a phone the button
+          row drops below the title instead of pushing the page wider than
+          the screen (it used to lay out 1010px wide on a 390px iPhone).
+          From lg (1024px) up both stay nowrap, exactly the old desktop
+          layout -- it only just fits at 1024, so wrapping there would
+          needlessly drop the buttons to a second row. */}
+      <header className="flex flex-wrap items-start justify-between gap-y-2 px-4 lg:flex-nowrap py-3 sm:px-6 sm:py-4">
         {/* flex-shrink-0: a real regression found live (persistence.spec.ts,
             radial-projection.spec.ts): with no shrink protection, adding
             enough content to the right-side controls div below (e.g. the
@@ -308,7 +314,7 @@ export default function Home() {
             block's own two lines of text should never depend on how much
             is on the right; it's the right side's job to fit its own
             space (via its own truncation), not this one's job to shrink. */}
-        <div className="shrink-0">
+        <div className="max-w-full shrink-0">
           {/* Same green-split treatment as WelcomeOverlay's <h1> --
               "Polyhedra" pale, "verse" the brand green -- rather than
               plain zinc-50, matching the identity established there and
@@ -330,7 +336,7 @@ export default function Home() {
             {POLYHEDRON_IDS.length} shapes across {FAMILY_ORDER.length} families — vertex ball-joints and face-to-face connections
           </p>
         </div>
-        <div className="flex items-center gap-2">
+        <div className="flex flex-wrap items-center gap-2 lg:flex-nowrap">
           {assemblyName && (
             // A small fixed-size icon, never text -- keeps the header a
             // fixed single-line height regardless of how elaborate the
@@ -443,7 +449,7 @@ export default function Home() {
         </div>
       </header>
 
-      <nav className="flex flex-wrap items-center gap-2 px-6 pb-2">
+      <nav className="flex flex-wrap items-center gap-2 px-4 pb-2 sm:px-6">
         <button
           type="button"
           onClick={() => openPicker('reset')}
@@ -454,7 +460,7 @@ export default function Home() {
         </button>
       </nav>
 
-      <nav className="flex min-h-11 flex-wrap items-center gap-2 px-6 pb-2">
+      <nav className="flex min-h-11 flex-wrap items-center gap-2 px-4 pb-2 sm:px-6">
         {pending ? (
           <>
             <span className="text-xs uppercase tracking-wide text-pink-400">
@@ -771,7 +777,7 @@ export default function Home() {
       </nav>
 
       {rewriteNote && (
-        <div className="px-6 pb-2">
+        <div className="px-4 pb-2 sm:px-6">
           <span className="text-xs text-amber-300">{rewriteNote}</span>
         </div>
       )}
