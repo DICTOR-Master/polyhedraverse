@@ -27,7 +27,7 @@ test.beforeEach(async ({ page }) => {
   await page.waitForTimeout(500);
 });
 
-test('renders the canvas and every shape across all 7 wheel families (8 Deltahedra + 5 Platonic + 13 Archimedean + 92 Johnson (all of them, incl. the 5 shared with Deltahedra) + 13 Catalan (all of them!) + 8 Prisms + 8 Antiprisms; 137 distinct shapes once cross-family overlaps are de-duped)', async ({ page }) => {
+test('renders the canvas and every shape in every family that has a wheel face', async ({ page }) => {
   // Scoped to <main> -- CornerHudWheel mounts its own small canvas too.
   await expect(page.getByRole('main').locator('canvas')).toBeVisible();
 
@@ -46,7 +46,10 @@ test('renders the canvas and every shape across all 7 wheel families (8 Deltahed
   // wheel-reachable yet -- skipping the family here doesn't lose
   // coverage this test could otherwise provide, since there's no wheel
   // path to them to check.
-  for (const family of WHEEL_FAMILIES.filter((f) => f.label !== '4D-Capable' && f.label !== 'Miscellaneous')) {
+  // Parallelohedra and Space-Filling Pairs claim no wheel face either
+  // (FAMILY_FACE_SLOTS), for the same reason.
+  const NO_WHEEL_FACE = ['4D-Capable', 'Miscellaneous', 'Parallelohedra', 'Space-Filling Pairs'];
+  for (const family of WHEEL_FAMILIES.filter((f) => !NO_WHEEL_FACE.includes(f.label))) {
     // Exact match, not substring -- "Prisms" is a substring of "Antiprisms"
     // now that both are separate families, so a plain hasText: family.label
     // would match both faces' labels at once. See exactLabel()'s doc comment.

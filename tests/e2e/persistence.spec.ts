@@ -28,13 +28,14 @@ test('saving and reloading restores the assembly exactly', async ({ page }) => {
   await page.reload({ waitUntil: 'networkidle' });
   await page.waitForTimeout(800);
 
-  // The camera resets to the same default position on reload, so the exact
-  // same screen offset that found the free vertex before should now read it
-  // as occupied — proving the attached D4 child specifically survived the
-  // reload, not just that the root shape type is D8.
+  // The same screen point that found the free vertex should now show the
+  // attached D4 there: the vertex reads occupied, or (since the camera
+  // re-fits to the restored two-shape build) the D4's own body covers it.
+  // Either proves the D4 child survived the reload; a lone D8 would still
+  // read the vertex as free.
   const textAfter = await readTooltipAt(page, cx + dx, cy + dy);
   expect(
     textAfter,
-    `expected the same vertex to read occupied after reload (got "${textAfter}")`,
-  ).toContain('occupied');
+    `expected the attached D4 at the same spot after reload (got "${textAfter}")`,
+  ).toMatch(/occupied|D4 node/);
 });
