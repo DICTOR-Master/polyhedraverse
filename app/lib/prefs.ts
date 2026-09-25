@@ -40,6 +40,8 @@ export interface Prefs {
   recents: string[];
   language: LangCode;
   theme: ThemeState;
+  // No longer read (the welcome screen shows every visit since 2026-09-25);
+  // kept so stored prefs from before then still validate.
   welcomeSeen: boolean;
 }
 
@@ -163,20 +165,14 @@ export function usePrefs() {
     commit({ ...cached, theme });
   }, []);
 
-  const setWelcomeSeen = useCallback((welcomeSeen: boolean) => {
-    commit({ ...cached, welcomeSeen });
-  }, []);
-
   return {
     favorites: prefs.favorites,
     recents: prefs.recents,
     language: prefs.language,
-    welcomeSeen: prefs.welcomeSeen,
     theme: prefs.theme,
     toggleFavorite,
     recordViewed,
     setLanguage,
     setTheme,
-    setWelcomeSeen,
   };
 }

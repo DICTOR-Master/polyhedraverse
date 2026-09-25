@@ -74,18 +74,6 @@ export interface AssemblyConnection {
   // occupied-vertex bookkeeping on load. (Rewrite only ever produces
   // 'vertex' connections — the D10<->D12 rule doesn't touch faces.)
   orphaned?: boolean;
-  // 4D extension: this face-attach used the real 4D dihedral fold
-  // (app/lib/polyhedra/fold4.ts) instead of an ordinary flush-3D join.
-  // Additive optional field, same proven pattern as `kind`/`orphaned`
-  // before it — old saves keep validating with zero migration. Only
-  // ever true for a 'face' connection between two nodes of the SAME
-  // FOURD_CAPABLE_IDS shape (Stage-1 scope: a genuine two-different-
-  // 4D-shape attach raises "whose dihedral angle governs the fold" with
-  // no single clean answer — deferred). The angle/axis of the fold are
-  // never stored here — both are always re-derived at render time from
-  // `node.shape` + this connection's own face index, matching fourD.ts's
-  // own "derive, don't duplicate" rule.
-  fold4?: true;
   // 4D Prism (duoprism): a REAL duoprism has exactly ONE far copy total
   // (like a tesseract has 2 cubes, not one per face) — additional faces
   // of the SAME near node ALSO connected to this SAME far copy (via
@@ -182,6 +170,29 @@ export function migrateLegacyRcp4d(v: unknown): unknown {
   return out;
 }
 
+/**
+ * Every load-time migration, in order -- what loading code should call
+ * (then isValidAssembly as usual). migrateLegacyRcp4d, then the retired
+ * 4D fold (2026-09-25): a face connection's `fold4: true` flag is simply
+ * dropped. That's exact, not approximate -- a fold only ever rotated the
+ * child's inner group by angle x slider, and the node's own stored pose
+ * was always the ordinary flush face-attach pose (slider at 0%).
+ */
+export function migrateLegacyAssembly(v: unknown): unknown {
+  const out = migrateLegacyRcp4d(v);
+  if (typeof out !== 'object' || out === null) return out;
+  const o = out as Record<string, unknown>;
+  if (Array.isArray(o.connections)) {
+    o.connections = o.connections.map((c) => {
+      if (typeof c !== 'object' || c === null || !('fold4' in c)) return c;
+      const { fold4: _dropped, ...rest } = c as Record<string, unknown>;
+      void _dropped;
+      return rest;
+    });
+  }
+  return o;
+}
+
 function isVec3(v: unknown): v is [number, number, number] {
   return Array.isArray(v) && v.length === 3 && v.every((n) => typeof n === 'number' && Number.isFinite(n));
 }
@@ -219,10 +230,6 @@ function isConnection(v: unknown): v is AssemblyConnection {
   }
   if (c.kind !== undefined && c.kind !== 'vertex' && c.kind !== 'face' && c.kind !== 'duoprism' && c.kind !== 'rcp4d') return false;
   if (c.orphaned !== undefined && typeof c.orphaned !== 'boolean') return false;
-  // Structural check only (no node/shape cross-reference here -- that
-  // needs isValidAssembly below, which has nodeById available): fold4
-  // can only ever accompany a face-kind connection.
-  if (c.fold4 !== undefined && (c.fold4 !== true || c.kind !== 'face')) return false;
   if (c.duoprismExtraFaces !== undefined) {
     if (c.kind !== 'duoprism') return false;
     if (!Array.isArray(c.duoprismExtraFaces) || !c.duoprismExtraFaces.every((f) => typeof f === 'number' && Number.isInteger(f) && f >= 0)) return false;
@@ -270,13 +277,7 @@ export function isValidAssembly(v: unknown): v is Assembly {
     const countB = isFaceLike ? POLYHEDRA[b.shape].faces.length : POLYHEDRA[b.shape].vertices.length;
     if (conn.vertexA < 0 || conn.vertexA >= countA) return false;
     if (conn.vertexB < 0 || conn.vertexB >= countB) return false;
-    // 4D extension, Stage-1 scope: fold4 only ever means something for a
-    // self-attach (same shape both sides) of a shape that's actually
-    // FOURD_CAPABLE_IDS-eligible -- cross-referencing both nodes here is
-    // exactly why this lives in isValidAssembly, not the structural-only
-    // isConnection above.
-    if (conn.fold4 && (a.shape !== b.shape || !FOURD_CAPABLE_IDS.includes(a.shape))) return false;
-    // Duoprism: same restriction as fold4 (self-attach only, FOURD-
+    // Duoprism: self-attach only, FOURD-
     // capable shapes only — see duoprism.ts's own header comment for why
     // it's still gated to these 4 even though the geometry itself would
     // work for any shape: a deliberate scope match with the other 4D

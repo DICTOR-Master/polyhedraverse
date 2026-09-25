@@ -121,7 +121,6 @@ Some shapes can also **Attach via Duoprism…**, which joins an exact copy throu
 | Control | What it does |
 |---|---|
 | i | Description of the named assembly |
-| 3D ↔ 4D slider | Only for older saved 4D folds: opens or closes the fold |
 | What's New | Recent changes |
 | View | Cycles Solid, Translucent and Inside view |
 | Undo | Takes back the last attach. Press again to step further back |

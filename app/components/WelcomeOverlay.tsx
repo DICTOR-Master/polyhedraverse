@@ -17,7 +17,7 @@
  * where it genuinely is (the mechanic, not the RD-specific visuals).
  */
 
-import { useCallback, useEffect, useState } from 'react';
+import { useCallback, useEffect } from 'react';
 import ShapePreview from './browser/ShapePreview';
 import { usePrefs } from '../lib/prefs';
 import { POLYHEDRON_IDS } from '../lib/polyhedra';
@@ -41,21 +41,12 @@ const PANEL_BG = '#0e1209';
 const PANEL_BORDER = 'rgba(71,204,36,.3)';
 
 export default function WelcomeOverlay({ open, onClose, onOpenGuide }: WelcomeOverlayProps) {
-  const { setWelcomeSeen, language } = usePrefs();
-  const [dontShowAgain, setDontShowAgain] = useState(false);
+  const { language } = usePrefs();
 
-  const enter = useCallback(() => {
-    if (dontShowAgain) setWelcomeSeen(true);
-    onClose();
-  }, [dontShowAgain, setWelcomeSeen, onClose]);
+  const enter = useCallback(() => onClose(), [onClose]);
 
   useEffect(() => {
     if (!open) return;
-    // Re-registers whenever `enter` changes identity (i.e. whenever
-    // dontShowAgain changes -- cheap, a checkbox toggle is rare) so a
-    // subsequent Enter keypress sees the CURRENT checkbox value, not
-    // whatever it was when the overlay first opened -- a stale closure
-    // here would silently ignore a just-checked box.
     const onKeyDown = (e: KeyboardEvent) => {
       if (e.key === 'Enter') {
         e.preventDefault();
@@ -165,11 +156,6 @@ export default function WelcomeOverlay({ open, onClose, onOpenGuide }: WelcomeOv
             ENTER
           </button>
         </div>
-
-        <label style={{ display: 'flex', alignItems: 'center', gap: 8, fontSize: 12, color: GREEN_BRIGHT, cursor: 'pointer' }}>
-          <input type="checkbox" checked={dontShowAgain} onChange={(e) => setDontShowAgain(e.target.checked)} />
-          {t('welcome.dontShowAgain', language)}
-        </label>
 
         <div style={{ display: 'flex', alignItems: 'flex-start', gap: 8, fontSize: 12 }}>
           {/* Rhombiverse's own real favicon (copied from its repo root

@@ -32,7 +32,7 @@ test('a DODECAHEDRON face offers Duoprism self-attach with no picker step, and p
 
   // Duoprism coexists with the ordinary flush attach -- an additional
   // choice, not a replacement (4D fold's own "Attach via 4D fold…" entry
-  // point was removed separately; see fold4.spec.ts).
+  // point was removed separately; see legacy-fold-migration.spec.ts).
   await expect(page.getByRole('button', { name: 'Attach via face…' })).toBeVisible();
   const duoprismBtn = page.getByRole('button', { name: 'Attach via Duoprism…' });
   await expect(duoprismBtn).toBeVisible();

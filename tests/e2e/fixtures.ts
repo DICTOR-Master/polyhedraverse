@@ -27,6 +27,9 @@ export const test = base.extend<{ consoleErrors: string[] }>({
     async ({ page }, use) => {
       await page.addInitScript((serializedPrefs) => {
         window.localStorage.setItem('polyhedraverse:prefs:v1', serializedPrefs);
+        // The welcome screen shows on every visit now; this test-only flag
+        // (read in app/page.tsx) is the one way to bypass it.
+        (window as unknown as { __PV_E2E_SKIP_WELCOME__: boolean }).__PV_E2E_SKIP_WELCOME__ = true;
       }, SEEDED_PREFS);
 
       const errors: string[] = [];

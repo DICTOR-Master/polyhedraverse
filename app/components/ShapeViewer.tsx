@@ -15,12 +15,11 @@ import {
   MISCELLANEOUS_ADDITION_IDS,
 } from '../lib/polyhedra';
 import { DELTAHEDRA } from '../lib/polyhedra/deltahedra';
-import { emptyAssembly, isValidAssembly, migrateLegacyRcp4d, ASSEMBLY_STORAGE_KEY, type Assembly } from '../lib/assembly';
+import { emptyAssembly, isValidAssembly, migrateLegacyAssembly, ASSEMBLY_STORAGE_KEY, type Assembly } from '../lib/assembly';
 import { matchRewriteVertices, REWRITE_TARGET } from '../lib/polyhedra/rewrite';
 import { collectSubtree, findParentConnection, hasCycle } from '../lib/graph';
 import { describeAssembly } from '../lib/assemblyNaming';
 import { FOURD_CAPABLE_IDS } from '../lib/polyhedra/fourD';
-import { edgeClosingCorrection } from '../lib/polyhedra/fold4';
 import { buildWallPrism, duoprismBuildDepth } from '../lib/polyhedra/duoprism';
 import { buildRcpComplex, buildSyntheticCellSpec, cellsAtShell, maxShell, parseRcpTarget, rcpTargetOptions, rootSpecForView, type RcpComplex } from '../lib/polyhedra/rcpBuild';
 import { resolveParamsKey, FOUR_D_SHAPE_PARAMS } from '../lib/polyhedra/radialProjection';
@@ -59,22 +58,49 @@ const NODE_HAS_CAPACITY_EMISSIVE = 0x0d2b1a; // subtle: this node still has a fr
 // that would otherwise reset it back to green (loadAssembly's own
 // reconstruction).
 const RCP_SEED_COLOR = 0xffd400;
-// "Show coordinates" overlay: RCP_COORD_POINT_COLOR marks each built
+// "Show coordinates" overlay: the coordinate colour marks each built
 // cell's own real generating coordinate (RcpComplex.cells[].coordPoint3D
 // -- its own doc comment explains why this is the actual generating
 // point, not just a convenient stand-in like the vertex centroid),
 // joined to the root's own center by a thin line ("lasers from the
 // center", direct user request) -- visualizes the literal radial
 // structure the whole feature (Radial Cell Projection) is named after.
-// RCP_DUAL_POINT_COLOR (600-cell only) marks its cells' own vertices --
+// The dual-point colour (600-cell only) marks its cells' own vertices --
 // the "dual points": under 120-cell/600-cell duality each 600-cell vertex
 // sits in the direction of one dodecahedral cell centre of the 120-cell
 // (checked in scripts/verify-radial-projection.ts via dualize()) -- a distinct
 // concept from the coordinate point above, so a distinct color, with no
 // line (they're already the cell's own rendered corners, not a separate
 // point out in space).
-const RCP_COORD_POINT_COLOR = 0xaa33ff;
-const RCP_DUAL_POINT_COLOR = 0xff33cc;
+//
+// Per build, not fixed (direct request 2026-09-25: the old fixed purple
+// and pink sat too close to the shell palette's violet and magenta):
+// pickRcpOverlayColors takes whichever two of these high-visibility
+// colours are furthest from every colour the build is showing.
+const RCP_OVERLAY_CANDIDATES = [0xffffff, 0x00ffff, 0xff00ff, 0xccff00, 0xff6a00, 0x3399ff, 0xffff00];
+
+/** Perceptual-ish RGB distance ("redmean"), 0 = identical. */
+function colourDistance(a: number, b: number): number {
+  const [r1, g1, b1] = [(a >> 16) & 255, (a >> 8) & 255, a & 255];
+  const [r2, g2, b2] = [(b >> 16) & 255, (b >> 8) & 255, b & 255];
+  const rm = (r1 + r2) / 2;
+  const dr = r1 - r2, dg = g1 - g2, db = b1 - b2;
+  return Math.sqrt((2 + rm / 256) * dr * dr + 4 * dg * dg + (2 + (255 - rm) / 256) * db * db);
+}
+
+/** Coordinate + dual-point colours for a build showing `present` colours: each is the candidate whose nearest present colour is furthest away; the dual point also stays clear of the coordinate colour. */
+function pickRcpOverlayColors(present: number[]): { coord: number; dual: number } {
+  const best = (avoid: number[], exclude: number[]) =>
+    RCP_OVERLAY_CANDIDATES.filter((c) => !exclude.includes(c)).reduce(
+      (acc, c) => {
+        const score = Math.min(...avoid.map((p) => colourDistance(c, p)));
+        return score > acc.score ? { c, score } : acc;
+      },
+      { c: RCP_OVERLAY_CANDIDATES[0], score: -1 },
+    ).c;
+  const coord = best(present, []);
+  return { coord, dual: best([...present, coord], [coord]) };
+}
 // Preview shell (nextRcpCellsToBuild's own doc comment): same colors as
 // the real, built points, just dimmed -- reads as "not built yet"
 // rather than being mistaken for real progress.
@@ -142,18 +168,14 @@ interface ShapeObjectUserData {
 
 interface PlacedShape {
   object: THREE.Group; // holds foldGroup + vertexGroup; positioned/oriented directly in world space
-  // 4D extension: mesh + edge lines live one level deeper, inside this
-  // group, so a fold4-attached node's real closing rotation (see
-  // recomputeAllFolds below) can be applied as this group's own local
-  // matrix without ever touching `object`'s own position/quaternion
-  // (which stays the ordinary flush pose the graph itself stores).
-  // vertexGroup deliberately stays a DIRECT child of `object`, a sibling
-  // of foldGroup rather than nested inside it -- vertex-attach code
-  // elsewhere assumes exactly `sphere.parent.parent === object` (see
-  // placedOwningVertexSphere/beginAttach), and a folded node can never be
-  // the target of a NEW vertex-attach in this pass anyway (fold4 is
-  // face-only). For every node with no fold4 sibling relationship,
-  // foldGroup's matrix is simply identity and this is invisible.
+  // mesh + edge lines live one level deeper, inside foldGroup. It used
+  // to carry the retired 4D fold's closing rotation; since the fold
+  // slider was retired (2026-09-25, old folds migrate to plain face
+  // attaches on load) its matrix is always identity. Kept because face
+  // highlight/attach code reads positions through it. vertexGroup stays
+  // a DIRECT child of `object` -- vertex-attach code assumes exactly
+  // `sphere.parent.parent === object` (placedOwningVertexSphere/
+  // beginAttach).
   foldGroup: THREE.Group;
   mesh: THREE.Mesh;
   vertexGroup: THREE.Group;
@@ -188,12 +210,6 @@ interface PendingFaceAttach {
   registrationCount: number;
   registration: number; // current discrete rotational registration, 0..registrationCount-1
   dragAccumPx: number;
-  // 4D extension, Stage D, trigger point 1: set only when beginFaceAttach
-  // was explicitly called with fold4 requested AND actually eligible
-  // (self-attach of a FOURD_CAPABLE_IDS shape) -- confirmAttach reads
-  // this to decide whether to tag the resulting connection `fold4: true`
-  // and register it for the fold slider.
-  fold4: boolean;
 }
 
 interface PendingDuoprismAttach {
@@ -239,14 +255,9 @@ export interface ShapeViewerHandle {
   beginAttach(specId: string): void;
   /**
    * Places `specId` at the currently selected target face as a pending
-   * (draggable) face-to-face attach. `fold4` requests the real 4D fold
-   * (see fold4.ts) instead of an ordinary flush join -- silently ignored
-   * (falls back to an ordinary attach) unless `specId` matches the
-   * target's own shape and that shape is FOURD_CAPABLE_IDS-eligible;
-   * `isValidAssembly` is the actual authority this defers to, this is
-   * just the UI-facing request.
+   * (draggable) face-to-face attach.
    */
-  beginFaceAttach(specId: string, fold4?: boolean): void;
+  beginFaceAttach(specId: string): void;
   /**
    * Places a same-shape, identical-orientation TRANSLATED copy at the
    * currently selected target face, connected by a real 3D wall-prism
@@ -288,14 +299,6 @@ export interface ShapeViewerHandle {
   importAssembly(data: unknown): boolean;
   /** Sets the render mode (opaque / translucent / skeleton-ish) for every placed shape. */
   setViewMode(mode: ViewMode): void;
-  /**
-   * The 4D fold slider position, 0 (pure 3D projection -- the real
-   * geometric separation gap) to 1 (pure 4D -- flush, matching the
-   * ordinary stored pose). Only ever visibly affects nodes with an
-   * incoming fold4 connection; a no-op otherwise. See
-   * onFoldConnectionsChange for when the UI should even show this control.
-   */
-  setFoldAmount(t: number): void;
   /**
    * RCP-C2B: marks the currently whole-node-selected (see
    * NodeSelection.rcpBuildEligible) node as an RCP-C2B root for
@@ -367,22 +370,10 @@ export interface NodeSelection {
   /** Spec ids with a matching face size — empty unless faceIndex is set and free. */
   faceAttachOptions: string[];
   /**
-   * 4D extension, Stage D, trigger point 1: true iff this node's own
-   * shape is FOURD_CAPABLE_IDS-eligible AND the selected face is free --
-   * the UI's signal for whether to additionally offer "attach via 4D
-   * fold" (self-attach only) alongside the ordinary face-attach picker,
-   * never as a separate always-visible control.
-   */
-  faceFold4Eligible: boolean;
-  /**
-   * Same eligibility condition as faceFold4Eligible (this node's own
-   * shape is FOURD_CAPABLE_IDS-eligible AND the selected face is free) --
-   * the UI's signal for whether to additionally offer "Attach via
-   * Duoprism…" alongside the ordinary face-attach and 4D-fold options.
-   * Always true/false together with faceFold4Eligible for the 4
-   * qualifying shapes; kept as its own field (not reusing
-   * faceFold4Eligible directly) so the two features can diverge in
-   * scope later without an implicit coupling.
+   * True when this node's own shape is FOURD_CAPABLE_IDS-eligible AND
+   * the selected face is free -- the UI's signal for whether to
+   * additionally offer "Attach via Duoprism…" alongside the ordinary
+   * face-attach picker.
    */
   faceDuoprismEligible: boolean;
   /**
@@ -664,12 +655,11 @@ export default function ShapeViewer({
   onCageClosedChange,
   onAssemblyNameChange,
   onCanUndoChange,
-  onFoldConnectionsChange,
   onReady,
 }: {
   initialShapeId: string;
   onSelectionChange?: (selection: ShapeSelection | null) => void;
-  onPendingChange?: (pending: { specId: string; fold4?: boolean; duoprism?: boolean } | null) => void;
+  onPendingChange?: (pending: { specId: string; duoprism?: boolean } | null) => void;
   onNodeSelectionChange?: (selection: NodeSelection | null) => void;
   onCageClosedChange?: (closed: boolean) => void;
   /**
@@ -684,15 +674,6 @@ export default function ShapeViewer({
    */
   onAssemblyNameChange?: (name: string) => void;
   onCanUndoChange?: (canUndo: boolean) => void;
-  /**
-   * Fires whenever the current assembly's own count of real fold4
-   * connections crosses the zero/nonzero boundary -- the UI's own signal
-   * for whether the 4D fold slider should be visible at all (trigger
-   * point 2 of the contextual design: the slider only ever appears once
-   * at least one fold4 attachment genuinely exists, never as a permanent
-   * control).
-   */
-  onFoldConnectionsChange?: (hasFoldConnections: boolean) => void;
   onReady?: (handle: ShapeViewerHandle) => void;
 }) {
   const containerRef = useRef<HTMLDivElement>(null);
@@ -724,23 +705,6 @@ export default function ShapeViewer({
   // parity with Rhombiverse's multi-step undo. Cleared on reset; any ids
   // a delete removes (the node or its subtree) are dropped from it.
   const addedNodeStackRef = useRef<string[]>([]);
-  // 4D extension. foldAmountRef is the slider's own `t`: 0 = raw/ordinary
-  // 3D (every fold4-attached sibling sits at its own real, independent
-  // flush pose -- the actual geometric gap between siblings sharing an
-  // edge is fully visible, matching a rigid physical construction), 1 =
-  // fully closed (each sibling rotated to meet its neighbor, matching
-  // the true 4D structure where the gap doesn't exist). Starts at 0 so a
-  // freshly confirmed fold4 attach looks exactly like an ordinary flush
-  // attach (its real geometric consequences visible) until the player
-  // drags the slider toward 4D themselves; reset back to 0 whenever the
-  // assembly's last fold4 connection is removed. See
-  // recomputeAllFolds's own doc comment for how `t` turns into actual
-  // per-node rotations, recomputed fresh from the current graph on every
-  // change rather than incrementally cached (simpler and correct even
-  // when a new sibling's arrival changes an EXISTING node's own
-  // correction, which incremental per-node registration got wrong).
-  const foldAmountRef = useRef<number>(0);
-  const hasFoldConnectionsRef = useRef<boolean>(false);
   // Duoprism wall-prism meshes, keyed by their own CHILD node's id (see
   // confirmAttach's own duoprism branch) -- plain extra scene meshes,
   // never part of either node's own PlacedShape, since a wall-prism
@@ -752,7 +716,6 @@ export default function ShapeViewer({
   // multiple independent RCP-C2B roots sharing the same seed+target) never
   // recomputes the whole 4-polytope complex from scratch each time.
   const rcpComplexCacheRef = useRef<Map<string, RcpComplex>>(new Map());
-  const onFoldConnectionsChangeRef = useRef(onFoldConnectionsChange);
   const onSelectionChangeRef = useRef(onSelectionChange);
   const onPendingChangeRef = useRef(onPendingChange);
   const onNodeSelectionChangeRef = useRef(onNodeSelectionChange);
@@ -784,10 +747,6 @@ export default function ShapeViewer({
   useEffect(() => {
     onCanUndoChangeRef.current = onCanUndoChange;
   }, [onCanUndoChange]);
-
-  useEffect(() => {
-    onFoldConnectionsChangeRef.current = onFoldConnectionsChange;
-  }, [onFoldConnectionsChange]);
 
   useEffect(() => {
     onReadyRef.current = onReady;
@@ -867,11 +826,8 @@ export default function ShapeViewer({
       faceHighlightMesh.geometry.setAttribute('position', new THREE.Float32BufferAttribute(positions, 3));
       faceHighlightMesh.geometry.computeVertexNormals();
       node.object.updateMatrixWorld(true);
-      // Through the node's own foldGroup, not `object` directly -- matches
-      // beginFaceAttach's own fix (see its comment): a fold4 node's real
-      // rendered position can differ from its outer object's unfolded
-      // baseline once the slider is off 0, and the highlight should track
-      // whichever one is actually clickable/visible.
+      // Through the node's own foldGroup (always identity since the fold
+      // slider was retired, so this equals `object`'s own transform).
       const pos = new THREE.Vector3();
       const quat = new THREE.Quaternion();
       const scl = new THREE.Vector3();
@@ -1031,127 +987,6 @@ export default function ShapeViewer({
       onAssemblyNameChangeRef.current?.(describeAssembly(graphRef.current.nodes, graphRef.current.connections));
     };
 
-    /** The OTHER face of `spec` (besides `faceIndex`) that also borders the edge (vi,vj) of `faceIndex`'s own cycle, or null (shouldn't happen for a valid manifold solid). */
-    const otherFaceAcrossEdge = (spec: PolyhedronSpec, faceIndex: number, vi: number, vj: number): number | null => {
-      for (let f = 0; f < spec.faces.length; f++) {
-        if (f === faceIndex) continue;
-        const face = spec.faces[f];
-        for (let k = 0; k < face.length; k++) {
-          const a = face[k];
-          const b = face[(k + 1) % face.length];
-          if ((a === vi && b === vj) || (a === vj && b === vi)) return f;
-        }
-      }
-      return null;
-    };
-
-    /**
-     * Recomputes EVERY fold4 node's own closing rotation from scratch,
-     * walking the current graph fresh -- not incrementally cached. That's
-     * deliberate: a lone fold4 child (no sibling on the parent's adjacent
-     * face yet) needs zero correction, but the MOMENT a second sibling
-     * attaches next to it, the FIRST one's own correction changes too
-     * (it now has a real edge partner) -- an earlier, incremental
-     * per-node registration design got exactly this case wrong. Recomputing
-     * fresh is simple, correct, and cheap at this app's real scale
-     * (at most a few dozen placed nodes).
-     *
-     * For each fold4 connection (parent P, child C attached via P's face
-     * F_P / C's face F_C): for every edge of F_P, if the OTHER parent face
-     * bordering that edge is ALSO occupied by a different fold4 sibling,
-     * that's a real "3 cells meet at this edge" situation (P + C + the
-     * sibling) -- fold4.ts's edgeClosingCorrection gives the rotation
-     * (around that edge, through its midpoint, in P's own local frame)
-     * that closes C's half of the real angular defect at `t=1`, none of
-     * it at `t=0`. Multiple contributing edges (a child bordering more
-     * than one occupied sibling) compose sequentially into one combined
-     * rotation. Converted from the parent's local frame to world, then
-     * into the CHILD's own local frame, since that's the frame its own
-     * `foldGroup` (nested inside its own, never-changing `object`)
-     * operates in.
-     */
-    const recomputeAllFolds = (t: number) => {
-      for (const placed of placedRef.current) {
-        placed.foldGroup.matrixAutoUpdate = false;
-        placed.foldGroup.matrix.identity();
-        // vertexGroup stays a separate sibling (see PlacedShape's own doc
-        // comment for why), but its own local matrix is kept numerically
-        // in sync with foldGroup's -- otherwise a folded node's vertex
-        // markers stay at their ORIGINAL unfolded spot while the mesh
-        // visually rotates, so hovering near the now-rotated surface can
-        // land on a stray, visually-detached vertex sphere instead (real
-        // user report: "vertex attachment was triggering during assembly").
-        placed.vertexGroup.matrixAutoUpdate = false;
-        placed.vertexGroup.matrix.identity();
-      }
-
-      const nodeById = new Map(graphRef.current.nodes.map((n) => [n.id, n]));
-      const occupiedByParent = new Map<string, Map<number, string>>();
-      for (const conn of graphRef.current.connections) {
-        if (conn.orphaned || conn.kind !== 'face' || !conn.fold4) continue;
-        if (!occupiedByParent.has(conn.nodeA)) occupiedByParent.set(conn.nodeA, new Map());
-        occupiedByParent.get(conn.nodeA)!.set(conn.vertexA, conn.nodeB);
-      }
-      if (occupiedByParent.size === 0) return;
-
-      scene.updateMatrixWorld(true);
-
-      for (const conn of graphRef.current.connections) {
-        if (conn.orphaned || conn.kind !== 'face' || !conn.fold4) continue;
-        const parentNode = nodeById.get(conn.nodeA);
-        const parentPlaced = findPlaced(conn.nodeA);
-        const childPlaced = findPlaced(conn.nodeB);
-        if (!parentNode || !parentPlaced || !childPlaced) continue;
-        const siblingsOnThisParent = occupiedByParent.get(conn.nodeA);
-        if (!siblingsOnThisParent) continue;
-
-        const parentSpec = POLYHEDRA[parentNode.shape];
-        const parentFaceIndex = conn.vertexA;
-        const faceCycle = parentSpec.faces[parentFaceIndex];
-        const combined = new THREE.Matrix4();
-        let anyContribution = false;
-
-        for (let k = 0; k < faceCycle.length; k++) {
-          const vi = faceCycle[k];
-          const vj = faceCycle[(k + 1) % faceCycle.length];
-          const otherFace = otherFaceAcrossEdge(parentSpec, parentFaceIndex, vi, vj);
-          if (otherFace === null || !siblingsOnThisParent.has(otherFace)) continue;
-
-          const corr = edgeClosingCorrection(parentSpec, parentFaceIndex, otherFace);
-          if (!corr) continue;
-
-          const pivotWorld = new THREE.Vector3(...corr.pivot).applyMatrix4(parentPlaced.object.matrixWorld);
-          const axisWorld = new THREE.Vector3(...corr.axis).transformDirection(parentPlaced.object.matrixWorld).normalize();
-
-          const childInverse = childPlaced.object.matrixWorld.clone().invert();
-          const pivotLocal = pivotWorld.clone().applyMatrix4(childInverse);
-          const axisLocal = axisWorld.clone().transformDirection(childInverse).normalize();
-
-          const edgeMatrix = new THREE.Matrix4()
-            .makeTranslation(pivotLocal.x, pivotLocal.y, pivotLocal.z)
-            .multiply(new THREE.Matrix4().makeRotationAxis(axisLocal, corr.angleRad * t))
-            .multiply(new THREE.Matrix4().makeTranslation(-pivotLocal.x, -pivotLocal.y, -pivotLocal.z));
-          combined.premultiply(edgeMatrix);
-          anyContribution = true;
-        }
-
-        if (anyContribution) {
-          childPlaced.foldGroup.matrix.copy(combined);
-          childPlaced.vertexGroup.matrix.copy(combined);
-        }
-      }
-
-      scene.updateMatrixWorld(true);
-    };
-
-    /** Recomputes whether any real fold4 connection currently exists, firing onFoldConnectionsChange only on a real transition. */
-    const refreshFoldConnectionsFlag = () => {
-      const has = graphRef.current.connections.some((c) => !c.orphaned && c.kind === 'face' && c.fold4);
-      if (has === hasFoldConnectionsRef.current) return;
-      hasFoldConnectionsRef.current = has;
-      if (!has) foldAmountRef.current = 0; // see foldAmountRef's own doc comment
-      onFoldConnectionsChangeRef.current?.(has);
-    };
 
     const clearSelection = () => {
       if (selectedRef.current) {
@@ -1290,12 +1125,24 @@ export default function ShapeViewer({
         new THREE.Vector3(0, -crossSize, 0), new THREE.Vector3(0, crossSize, 0),
         new THREE.Vector3(0, 0, -crossSize), new THREE.Vector3(0, 0, crossSize),
       ]);
-      const coordMat = new THREE.LineBasicMaterial({ color: RCP_COORD_POINT_COLOR, depthTest: false, transparent: true });
-      const dualMat = new THREE.LineBasicMaterial({ color: RCP_DUAL_POINT_COLOR, depthTest: false, transparent: true });
-      const previewCoordMat = new THREE.LineBasicMaterial({ color: RCP_COORD_POINT_COLOR, depthTest: false, transparent: true, opacity: RCP_PREVIEW_OPACITY });
-      const previewDualMat = new THREE.LineBasicMaterial({ color: RCP_DUAL_POINT_COLOR, depthTest: false, transparent: true, opacity: RCP_PREVIEW_OPACITY });
-      const laserMat = new THREE.LineBasicMaterial({ color: RCP_COORD_POINT_COLOR, depthTest: false, transparent: true });
-      const previewLaserMat = new THREE.LineBasicMaterial({ color: RCP_COORD_POINT_COLOR, depthTest: false, transparent: true, opacity: RCP_PREVIEW_OPACITY });
+      // The colours this build can show: seed yellow, the gap red, and
+      // either the base green or every shell colour of its closure (all
+      // shells, not just the built ones, so the pick stays the same while
+      // the build grows).
+      const present = [RCP_SEED_COLOR, RCP_GAP_COLOR];
+      if (rcpShellColorsRef.current.has(nodeId)) {
+        const shells = new Set(complex.cells.filter((c) => c.shell > 0).map((c) => c.shell));
+        for (const sh of shells) present.push(rcpShellColor(sh, complex.cells.length).getHex());
+      } else {
+        present.push(NODE_BASE_COLOR);
+      }
+      const { coord: coordColor, dual: dualColor } = pickRcpOverlayColors(present);
+      const coordMat = new THREE.LineBasicMaterial({ color: coordColor, depthTest: false, transparent: true });
+      const dualMat = new THREE.LineBasicMaterial({ color: dualColor, depthTest: false, transparent: true });
+      const previewCoordMat = new THREE.LineBasicMaterial({ color: coordColor, depthTest: false, transparent: true, opacity: RCP_PREVIEW_OPACITY });
+      const previewDualMat = new THREE.LineBasicMaterial({ color: dualColor, depthTest: false, transparent: true, opacity: RCP_PREVIEW_OPACITY });
+      const laserMat = new THREE.LineBasicMaterial({ color: coordColor, depthTest: false, transparent: true });
+      const previewLaserMat = new THREE.LineBasicMaterial({ color: coordColor, depthTest: false, transparent: true, opacity: RCP_PREVIEW_OPACITY });
       const origin = new THREE.Vector3(0, 0, 0);
 
       for (const cell of complex.cells) {
@@ -1404,6 +1251,7 @@ export default function ShapeViewer({
         const child = findPlaced(conn.nodeB);
         if (child) applyViewModeToPlaced(child, viewModeRef.current);
       }
+      rebuildRcpCoordOverlay(nodeId); // its colours depend on the shell colours
       publishNodeSelection(placed);
     };
 
@@ -1916,8 +1764,7 @@ export default function ShapeViewer({
               ),
             )
           : [];
-      const faceFold4Eligible = faceIndex !== null && !faceOccupied && FOURD_CAPABLE_IDS.includes(specId);
-      const faceDuoprismEligible = faceFold4Eligible;
+      const faceDuoprismEligible = faceIndex !== null && !faceOccupied && FOURD_CAPABLE_IDS.includes(specId);
 
       // RCP-C2B eligibility: this NODE (regardless of which face
       // happens to also be hover/click-selected -- RCP-C2B operates on
@@ -1965,7 +1812,6 @@ export default function ShapeViewer({
         faceSize,
         faceOccupied,
         faceAttachOptions,
-        faceFold4Eligible,
         faceDuoprismEligible,
         rcpBuildEligible,
         rcpClosureOptions,
@@ -2038,11 +1884,6 @@ export default function ShapeViewer({
       if (addedNodeStackRef.current.length > 0) {
         addedNodeStackRef.current = [];
         onCanUndoChangeRef.current?.(false);
-      }
-      if (hasFoldConnectionsRef.current) {
-        hasFoldConnectionsRef.current = false;
-        foldAmountRef.current = 0;
-        onFoldConnectionsChangeRef.current?.(false);
       }
     };
 
@@ -2208,8 +2049,6 @@ export default function ShapeViewer({
 
       graphRef.current = assembly;
       for (const node of assembly.nodes) if (node.rcpPolytope) rebuildRcpGapOverlay(node.id);
-      refreshFoldConnectionsFlag();
-      recomputeAllFolds(foldAmountRef.current);
       fitCameraToObjects(placedRef.current.map((p) => p.object));
       onSelectionChangeRef.current?.(null);
       reportCageStatus();
@@ -2288,7 +2127,7 @@ export default function ShapeViewer({
      * 360/n from zero" was always already correct, which turned out false
      * for most pairs (confirmed empirically, not assumed).
      */
-    const beginFaceAttach = (specId: string, wantFold4 = false) => {
+    const beginFaceAttach = (specId: string) => {
       const targetPlaced = selectedNodeRef.current;
       const targetFaceIndex = selectedFaceIndexRef.current;
       const spec = POLYHEDRA[specId];
@@ -2297,12 +2136,6 @@ export default function ShapeViewer({
 
       const { specId: targetSpecId } = targetPlaced.object.userData as ShapeObjectUserData;
       const targetSpec = POLYHEDRA[targetSpecId];
-      // See beginFaceAttach's own doc comment on ShapeViewerHandle: a
-      // fold4 request only ever takes effect for a same-shape,
-      // FOURD_CAPABLE_IDS-eligible self-attach -- silently degrades to an
-      // ordinary flush attach otherwise rather than erroring, since the
-      // real gate is isValidAssembly at save/load time regardless.
-      const fold4 = wantFold4 && specId === targetSpecId && FOURD_CAPABLE_IDS.includes(specId);
       const targetFaceVerts = targetSpec.faces[targetFaceIndex];
       // Real congruence (edge lengths + angles), not just matching vertex
       // count — see the onClick filter above for why this matters once
@@ -2322,15 +2155,9 @@ export default function ShapeViewer({
       const targetFaceConnector = buildFaceConnectors(targetSpec)[targetFaceIndex];
       const incomingFaceConnector = buildFaceConnectors(spec)[incomingFaceIndex];
 
-      // Read the target face's CURRENT position/normal through its own
-      // foldGroup, not its outer `object` -- if the target itself is a
-      // fold4 node with a nonzero closing rotation applied right now
-      // (the slider isn't at 0), its rendered face has moved from the
-      // outer object's own unfolded baseline. Using `object.matrixWorld`
-      // here would compute a flush position for where the face WOULD be
-      // at t=0, while the visible mesh sits somewhere else -- a real bug
-      // found live (a newly-attached piece rendering detached from the
-      // surface it was just attached to, "floating away").
+      // Read the target face's position/normal through its foldGroup
+      // (always identity since the fold slider was retired 2026-09-25, so
+      // this equals `object`'s own transform).
       const targetWorldPos = new THREE.Vector3(...targetFaceConnector.pos).applyMatrix4(targetPlaced.foldGroup.matrixWorld);
       const targetWorldQuat = new THREE.Quaternion();
       targetPlaced.foldGroup.getWorldQuaternion(targetWorldQuat);
@@ -2392,11 +2219,10 @@ export default function ShapeViewer({
         registrationCount,
         registration: 0,
         dragAccumPx: 0,
-        fold4,
       };
       controls.enabled = false;
       clearNodeSelection();
-      onPendingChangeRef.current?.(fold4 ? { specId, fold4: true } : { specId });
+      onPendingChangeRef.current?.({ specId });
 
       // Show the registration counter immediately, not only once a drag
       // begins — essential once irregular-faced (Catalan) shapes exist:
@@ -2598,12 +2424,7 @@ export default function ShapeViewer({
           nodeB: pending.nodeId,
           vertexB: pending.incomingFaceIndex,
           kind: 'face',
-          ...(pending.fold4 ? { fold4: true as const } : {}),
         });
-        if (pending.fold4) {
-          refreshFoldConnectionsFlag();
-          recomputeAllFolds(foldAmountRef.current);
-        }
       } else {
         const { nodeId: parentNodeId } = pending.targetPlaced.object.userData as ShapeObjectUserData;
         applyNodeAppearance(pending.targetPlaced, pending.targetPlaced === selectedNodeRef.current);
@@ -2868,9 +2689,6 @@ export default function ShapeViewer({
         if (parentPlaced) applyNodeAppearance(parentPlaced, parentPlaced === selectedNodeRef.current);
       }
 
-      refreshFoldConnectionsFlag();
-      recomputeAllFolds(foldAmountRef.current);
-
       // Anything removed here (the node or its subtree) is no longer
       // something undo can step back to.
       const stackBefore = addedNodeStackRef.current.length;
@@ -2937,10 +2755,6 @@ export default function ShapeViewer({
       if (pendingRef.current) applyViewModeToPlaced(pendingRef.current.placed, mode);
     };
 
-    const setFoldAmount = (t: number) => {
-      foldAmountRef.current = t;
-      recomputeAllFolds(t); // its own trailing updateMatrixWorld(true) covers the immediate-raycast concern too
-    };
 
     const getRootScreenPosition = (): { x: number; y: number } | null => {
       const rootPlaced = placedRef.current[0];
@@ -2965,14 +2779,13 @@ export default function ShapeViewer({
       deleteSelectedNode,
       undo,
       importAssembly: (data: unknown) => {
-        const migrated = migrateLegacyRcp4d(data);
+        const migrated = migrateLegacyAssembly(data);
         if (!isValidAssembly(migrated) || migrated.nodes.length === 0) return false;
         loadAssembly(migrated);
         return true;
       },
       getAssembly,
       setViewMode,
-      setFoldAmount,
       beginRcpBuild,
       buildNextRcpCell,
       removeLastRcpCell,
@@ -2988,7 +2801,7 @@ export default function ShapeViewer({
     (() => {
       try {
         const raw = localStorage.getItem(ASSEMBLY_STORAGE_KEY);
-        const data: unknown = raw === null ? null : migrateLegacyRcp4d(JSON.parse(raw));
+        const data: unknown = raw === null ? null : migrateLegacyAssembly(JSON.parse(raw));
         if (cancelled) return;
         if (isValidAssembly(data) && data.nodes.length > 0) {
           loadAssembly(data);

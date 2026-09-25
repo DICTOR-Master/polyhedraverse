@@ -71,7 +71,6 @@ const en: Dict = {
   'welcome.overview': 'The portrait gallery: {n} shapes up close — connect them face to face, vertex to vertex.',
   'welcome.stars': '+ {n} impossible star solids to explore in Full Catalog — look, don\'t build.',
   'welcome.howTo': 'How to use →',
-  'welcome.dontShowAgain': 'Don\'t show this again on this device',
   'welcome.rhombiverseLink': 'New here? Explore Rhombiverse, our twin lattice-based spatial editor →',
 };
 
@@ -124,7 +123,6 @@ const ja: Dict = {
   'welcome.overview': 'ポートレート・ギャラリー：{n}種類の立体を間近で。面と面、頂点と頂点でつなげてみましょう。',
   'welcome.stars': '＋ フルカタログで見られる{n}つの「不可能な」星形多面体 — 見るだけで、組み立てはできません。',
   'welcome.howTo': '使い方 →',
-  'welcome.dontShowAgain': 'このデバイスでは今後表示しない',
   'welcome.rhombiverseLink': '初めての方へ：姉妹サイト、格子ベースの空間エディター「Rhombiverse」もどうぞ →',
 };
 
@@ -177,7 +175,6 @@ const es: Dict = {
   'welcome.overview': 'La galería de retratos: {n} formas de cerca — conéctalas cara con cara, vértice con vértice.',
   'welcome.stars': '+ {n} sólidos estrellados imposibles para explorar en el Catálogo Completo — para mirar, no para construir.',
   'welcome.howTo': 'Cómo usarlo →',
-  'welcome.dontShowAgain': 'No volver a mostrar esto en este dispositivo',
   'welcome.rhombiverseLink': '¿Eres nuevo? Explora Rhombiverse, nuestro editor espacial gemelo basado en redes →',
 };
 
@@ -230,7 +227,6 @@ const fr: Dict = {
   'welcome.overview': 'La galerie de portraits : {n} formes vues de près — reliez-les face à face, sommet à sommet.',
   'welcome.stars': '+ {n} solides étoilés impossibles à explorer dans le Catalogue complet — à regarder, pas à construire.',
   'welcome.howTo': 'Mode d\'emploi →',
-  'welcome.dontShowAgain': 'Ne plus afficher ceci sur cet appareil',
   'welcome.rhombiverseLink': 'Nouveau ici ? Découvrez Rhombiverse, notre éditeur spatial jumeau basé sur les réseaux →',
 };
 
@@ -283,7 +279,6 @@ const ko: Dict = {
   'welcome.overview': '초상화 갤러리: {n}개의 도형을 가까이에서 — 면과 면, 꼭짓점과 꼭짓점으로 연결해 보세요.',
   'welcome.stars': '+ 전체 카탈로그에서 볼 수 있는 {n}개의 불가능한 별 다면체 — 보기만 가능하고 만들 수는 없습니다.',
   'welcome.howTo': '사용 방법 →',
-  'welcome.dontShowAgain': '이 기기에서 다시 표시하지 않기',
   'welcome.rhombiverseLink': '처음이신가요? 격자 기반 공간 편집기인 자매 사이트 Rhombiverse도 둘러보세요 →',
 };
 
@@ -336,7 +331,6 @@ const zh: Dict = {
   'welcome.overview': '肖像画廊：近距离欣赏 {n} 种形状 — 面对面、顶点对顶点地连接它们。',
   'welcome.stars': '+ {n} 个不可能的星形多面体，可在完整目录中探索 — 只能观看，不能搭建。',
   'welcome.howTo': '使用指南 →',
-  'welcome.dontShowAgain': '在此设备上不再显示',
   'welcome.rhombiverseLink': '初次来访？看看我们基于晶格的姊妹空间编辑器 Rhombiverse →',
 };
 
@@ -389,7 +383,6 @@ const ru: Dict = {
   'welcome.overview': 'Портретная галерея: {n} фигур крупным планом — соединяйте их грань к грани, вершина к вершине.',
   'welcome.stars': '+ {n} невозможных звёздчатых тела в Полном каталоге — только смотреть, не строить.',
   'welcome.howTo': 'Как пользоваться →',
-  'welcome.dontShowAgain': 'Не показывать это на этом устройстве',
   'welcome.rhombiverseLink': 'Вы здесь впервые? Загляните в Rhombiverse, наш родственный редактор пространства на основе решёток →',
 };
 

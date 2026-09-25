@@ -1,6 +1,6 @@
 'use client';
 
-import { useEffect, useRef, useState } from 'react';
+import { useEffect, useRef, useState, useSyncExternalStore } from 'react';
 import dynamic from 'next/dynamic';
 import { POLYHEDRON_IDS } from './lib/polyhedra';
 import type { NodeSelection, ShapeSelection, ShapeViewerHandle, ViewMode } from './components/ShapeViewer';
@@ -11,7 +11,6 @@ import WelcomeOverlay from './components/WelcomeOverlay';
 import GuideOverlay from './components/GuideOverlay';
 import ChangelogOverlay from './components/ChangelogOverlay';
 import AssemblyDescriptionPopover from './components/AssemblyDescriptionPopover';
-import { usePrefs } from './lib/prefs';
 import { buildShareUrl, clearSharedAssemblyParam, compressionSupported, decodeAssemblyFromUrl, encodeAssemblyForUrl, getSharedAssemblyParam } from './lib/share';
 import { FAMILY_ORDER, type FamilyKey } from './lib/polyhedra/families';
 
@@ -19,9 +18,10 @@ const ShapeViewer = dynamic(() => import('./components/ShapeViewer'), {
   ssr: false,
 });
 
+const noopSubscribe = () => () => {};
+
 interface Pending {
   specId: string;
-  fold4?: boolean;
   duoprism?: boolean;
 }
 
@@ -97,28 +97,10 @@ export default function Home() {
   // it's naturally gone the next time the picker opens from anywhere
   // else. Shared by both the wheel and the browser.
   //
-  // 4D fold ("Attach via 4D fold…", a 'faceAttachFold4' mode here)
-  // removed for now: it's mathematically exact for a single attached
-  // pair, but has a real, unsolved limitation once 3+ copies share an
-  // edge (see fold4.ts's own header). Direct user decision: pull the
-  // entry point rather than let players reach the known-broken case,
-  // now that duoprism.ts's own construction offers an always-exact way
-  // to build groups instead. The underlying fold4 machinery
-  // (ShapeViewer's beginFaceAttach fold4 param, recomputeAllFolds, the
-  // slider) is untouched, so any already-saved assembly with a fold4
-  // connection keeps loading and scrubbing correctly -- only the UI path
-  // to CREATE a new one is gone.
+  // The old 4D fold (and its slider) is retired: nothing creates folds,
+  // and old saves' fold connections load as plain face attaches (see
+  // assembly.ts's migrateLegacyAssembly).
   const [wheelMode, setWheelMode] = useState<'reset' | 'faceAttach' | 'vertexAttach'>('reset');
-  // 4D extension, Stage E: the slider itself only ever renders once the
-  // assembly has at least one real fold4 connection (contextual, not a
-  // permanent control) -- foldPercent is 0-100 for the <input type="range">
-  // UI, converted to fold4.ts's own 0..1 `t` before reaching ShapeViewer.
-  // 0 (default) is the raw/ordinary-3D end: a freshly confirmed fold4
-  // attach looks exactly like a normal flush attach (its real geometric
-  // consequences, if any, already visible) until the player drags toward
-  // 4D themselves -- matches ShapeViewer's own foldAmountRef default.
-  const [hasFoldConnections, setHasFoldConnections] = useState(false);
-  const [foldPercent, setFoldPercent] = useState(0);
   // RCP-C2B (Radial Cell Projection, click-to-build), replacing fold4 as
   // the live 4D folding-construction feature: rcpPickerOpen shows the
   // small inline "which closure?" choice for a seed with more than one
@@ -139,20 +121,22 @@ export default function Home() {
   // not "never show me this again."
   const [instructionsDismissed, setInstructionsDismissed] = useState(false);
 
-  // First-visit welcome overlay -- shown once (persisted via usePrefs'
-  // welcomeSeen, only if the "don't show again" checkbox was checked),
-  // reopenable anytime via the "ℹ" button next to the corner HUD.
-  // Plain derived state, no effect needed: welcomeOpen is true if either
-  // explicitly force-reopened (the ℹ button) OR it's a fresh visit that
-  // hasn't been dismissed yet THIS session -- dismissedThisSession is
-  // separate from the persisted welcomeSeen so closing it without
-  // checking the box still hides it for the rest of the current visit,
-  // without permanently marking it seen.
-  const { welcomeSeen } = usePrefs();
+  // Welcome overlay: shown on every visit (direct decision 2026-09-25 --
+  // the "Don't show this again" opt-out was removed), reopenable anytime
+  // via About on the corner wheel. dismissedThisSession hides it for the
+  // rest of the visit once entered. The only bypass is the e2e suite's own
+  // window flag (tests/e2e/fixtures.ts), set before any page script runs --
+  // read via useSyncExternalStore so the server render (always "show")
+  // hydrates cleanly.
+  const skipWelcomeForE2E = useSyncExternalStore(
+    noopSubscribe,
+    () => (window as { __PV_E2E_SKIP_WELCOME__?: boolean }).__PV_E2E_SKIP_WELCOME__ === true,
+    () => false,
+  );
   const [welcomeForceOpen, setWelcomeForceOpen] = useState(false);
   const [guideOpen, setGuideOpen] = useState(false);
   const [welcomeDismissedThisSession, setWelcomeDismissedThisSession] = useState(false);
-  const welcomeOpen = welcomeForceOpen || (!welcomeDismissedThisSession && !welcomeSeen);
+  const welcomeOpen = welcomeForceOpen || (!welcomeDismissedThisSession && !skipWelcomeForE2E);
   const closeWelcome = () => {
     setWelcomeForceOpen(false);
     setWelcomeDismissedThisSession(true);
@@ -425,41 +409,6 @@ export default function Home() {
           )}
           {saveStatus === 'saved' && <span className="text-xs text-emerald-400">Saved</span>}
           {saveStatus === 'error' && <span className="text-xs text-red-400">Save failed</span>}
-          {hasFoldConnections && (
-            // 4D extension, Stage E, trigger point 2: this control only
-            // ever mounts once the assembly has at least one real fold4
-            // connection -- its own presence IS the signal one exists, so
-            // it's never a permanent header fixture. Clearly labeled per
-            // direct user request ("as long as the slider is clearly
-            // labeled") -- both endpoints spelled out, not just a bare 0-
-            // 100 range, and the live percentage always visible.
-            <div
-              className="flex items-center gap-2 rounded-full px-4 py-1.5 text-sm font-medium"
-              style={{ background: '#0e1209', border: '1px solid #ffd54a' }}
-              title="Fold amount: 0% is ordinary rigid 3D (the real separation gap between neighboring pieces, if any); dragging toward 100% closes it, matching the true 4D structure"
-            >
-              <span style={{ color: '#ffd54a' }}>4D ⧉ Fold</span>
-              <span className="text-xs" style={{ color: '#5ee233', opacity: 0.8 }}>
-                3D
-              </span>
-              <input
-                type="range"
-                min={0}
-                max={100}
-                value={foldPercent}
-                onChange={(e) => {
-                  const value = Number(e.target.value);
-                  setFoldPercent(value);
-                  handleRef.current?.setFoldAmount(value / 100);
-                }}
-                className="h-1 w-24 accent-[#ffd54a]"
-              />
-              <span className="text-xs" style={{ color: '#5ee233', opacity: 0.8 }}>
-                4D
-              </span>
-              <span style={{ color: '#ffd54a' }}>{foldPercent}%</span>
-            </div>
-          )}
           <button
             type="button"
             onClick={() => setChangelogOpen(true)}
@@ -577,7 +526,7 @@ export default function Home() {
           <>
             <span className="text-xs uppercase tracking-wide text-pink-400">
               Placing {pending.specId}
-              {pending.fold4 ? ' via 4D fold' : pending.duoprism ? ' via Duoprism' : ''}
+              {pending.duoprism ? ' via Duoprism' : ''}
               {pending.duoprism ? ' — then:' : ' — drag to rotate it, then:'}
             </span>
             <button
@@ -657,10 +606,9 @@ export default function Home() {
                 Attach via Duoprism…
               </button>
             )}
-            {/* RCP-C2B (Radial Cell Projection, click-to-build): replaces
-                fold4 as the live 4D folding-construction feature (fold4's
-                own slider above stays only for already-saved fold4
-                connections — no new UI path creates one). Violet accent,
+            {/* RCP-C2B (Radial Cell Projection, click-to-build): the live
+                4D construction (the older 4D fold it replaced is retired).
+                Violet accent,
                 distinct from amber (ordinary)/gold (4D-capable badge)/
                 teal (duoprism)/red (delete) — a genuinely new family so
                 it reads as its own construction mode, not a variant of
@@ -903,10 +851,6 @@ export default function Home() {
           onCageClosedChange={setCageClosed}
           onAssemblyNameChange={setAssemblyName}
           onCanUndoChange={setCanUndo}
-          onFoldConnectionsChange={(has) => {
-            setHasFoldConnections(has);
-            if (!has) setFoldPercent(0); // matches ShapeViewer's own foldAmountRef reset
-          }}
           onReady={(handle) => {
             handleRef.current = handle;
             // A shared link (?a=) wins over the saved build: the viewer's

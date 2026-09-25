@@ -350,33 +350,7 @@ test('a non-4D-capable shape (RHOMBIC_DODECAHEDRON) never offers the RCP-C2B mai
   await expect(page.getByRole('button', { name: '4D', exact: true })).toHaveCount(0);
 });
 
-/**
- * Old saved assemblies with a real fold4 connection must still load and
- * scrub correctly -- fold4 is functionally superseded by RCP-C2B, not
- * removed; its own creation UI is gone but its slider must still work
- * for data that predates this change.
- */
-test('an old saved fold4 assembly still loads and the fold slider still scrubs it', async ({ page }) => {
-  const assembly: Assembly = {
-    nodes: [
-      { id: 'a', shape: 'DODECAHEDRON', transform: { position: [0, 0, 0], quaternion: [0, 0, 0, 1] } },
-      { id: 'b', shape: 'DODECAHEDRON', transform: { position: [0, 0, 3], quaternion: [0, 0, 0, 1] } },
-    ],
-    connections: [{ nodeA: 'a', vertexA: 0, nodeB: 'b', vertexB: 0, kind: 'face', fold4: true }],
-  };
-  await page.goto('/');
-  await page.waitForTimeout(300);
-  await setSavedAssembly(page, assembly);
-  await page.reload();
-  await page.waitForTimeout(500);
-  await expect(page.getByRole('main').locator('canvas')).toBeVisible();
-
-  const slider = page.locator('input[type="range"]');
-  await expect(slider).toBeVisible();
-  await slider.fill('100');
-  await page.waitForTimeout(200);
-  await slider.fill('0');
-});
+// Old saves with the retired 4D fold: see legacy-fold-migration.spec.ts.
 
 /**
  * The feature was renamed from "RPC-build" to RCP-C2B (2026-09-16) --
