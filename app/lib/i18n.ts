@@ -68,6 +68,11 @@ const en: Dict = {
   'fourD.hideButton': 'Hide 4D',
   'duoprism.referenceOnly': 'Reference only — 3D shadow of the 4D duoprism, not buildable here',
   'radialProjection.referenceOnly': 'Extend a regular 3D cell through its fourth-dimensional continuation, recursively projecting each new cell into 3D',
+  'welcome.overview': 'The portrait gallery: {n} shapes up close — connect them face to face, vertex to vertex.',
+  'welcome.stars': '+ {n} impossible star solids to explore in Full Catalog — look, don\'t build.',
+  'welcome.howTo': 'How to use →',
+  'welcome.dontShowAgain': 'Don\'t show this again on this device',
+  'welcome.rhombiverseLink': 'New here? Explore Rhombiverse, our twin lattice-based spatial editor →',
 };
 
 const ja: Dict = {
@@ -116,6 +121,11 @@ const ja: Dict = {
   'fourD.hideButton': '4Dを隠す',
   'duoprism.referenceOnly': '参照専用 — 4Dデュオプリズムの3D投影（組み立て不可）',
   'radialProjection.referenceOnly': '正多面体セルを第4次元へ拡張し、新しいセルを再帰的に3Dへ投影したもの',
+  'welcome.overview': 'ポートレート・ギャラリー：{n}種類の立体を間近で。面と面、頂点と頂点でつなげてみましょう。',
+  'welcome.stars': '＋ フルカタログで見られる{n}つの「不可能な」星形多面体 — 見るだけで、組み立てはできません。',
+  'welcome.howTo': '使い方 →',
+  'welcome.dontShowAgain': 'このデバイスでは今後表示しない',
+  'welcome.rhombiverseLink': '初めての方へ：姉妹サイト、格子ベースの空間エディター「Rhombiverse」もどうぞ →',
 };
 
 const es: Dict = {
@@ -164,6 +174,11 @@ const es: Dict = {
   'fourD.hideButton': 'Ocultar 4D',
   'duoprism.referenceOnly': 'Solo referencia — sombra 3D del duoprisma 4D, no se puede construir aquí',
   'radialProjection.referenceOnly': 'Extiende una celda 3D regular a través de su continuación en la cuarta dimensión, proyectando recursivamente cada nueva celda a 3D',
+  'welcome.overview': 'La galería de retratos: {n} formas de cerca — conéctalas cara con cara, vértice con vértice.',
+  'welcome.stars': '+ {n} sólidos estrellados imposibles para explorar en el Catálogo Completo — para mirar, no para construir.',
+  'welcome.howTo': 'Cómo usarlo →',
+  'welcome.dontShowAgain': 'No volver a mostrar esto en este dispositivo',
+  'welcome.rhombiverseLink': '¿Eres nuevo? Explora Rhombiverse, nuestro editor espacial gemelo basado en redes →',
 };
 
 const fr: Dict = {
@@ -212,6 +227,11 @@ const fr: Dict = {
   'fourD.hideButton': 'Masquer le 4D',
   'duoprism.referenceOnly': 'Référence uniquement — ombre 3D du duoprisme 4D, non assemblable ici',
   'radialProjection.referenceOnly': 'Étend une cellule 3D régulière à travers sa continuation en quatrième dimension, en projetant récursivement chaque nouvelle cellule en 3D',
+  'welcome.overview': 'La galerie de portraits : {n} formes vues de près — reliez-les face à face, sommet à sommet.',
+  'welcome.stars': '+ {n} solides étoilés impossibles à explorer dans le Catalogue complet — à regarder, pas à construire.',
+  'welcome.howTo': 'Mode d\'emploi →',
+  'welcome.dontShowAgain': 'Ne plus afficher ceci sur cet appareil',
+  'welcome.rhombiverseLink': 'Nouveau ici ? Découvrez Rhombiverse, notre éditeur spatial jumeau basé sur les réseaux →',
 };
 
 const ko: Dict = {
@@ -260,6 +280,11 @@ const ko: Dict = {
   'fourD.hideButton': '4D 숨기기',
   'duoprism.referenceOnly': '참고 전용 — 4D 듀오프리즘의 3D 그림자, 여기서는 조립 불가',
   'radialProjection.referenceOnly': '정다면체 셀을 그 4차원 연속체를 통해 확장하며, 새로운 셀을 재귀적으로 3D에 투영합니다',
+  'welcome.overview': '초상화 갤러리: {n}개의 도형을 가까이에서 — 면과 면, 꼭짓점과 꼭짓점으로 연결해 보세요.',
+  'welcome.stars': '+ 전체 카탈로그에서 볼 수 있는 {n}개의 불가능한 별 다면체 — 보기만 가능하고 만들 수는 없습니다.',
+  'welcome.howTo': '사용 방법 →',
+  'welcome.dontShowAgain': '이 기기에서 다시 표시하지 않기',
+  'welcome.rhombiverseLink': '처음이신가요? 격자 기반 공간 편집기인 자매 사이트 Rhombiverse도 둘러보세요 →',
 };
 
 const zh: Dict = {
@@ -308,6 +333,11 @@ const zh: Dict = {
   'fourD.hideButton': '隐藏4D',
   'duoprism.referenceOnly': '仅供参考 — 4D双棱柱的3D投影，此处无法构建',
   'radialProjection.referenceOnly': '将一个正三维单元沿其四维延伸方向扩展，并递归地将每个新单元投影回三维空间',
+  'welcome.overview': '肖像画廊：近距离欣赏 {n} 种形状 — 面对面、顶点对顶点地连接它们。',
+  'welcome.stars': '+ {n} 个不可能的星形多面体，可在完整目录中探索 — 只能观看，不能搭建。',
+  'welcome.howTo': '使用指南 →',
+  'welcome.dontShowAgain': '在此设备上不再显示',
+  'welcome.rhombiverseLink': '初次来访？看看我们基于晶格的姊妹空间编辑器 Rhombiverse →',
 };
 
 const ru: Dict = {
@@ -356,6 +386,11 @@ const ru: Dict = {
   'fourD.hideButton': 'Скрыть 4D',
   'duoprism.referenceOnly': 'Только для справки — 3D-тень 4D-дуопризмы, здесь не строится',
   'radialProjection.referenceOnly': 'Расширьте правильную 3D-ячейку через её четырёхмерное продолжение, рекурсивно проецируя каждую новую ячейку обратно в 3D',
+  'welcome.overview': 'Портретная галерея: {n} фигур крупным планом — соединяйте их грань к грани, вершина к вершине.',
+  'welcome.stars': '+ {n} невозможных звёздчатых тела в Полном каталоге — только смотреть, не строить.',
+  'welcome.howTo': 'Как пользоваться →',
+  'welcome.dontShowAgain': 'Не показывать это на этом устройстве',
+  'welcome.rhombiverseLink': 'Вы здесь впервые? Загляните в Rhombiverse, наш родственный редактор пространства на основе решёток →',
 };
 
 /** Exported for scripts/verify-i18n.ts's own key-parity check -- not otherwise consumed outside this module. */

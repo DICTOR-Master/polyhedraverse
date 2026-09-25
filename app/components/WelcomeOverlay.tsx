@@ -21,6 +21,8 @@ import { useCallback, useEffect, useState } from 'react';
 import ShapePreview from './browser/ShapePreview';
 import { usePrefs } from '../lib/prefs';
 import { POLYHEDRON_IDS } from '../lib/polyhedra';
+import { STAR_POLYHEDRON_IDS } from '../lib/polyhedra/starPolyhedra';
+import { t } from '../lib/i18n';
 
 export interface WelcomeOverlayProps {
   open: boolean;
@@ -39,7 +41,7 @@ const PANEL_BG = '#0e1209';
 const PANEL_BORDER = 'rgba(71,204,36,.3)';
 
 export default function WelcomeOverlay({ open, onClose, onOpenGuide }: WelcomeOverlayProps) {
-  const { setWelcomeSeen } = usePrefs();
+  const { setWelcomeSeen, language } = usePrefs();
   const [dontShowAgain, setDontShowAgain] = useState(false);
 
   const enter = useCallback(() => {
@@ -105,7 +107,7 @@ export default function WelcomeOverlay({ open, onClose, onOpenGuide }: WelcomeOv
               below are a genuinely separate registry, never included in
               this count in the first place, so no extra subtraction is
               needed here). */}
-          The portrait gallery: {POLYHEDRON_IDS.length} shapes up close — connect them face to face, vertex to vertex.
+          {t('welcome.overview', language, { n: POLYHEDRON_IDS.length })}
         </p>
         {/* Real user catch: the welcome page never mentioned the 4 Kepler-
             Poinsot star solids at all, undersizing what the app actually
@@ -115,7 +117,7 @@ export default function WelcomeOverlay({ open, onClose, onOpenGuide }: WelcomeOv
             stating them as part of the same "connect them" claim would be
             wrong, not just imprecise. */}
         <p style={{ margin: 0, fontSize: 11, opacity: 0.6, color: GREEN_BRIGHT }}>
-          + 4 impossible star solids to explore in Full Catalog — look, don&apos;t build.
+          {t('welcome.stars', language, { n: STAR_POLYHEDRON_IDS.length })}
         </p>
 
         <button
@@ -132,7 +134,7 @@ export default function WelcomeOverlay({ open, onClose, onOpenGuide }: WelcomeOv
             cursor: 'pointer',
           }}
         >
-          How to use &rarr;
+          {t('welcome.howTo', language)}
         </button>
 
         <div style={{ position: 'relative', width: 180, height: 180 }}>
@@ -166,7 +168,7 @@ export default function WelcomeOverlay({ open, onClose, onOpenGuide }: WelcomeOv
 
         <label style={{ display: 'flex', alignItems: 'center', gap: 8, fontSize: 12, color: GREEN_BRIGHT, cursor: 'pointer' }}>
           <input type="checkbox" checked={dontShowAgain} onChange={(e) => setDontShowAgain(e.target.checked)} />
-          Don&apos;t show this again on this device
+          {t('welcome.dontShowAgain', language)}
         </label>
 
         <div style={{ display: 'flex', alignItems: 'flex-start', gap: 8, fontSize: 12 }}>
@@ -193,7 +195,7 @@ export default function WelcomeOverlay({ open, onClose, onOpenGuide }: WelcomeOv
             style={{ borderRadius: 6, flexShrink: 0 }}
           />
           <a href="https://rhombiverse.vercel.app" target="_blank" rel="noopener" style={{ color: GREEN_BRIGHT }}>
-            New here? Explore Rhombiverse, our twin lattice-based spatial editor &rarr;
+            {t('welcome.rhombiverseLink', language)}
           </a>
         </div>
 
