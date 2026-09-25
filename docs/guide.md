@@ -22,19 +22,19 @@ The first part of this guide walks through common tasks. The second part lists e
 - **Rotate:** drag with one finger, or drag with the left mouse button.
 - **Zoom:** pinch, or use the scroll wheel.
 
-### Attach a shape at a vertex
-
-1. Tap a **highlighted vertex**. Only free vertices light up. Shapes that still have room to build from glow.
-2. Tap **Attach via vertex…** and choose any shape. A vertex joint accepts any shape.
-3. The new shape appears but isn't fixed yet. Drag to turn it, then tap **Confirm**, or **Cancel** (or press Esc).
-
 ### Attach a shape to a face
 
 1. Tap the body of a shape to select it. The face you tapped is selected too.
 2. Tap **Attach via face…**. The picker only offers shapes that have a face of the same size.
-3. Choose one, turn it to the position you want, and tap **Confirm**.
+3. The new shape appears but isn't fixed yet. Drag to turn it, then tap **Confirm**, or **Cancel** (or press Esc).
 
 Two shapes joined face to face share that face exactly, a cube on a cube for example.
+
+### Attach a shape at a vertex
+
+1. Tap a **highlighted vertex**. Only free vertices light up. Shapes that still have room to build from glow.
+2. Tap **Attach via vertex…** and choose any shape. A vertex joint accepts any shape.
+3. Turn it and tap **Confirm**, the same as a face attach.
 
 ### Undo and delete
 
@@ -132,8 +132,8 @@ These controls change with what you've selected.
 
 | When | Controls |
 |---|---|
-| A vertex is selected | Attach via vertex… |
 | A shape is selected | Transform to… (when the shape has a related form), Delete, Attach via face…, Attach via Duoprism… |
+| A vertex is selected | Attach via vertex… |
 | A 4D-capable shape is selected | 3D / 4D, and in 4D: Add next cell, Remove last cell, Build next shell, Remove last shell, Open / Closed, RCP-Coordinates, Shell colours |
 | A new shape is waiting to be placed | Confirm, Cancel (Esc) |
 
@@ -154,8 +154,8 @@ The small dodecahedron in the corner. Drag to turn it, and tap a face.
 
 | Input | Action |
 |---|---|
-| Click a vertex | Select it for vertex attach |
 | Click a shape | Select it, along with the face you clicked |
+| Click a vertex | Select it for vertex attach |
 | Left-drag | Rotate the camera, or turn a new shape before confirming |
 | Scroll wheel | Zoom |
 | Tab or Space | Open the shape wheel |
