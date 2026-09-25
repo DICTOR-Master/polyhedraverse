@@ -106,7 +106,9 @@ Some shapes can also **Attach via Duoprism…**, which joins an exact copy throu
 ## Saving and sharing
 
 - **Save:** stores your build in this browser.
-- **Export JSON:** downloads your build as a file.
+- **File → Copy share link:** copies a link that contains your whole build. Anyone who opens it sees the same build. Nothing is stored on a server.
+- **File → Export JSON:** downloads your build as a file.
+- **File → Import JSON…:** opens a file you exported earlier. It replaces what's on screen.
 - **What's New:** recent changes.
 - **Language:** tap the language face on the corner wheel to change language. There are 7 languages.
 
@@ -124,7 +126,7 @@ Some shapes can also **Attach via Duoprism…**, which joins an exact copy throu
 | View | Cycles Solid, Translucent and Inside view |
 | Undo | Takes back the last attach. Press again to step further back |
 | Save | Stores the build in this browser |
-| Export JSON | Downloads the build |
+| File ▾ | Export JSON, Import JSON…, Copy share link |
 
 ## Context bar
 

@@ -279,6 +279,13 @@ export interface ShapeViewerHandle {
   undo(): DeleteResult | null;
   /** The current assembly graph, exactly as saved -- for client-side export (JSON download), not persistence. */
   getAssembly(): Assembly;
+  /**
+   * Replaces the scene with an assembly from outside (an imported JSON
+   * file or a shared link), through the same migrate + validate + load
+   * path as the saved-assembly restore on startup. False, scene
+   * untouched, if the data isn't a valid non-empty assembly.
+   */
+  importAssembly(data: unknown): boolean;
   /** Sets the render mode (opaque / translucent / skeleton-ish) for every placed shape. */
   setViewMode(mode: ViewMode): void;
   /**
@@ -2957,6 +2964,12 @@ export default function ShapeViewer({
       rewriteSelectedNode,
       deleteSelectedNode,
       undo,
+      importAssembly: (data: unknown) => {
+        const migrated = migrateLegacyRcp4d(data);
+        if (!isValidAssembly(migrated) || migrated.nodes.length === 0) return false;
+        loadAssembly(migrated);
+        return true;
+      },
       getAssembly,
       setViewMode,
       setFoldAmount,

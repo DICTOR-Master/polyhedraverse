@@ -12,6 +12,7 @@ import GuideOverlay from './components/GuideOverlay';
 import ChangelogOverlay from './components/ChangelogOverlay';
 import AssemblyDescriptionPopover from './components/AssemblyDescriptionPopover';
 import { usePrefs } from './lib/prefs';
+import { buildShareUrl, clearSharedAssemblyParam, compressionSupported, decodeAssemblyFromUrl, encodeAssemblyForUrl, getSharedAssemblyParam } from './lib/share';
 import { FAMILY_ORDER, type FamilyKey } from './lib/polyhedra/families';
 
 const ShapeViewer = dynamic(() => import('./components/ShapeViewer'), {
@@ -36,6 +37,9 @@ const VIEW_MODE_LABELS: Record<ViewMode, string> = {
 export default function Home() {
   const handleRef = useRef<ShapeViewerHandle | null>(null);
   const saveStatusResetRef = useRef<ReturnType<typeof setTimeout> | null>(null);
+  const [fileMenuOpen, setFileMenuOpen] = useState(false);
+  const fileMenuRef = useRef<HTMLDivElement | null>(null);
+  const importInputRef = useRef<HTMLInputElement | null>(null);
   const [selection, setSelection] = useState<ShapeSelection | null>(null);
   const [pending, setPending] = useState<Pending | null>(null);
   const [nodeSelection, setNodeSelection] = useState<NodeSelection | null>(null);
@@ -265,6 +269,60 @@ export default function Home() {
     URL.revokeObjectURL(url);
   };
 
+  const showNote = (note: string, ms = 4000) => {
+    setRewriteNote(note);
+    setTimeout(() => setRewriteNote(null), ms);
+  };
+
+  // Share link: the whole assembly, gzip + base64url in ?a= (see
+  // lib/share.ts) -- same client-side scheme as Rhombiverse's ?w=.
+  const handleShare = async () => {
+    setFileMenuOpen(false);
+    const assembly = handleRef.current?.getAssembly();
+    if (!assembly) return;
+    if (!compressionSupported()) {
+      showNote('This browser can’t make share links. Use Export JSON instead.');
+      return;
+    }
+    const url = buildShareUrl(await encodeAssemblyForUrl(assembly));
+    if (url.length > 30000) {
+      showNote('This build is too large to share as a link. Use Export JSON instead.');
+      return;
+    }
+    try {
+      await navigator.clipboard.writeText(url);
+      showNote('Share link copied.');
+    } catch {
+      window.prompt('Copy this share link:', url);
+    }
+  };
+
+  const handleImportFile = async (file: File | undefined) => {
+    if (!file) return;
+    try {
+      const ok = handleRef.current?.importAssembly(JSON.parse(await file.text())) ?? false;
+      showNote(ok ? `Imported ${file.name}.` : 'That file isn’t a Polyhedraverse build.');
+    } catch {
+      showNote('That file isn’t a Polyhedraverse build.');
+    }
+  };
+
+  useEffect(() => {
+    if (!fileMenuOpen) return;
+    const onPointerDown = (e: PointerEvent) => {
+      if (!fileMenuRef.current?.contains(e.target as Node)) setFileMenuOpen(false);
+    };
+    const onKeyDown = (e: KeyboardEvent) => {
+      if (e.key === 'Escape') setFileMenuOpen(false);
+    };
+    window.addEventListener('pointerdown', onPointerDown);
+    window.addEventListener('keydown', onKeyDown);
+    return () => {
+      window.removeEventListener('pointerdown', onPointerDown);
+      window.removeEventListener('keydown', onKeyDown);
+    };
+  }, [fileMenuOpen]);
+
   const cycleViewMode = () => {
     const next = VIEW_MODES[(VIEW_MODES.indexOf(viewMode) + 1) % VIEW_MODES.length];
     setViewModeState(next);
@@ -437,15 +495,69 @@ export default function Home() {
           >
             {saveStatus === 'saving' ? 'Saving…' : 'Save'}
           </button>
-          <button
-            type="button"
-            onClick={handleExport}
-            title="Download the current assembly as a JSON file"
-            className="shrink-0 whitespace-nowrap rounded-full px-4 py-1.5 text-sm font-medium transition-colors"
-            style={{ background: '#0e1209', border: '1px solid rgba(71,204,36,.3)', color: '#5ee233' }}
-          >
-            Export JSON
-          </button>
+          {/* Export / Import / Share grouped under one button: the header
+              only just fits on one line at 1024px, so two more buttons
+              there would have pushed it to a second row. */}
+          <div ref={fileMenuRef} className="relative shrink-0">
+            <button
+              type="button"
+              onClick={() => setFileMenuOpen((o) => !o)}
+              aria-haspopup="menu"
+              aria-expanded={fileMenuOpen}
+              className="shrink-0 whitespace-nowrap rounded-full px-4 py-1.5 text-sm font-medium transition-colors"
+              style={{ background: '#0e1209', border: '1px solid rgba(71,204,36,.3)', color: '#5ee233' }}
+            >
+              File ▾
+            </button>
+            {fileMenuOpen && (
+              <div
+                role="menu"
+                className="absolute left-0 z-30 mt-2 flex min-w-48 lg:left-auto lg:right-0 flex-col overflow-hidden rounded-xl"
+                style={{ background: '#0e1209', border: '1px solid rgba(71,204,36,.3)' }}
+              >
+                <button
+                  type="button"
+                  role="menuitem"
+                  title="Download the current assembly as a JSON file"
+                  onClick={() => { setFileMenuOpen(false); handleExport(); }}
+                  className="min-h-11 whitespace-nowrap px-4 text-left text-sm hover:bg-white/5"
+                  style={{ color: '#5ee233' }}
+                >
+                  Export JSON
+                </button>
+                <button
+                  type="button"
+                  role="menuitem"
+                  title="Open a JSON file exported from Polyhedraverse (replaces the current build)"
+                  onClick={() => { setFileMenuOpen(false); importInputRef.current?.click(); }}
+                  className="min-h-11 whitespace-nowrap px-4 text-left text-sm hover:bg-white/5"
+                  style={{ color: '#5ee233' }}
+                >
+                  Import JSON…
+                </button>
+                <button
+                  type="button"
+                  role="menuitem"
+                  title="Copy a link that contains this whole build -- nothing is stored on a server"
+                  onClick={handleShare}
+                  className="min-h-11 whitespace-nowrap px-4 text-left text-sm hover:bg-white/5"
+                  style={{ color: '#5ee233' }}
+                >
+                  Copy share link
+                </button>
+              </div>
+            )}
+            <input
+              ref={importInputRef}
+              type="file"
+              accept="application/json,.json"
+              hidden
+              onChange={(e) => {
+                void handleImportFile(e.target.files?.[0]);
+                e.target.value = '';
+              }}
+            />
+          </div>
         </div>
       </header>
 
@@ -797,6 +909,16 @@ export default function Home() {
           }}
           onReady={(handle) => {
             handleRef.current = handle;
+            // A shared link (?a=) wins over the saved build: the viewer's
+            // own saved-build restore runs synchronously right after this,
+            // and the decode below always resolves after it.
+            const shared = getSharedAssemblyParam();
+            if (shared && compressionSupported()) {
+              decodeAssemblyFromUrl(shared)
+                .then((data) => showNote(handle.importAssembly(data) ? 'Opened a shared build.' : 'That share link is broken or incomplete.'))
+                .catch(() => showNote('That share link is broken or incomplete.'))
+                .finally(clearSharedAssemblyParam);
+            }
           }}
         />
       </main>

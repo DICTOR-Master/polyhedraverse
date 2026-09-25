@@ -17,7 +17,7 @@ async function downloadedJson(page: import('@playwright/test').Page, trigger: ()
 
 test('Export JSON downloads the current assembly as a real, valid JSON file', async ({ page }) => {
   const { filename, assembly } = await downloadedJson(page, () =>
-    page.getByRole('button', { name: 'Export JSON' }).click(),
+    page.getByRole('button', { name: 'File ▾' }).click().then(() => page.getByRole('menuitem', { name: 'Export JSON' }).click()),
   );
 
   expect(filename).toMatch(/^polyhedraverse-.*\.json$/);
@@ -40,7 +40,7 @@ test('Export JSON reflects a confirmed attach, not just the root shape', async (
   await expect(page.locator('text=/Placing CUBE/')).toHaveCount(0);
 
   const { assembly } = await downloadedJson(page, () =>
-    page.getByRole('button', { name: 'Export JSON' }).click(),
+    page.getByRole('button', { name: 'File ▾' }).click().then(() => page.getByRole('menuitem', { name: 'Export JSON' }).click()),
   );
   expect(assembly.nodes).toHaveLength(2);
   expect(assembly.nodes.every((n: { shape: string }) => n.shape === 'CUBE')).toBe(true);

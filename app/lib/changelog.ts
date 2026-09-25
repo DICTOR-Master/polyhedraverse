@@ -20,6 +20,7 @@ export const CHANGELOG: ChangelogDay[] = [
       'New "How to use" guide, opened from the welcome screen (About on the corner wheel brings the welcome screen back any time). It walks through choosing shapes, attaching them, browsing the catalogue and building in 4D, then lists every control. It is also a page you can share: polyhedraverse.vercel.app/guide.',
       'The welcome screen now describes Polyhedraverse as the portrait gallery of shapes, alongside Rhombiverse\'s landscape view of lattices, and is now in all 7 languages.',
       'Undo now steps back through every attach you\'ve made, not just the last one: press it again to keep going.',
+      'Share a build as a link: File → Copy share link puts the whole build in the link itself, with nothing stored on a server. File → Import JSON… opens a build you exported earlier.',
     ],
   },
   {
