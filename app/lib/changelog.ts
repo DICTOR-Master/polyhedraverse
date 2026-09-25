@@ -15,6 +15,12 @@ export interface ChangelogDay {
 
 export const CHANGELOG: ChangelogDay[] = [
   {
+    date: '2026-09-26',
+    entries: [
+      'The welcome screen now says what Polyhedraverse can build in 4D: real 4D polytopes, from the tesseract to the 600-cell, one 3D cell at a time. Its link to Rhombiverse now mentions that twin\'s range, from 2D to 6D with quasicrystals.',
+    ],
+  },
+  {
     date: '2026-09-25',
     entries: [
       'The View button\'s third mode is now called Skeleton, the same name Rhombiverse uses.',

@@ -112,6 +112,9 @@ export default function WelcomeOverlay({ open, onClose, onOpenGuide }: WelcomeOv
         <p style={{ margin: 0, fontSize: 11, opacity: 0.6, color: GREEN_BRIGHT }}>
           {t('welcome.stars', language, { n: STAR_POLYHEDRON_IDS.length })}
         </p>
+        <p style={{ margin: 0, fontSize: 13, opacity: 0.8, color: GREEN_BRIGHT }}>
+          {t('welcome.fourD', language)}
+        </p>
 
         <button
           type="button"
