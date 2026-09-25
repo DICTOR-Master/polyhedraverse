@@ -23,20 +23,21 @@ test('a "Previous" face steps back a page without wrapping through the whole fam
   // "View all" is also a real, always-present nav face once a family
   // overflows (not page-dependent, unlike More/Previous) -- excluded here
   // the same way, since this test is about per-shape CONTENT only.
-  const realContent = (labels: string[]) => labels.filter((t) => t !== '' && t !== 'More' && t !== 'Previous' && t !== 'View all');
+  const realContent = (labels: string[]) => labels.filter((t) => t !== '' && t !== 'More' && t !== 'Previous' && t !== 'View all' && t !== 'Home');
 
   const page1Labels = await page.locator('.pw-label-text').allTextContents();
   expect(page1Labels).toContain('More');
   expect(page1Labels).toContain('View all');
   expect(page1Labels).not.toContain('Previous'); // page 0: nothing to go back to yet
   const page1Content = realContent(page1Labels).sort();
-  expect(page1Content).toHaveLength(9); // PAGED_CONTENT_PER_PAGE once overflowing (one less than CONTENT_FACES_PER_PAGE -- "View all" also reserves a face)
+  expect(page1Labels).toContain('Home');
+  expect(page1Content).toHaveLength(8); // PAGED_CONTENT_PER_PAGE once overflowing (More, View all and Home each reserve a face)
 
   await clickWheelLabel(page, 'More');
   const page2Labels = await page.locator('.pw-label-text').allTextContents();
   expect(page2Labels).toContain('Previous');
   const page2Content = realContent(page2Labels).sort();
-  expect(page2Content).toHaveLength(4); // Archimedean's 13 - 9 already shown
+  expect(page2Content).toHaveLength(5); // Archimedean's 13 - 8 already shown
   // No overlap -- page 2 shows the REMAINING shapes, not a repeat of page 1's.
   expect(page2Content.some((t) => page1Content.includes(t))).toBe(false);
 
@@ -44,6 +45,13 @@ test('a "Previous" face steps back a page without wrapping through the whole fam
   const page1AgainLabels = await page.locator('.pw-label-text').allTextContents();
   expect(page1AgainLabels).not.toContain('Previous'); // back to page 0
   expect(realContent(page1AgainLabels).sort()).toEqual(page1Content);
+
+  // Home (a wheel face, not a text button) goes back to the family wheel.
+  await clickWheelLabel(page, 'Home');
+  const familyLabels = await page.locator('.pw-label-text').allTextContents();
+  expect(familyLabels).toContain('Archimedean');
+  expect(familyLabels).not.toContain('Home');
+  expect(familyLabels).not.toContain('Star Polyhedra'); // dropped from the wheel; still in Full Catalog
 });
 
 /**

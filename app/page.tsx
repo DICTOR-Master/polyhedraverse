@@ -882,12 +882,6 @@ export default function Home() {
           setFullCatalogRequestId((n) => n + 1);
           setBrowserOpen(true);
         }}
-        onSelectStarPolyhedra={() => {
-          setWheelOpen(false);
-          setFullCatalogFocusSection('STAR');
-          setFullCatalogRequestId((n) => n + 1);
-          setBrowserOpen(true);
-        }}
         onSelectFamilyGrid={(familyKey) => {
           setWheelOpen(false);
           setFullCatalogFocusSection(familyKey);

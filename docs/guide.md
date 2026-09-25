@@ -12,7 +12,7 @@ The first part of this guide walks through common tasks. The second part lists e
 
 1. Press **ENTER** on the welcome screen.
 2. Press **Tab** or **Space**, or tap the **shape wheel** button, to open the shape wheel.
-3. The wheel is a dodecahedron. Each face is a family of shapes. Drag to turn it, and tap a face to open that family.
+3. The wheel is a dodecahedron. Each face is a family of shapes. Drag to turn it (or use the arrow keys), and tap a face to open that family. Hover over a face, or press and hold it, to see its name. Inside a family, the **Home** face (an H in a hexagon) takes you back to the families.
 4. Tap a shape. It replaces whatever is on screen, so you start fresh.
 
 **Spin the Wheel** picks a family at random.

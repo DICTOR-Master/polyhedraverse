@@ -421,11 +421,6 @@ export default function ShapeBrowser({
           setFocusSection(undefined);
           setShowFullCatalog(true);
         }}
-        onSelectStarPolyhedra={() => {
-          setShowWheel(false);
-          setFocusSection('STAR');
-          setShowFullCatalog(true);
-        }}
         onSelectFamilyGrid={(familyKey) => {
           setShowWheel(false);
           setFocusSection(familyKey);

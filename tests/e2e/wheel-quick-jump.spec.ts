@@ -13,18 +13,6 @@ test.beforeEach(async ({ page }) => {
  * Full Catalog and scrolling, or drilling through the wheel's per-shape
  * pagination one page at a time.
  */
-test('the wheel\'s own Star Polyhedra face jumps straight to Full Catalog\'s star section', async ({ page }) => {
-  await page.getByRole('button', { name: /^Start over with/ }).click();
-  await openBrowserWheel(page);
-  await clickWheelLabel(page, exactLabel('Star Polyhedra'));
-
-  // The wheel itself is gone -- exits immediately, same as Full Catalog's
-  // own face does, not a further wheel-level navigation.
-  await expect(page.locator('[data-testid="polyhedral-wheel-scene"]')).toHaveCount(0);
-  const header = page.locator('text=/Star Polyhedra — reference only/');
-  await expect(header).toBeVisible();
-});
-
 /**
  * "View all" only appears once a family actually spans more than one
  * wheel page (Johnson: 92 members) -- a small family (e.g. Platonic: 5)
@@ -60,21 +48,24 @@ test('a small, non-overflowing family has no "View all" face -- its whole roster
 });
 
 /**
- * Both Star Polyhedra and family "View all" also have to work from the
- * DIRECT corner-HUD wheel (page.tsx's own PolyhedralWheel, not the one
- * embedded in ShapeBrowser) -- real, separate plumbing
- * (fullCatalogRequestId + fullCatalogFocusSection), not a duplicate of
- * the embedded-wheel tests above.
+ * Family "View all" also has to work from the DIRECT corner-HUD wheel
+ * (page.tsx's own PolyhedralWheel, not the one embedded in ShapeBrowser)
+ * -- real, separate plumbing (fullCatalogRequestId +
+ * fullCatalogFocusSection), not a duplicate of the embedded-wheel test
+ * above. (Star Polyhedra used to be checked here too; its wheel face was
+ * dropped 2026-09-25 -- the section is still in Full Catalog, see
+ * star-polyhedra.spec.ts.)
  */
-test('Star Polyhedra and View all are also reachable from the direct corner-HUD wheel', async ({ page }) => {
+test('View all is also reachable from the direct corner-HUD wheel', async ({ page }) => {
   await page.evaluate(() => {
     (document.querySelector('[data-testid="corner-hud-wheel"]') as unknown as { __hudTriggerAction: (i: number) => void })
       .__hudTriggerAction(0);
   });
   await expect(page.locator('[role="dialog"][aria-label="Shape picker wheel"]')).toBeVisible();
-  await clickWheelLabel(page, exactLabel('Star Polyhedra'));
+  await clickWheelLabel(page, exactLabel('Johnson'));
+  await clickWheelLabel(page, 'View all');
   await expect(page.locator('[role="dialog"][aria-label="Shape picker wheel"]')).toHaveCount(0);
-  await expect(page.locator('text=/Star Polyhedra — reference only/')).toBeVisible();
+  await expect(page.locator('text=/^Johnson$/').first()).toBeVisible();
 });
 
 /**

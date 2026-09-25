@@ -151,15 +151,15 @@ export async function clickWheelLabel(page: Page, text: string | RegExp): Promis
 }
 
 export const CONTENT_FACES_PER_PAGE = 10; // overflow THRESHOLD only -- must match PolyhedralWheel.tsx's own CONTENT_FACES_PER_PAGE (does a family need paging at all?)
-// Once a family IS paging, each page holds only 9 real shapes, not 10 --
-// face 10 is reserved for "View all" on every page of an overflowing
-// family (see PolyhedralWheel.tsx's own VIEW_ALL_FACE_INDEX/
+// Once a family IS paging, each page holds only 8 real shapes, not 10 --
+// faces 9 (More), 10 ("View all") and 11 (Home) are reserved on every
+// page of an overflowing family (see PolyhedralWheel.tsx's own VIEW_ALL_FACE_INDEX/
 // PAGED_CONTENT_PER_PAGE). Real bug this constant split fixed: reusing
 // CONTENT_FACES_PER_PAGE (10) for the actual per-page division too
 // undercounted how many pages Johnson (92) actually has, silently
 // causing this file's own paging walk to stop one page short and miss
 // whatever shapes lived on the real last page.
-export const PAGED_CONTENT_PER_PAGE = 9;
+export const PAGED_CONTENT_PER_PAGE = 8;
 
 /**
  * Like clickWheelLabel, but also pages forward (clicking "More") when a

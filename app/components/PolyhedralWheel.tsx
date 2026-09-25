@@ -243,8 +243,18 @@ const ALL_CATALOG_LABEL = 'Full Catalog';
 // actually are rather than a generic "star" gesture. Selecting it exits
 // the wheel and routes to FullCatalogScreen scrolled to that section,
 // same external-trigger pattern as onAll.
-const STAR_POLYHEDRA_LABEL = 'Star Polyhedra';
-const STAR_POLYHEDRA_SYMBOL = '⛧';
+// Home: every family's own wheel has a Home face (face 11) back to the
+// family wheel (direct request 2026-09-25: Home on the wheel itself, as
+// Rhombiverse's wheels have, instead of a "← Back" text button). The
+// Star Polyhedra face was dropped from the family wheel at the same time
+// ("poinsot stars doesnt need wheel space") -- they're still in Full
+// Catalog's own star section.
+const HOME_LABEL = 'Home';
+// Same mark as Rhombiverse's Home (src/app/wheel-icons.js: iconFrame's
+// hexagon + MARKS.home's H, same geometry; "Home" revealed above it on
+// hover/hold) -- one Home icon across both apps.
+const HOME_SVG = '<svg viewBox="-50 -50 100 100" width="1.15em" height="1.15em" aria-hidden="true"><polygon points="0.00,-46.00 39.84,-23.00 39.84,23.00 0.00,46.00 -39.84,23.00 -39.84,-23.00" stroke="currentColor" stroke-width="3" fill="none"/><path d="M-18,-22 V22 M18,-22 V22 M-18,0 H18" stroke="currentColor" stroke-width="5.5" stroke-linecap="round"/></svg>';
+const HOME_FACE_INDEX = 11;
 // Search -- real user request: an alternate way into the registry
 // besides family-by-family, deep-linking straight to ShapeBrowser's own
 // Search tab (already has both a name search box AND a face-shape facet
@@ -263,13 +273,14 @@ const SEARCH_SYMBOL = '⌕';
 // actually spans more than one wheel page (`overflow`) -- a family whose
 // whole roster already fits on one wheel screen (Deltahedra, Platonic,
 // Prisms, Antiprisms) has nothing to shortcut past. Reserves face 10
-// alongside Previous (0) and More (11), regardless of which page is
-// currently showing (unlike Previous/More, this isn't page-dependent) --
-// content then fills 9 slots per page instead of 10 once overflowing
-// (see PAGED_CONTENT_PER_PAGE), so this never collides with a real shape.
+// alongside Previous (0), More (9) and Home (11), regardless of which
+// page is currently showing (unlike Previous/More, this isn't
+// page-dependent) -- content then fills 8 slots per page (faces 1-8)
+// once overflowing (see PAGED_CONTENT_PER_PAGE), so it never collides
+// with a real shape.
 const VIEW_ALL_LABEL = 'View all';
 const VIEW_ALL_FACE_INDEX = 10;
-const PAGED_CONTENT_PER_PAGE = 9;
+const PAGED_CONTENT_PER_PAGE = 8;
 
 // 12 faces available; family level always fits (7 populated + 5 spare).
 // A family's shape level reserves face 11 for "More"/next-page paging
@@ -281,7 +292,7 @@ const PAGED_CONTENT_PER_PAGE = 9;
 // leave both nav faces free; a non-overflowing family still uses all 12
 // for content since neither nav face is ever needed there.
 const CONTENT_FACES_PER_PAGE = 10;
-const MORE_FACE_INDEX = 11;
+const MORE_FACE_INDEX = 9;
 const PREV_FACE_INDEX = 0;
 
 type WheelLevel = { kind: 'families' } | { kind: 'family'; familyIndex: number; page: number };
@@ -289,6 +300,8 @@ type WheelLevel = { kind: 'families' } | { kind: 'family'; familyIndex: number; 
 interface FaceSlot {
   label: string;
   symbol: string;
+  /** Optional inline SVG drawn instead of `symbol` (the shared Home mark). */
+  svg?: string;
   spare: boolean;
   onSelect: (() => void) | null;
 }
@@ -300,7 +313,7 @@ function resolveSlots(
   onSelectShape: (id: string) => void,
   onMore: () => void,
   onPrev: () => void,
-  onStarPolyhedra: () => void,
+  onHome: () => void,
   onFamilyGrid: (familyKey: FamilyKey) => void,
   onSearch: () => void,
   filterIds?: string[],
@@ -381,16 +394,10 @@ function resolveSlots(
         slots[faceIndex] = { label: f.label, symbol: f.symbol, spare: false, onSelect: () => onFamily(i) };
       }
     });
-    // Full Catalog and Star Polyhedra are both plain external triggers
-    // now (onAll/onStarPolyhedra), not levels this wheel navigates to
-    // itself -- always clickable regardless of filterIds (FullCatalogScreen
-    // handles per-section compatibility, and star polyhedra are never a
-    // valid attach target under any filter, so they'd offer nothing
-    // useful there -- but staying visible/clickable is simpler and more
-    // honest than a third special-cased dead-end rule here; the section
-    // itself is what decides what's actually shown).
+    // Full Catalog is a plain external trigger (onAll), not a level this
+    // wheel navigates to itself -- always clickable regardless of
+    // filterIds (FullCatalogScreen handles per-section compatibility).
     slots[8] = { label: ALL_CATALOG_LABEL, symbol: '★', spare: false, onSelect: onAll };
-    slots[11] = { label: STAR_POLYHEDRA_LABEL, symbol: STAR_POLYHEDRA_SYMBOL, spare: false, onSelect: onStarPolyhedra };
     slots[7] = { label: SEARCH_LABEL, symbol: SEARCH_SYMBOL, spare: false, onSelect: onSearch };
     return slots;
   }
@@ -451,6 +458,7 @@ function resolveSlots(
   if (hasPrev) {
     slots[PREV_FACE_INDEX] = { label: 'Previous', symbol: '←', spare: false, onSelect: onPrev };
   }
+  slots[HOME_FACE_INDEX] = { label: HOME_LABEL, symbol: '', svg: HOME_SVG, spare: false, onSelect: onHome };
   if (overflow) {
     slots[VIEW_ALL_FACE_INDEX] = {
       label: VIEW_ALL_LABEL,
@@ -475,15 +483,6 @@ export interface PolyhedralWheelProps {
    * embeddings; every real usage of this wheel wires it.
    */
   onSelectAll?: () => void;
-  /**
-   * Fired when the "Star Polyhedra" face (face 11, the pentagram symbol)
-   * is picked -- same external-trigger pattern as onSelectAll: the wheel
-   * closes itself immediately, the caller shows FullCatalogScreen
-   * scrolled to that section. Real user request: these 4 solids were
-   * only reachable by opening Full Catalog and scrolling all the way
-   * down; this gives them a direct door of their own.
-   */
-  onSelectStarPolyhedra?: () => void;
   /**
    * Fired when a family's own "View all" face is picked (only offered
    * once that family spans more than one wheel page) -- same
@@ -520,7 +519,6 @@ export default function PolyhedralWheel({
   onClose,
   onSelect,
   onSelectAll,
-  onSelectStarPolyhedra,
   onSelectFamilyGrid,
   onSelectSearch,
   filterIds,
@@ -706,9 +704,14 @@ export default function PolyhedralWheel({
         (mesh.material as THREE.MeshStandardMaterial).opacity = slot.spare ? 0.08 : 0.24;
         labelEls[i].classList.toggle('spare', slot.spare);
         const glyphEl = labelEls[i].querySelector('.pw-label-glyph') as HTMLElement;
-        glyphEl.textContent = slot.symbol;
-        const adjust = glyphAdjust(slot.symbol);
-        glyphEl.style.transform = `translate(${adjust.dx}px, ${adjust.dy}px) scale(${adjust.scale})`;
+        if (slot.svg) {
+          glyphEl.innerHTML = slot.svg;
+          glyphEl.style.transform = '';
+        } else {
+          glyphEl.textContent = slot.symbol;
+          const adjust = glyphAdjust(slot.symbol);
+          glyphEl.style.transform = `translate(${adjust.dx}px, ${adjust.dy}px) scale(${adjust.scale})`;
+        }
         labelTextEls[i].textContent = slot.label;
       });
     };
@@ -943,31 +946,21 @@ export default function PolyhedralWheel({
         // in-range decrement, never called from page 0.
         setLevel((l) => (l.kind !== 'families' ? { ...l, page: l.page - 1 } : l));
       },
-      () => {
-        // Star Polyhedra exits the wheel immediately, same as Full
-        // Catalog does -- no internal level change here either.
-        onSelectStarPolyhedra?.();
-        onClose();
-      },
+      () => setLevel({ kind: 'families' }),
       (familyKey) => {
         onSelectFamilyGrid?.(familyKey);
         onClose();
       },
       () => {
         // Search exits the wheel immediately too, same external-trigger
-        // pattern as Full Catalog/Star Polyhedra/View all.
+        // pattern as Full Catalog/View all.
         onSelectSearch?.();
         onClose();
       },
       filterIds,
     );
     container.__pwApplySlots(slots);
-  }, [level, onSelect, onClose, onSelectAll, onSelectStarPolyhedra, onSelectFamilyGrid, onSelectSearch, filterIds]);
-
-  const step = (axis: 'azimuth' | 'polar', delta: number) => {
-    const container = containerRef.current as unknown as { __pwStep?: (axis: 'azimuth' | 'polar', delta: number) => void } | null;
-    container?.__pwStep?.(axis, delta);
-  };
+  }, [level, onSelect, onClose, onSelectAll, onSelectFamilyGrid, onSelectSearch, filterIds]);
 
   if (!open) return null;
 
@@ -1033,6 +1026,7 @@ export default function PolyhedralWheel({
         .pw-label-glyph {
           display: inline-block; /* transform:scale needs a box, not a bare inline run */
         }
+        .pw-label-glyph svg { display: block; }
         .pw-label-text {
           position: absolute; left: 50%; bottom: 100%; transform: translateX(-50%);
           margin-bottom: 6px;
@@ -1087,66 +1081,19 @@ export default function PolyhedralWheel({
         }}
       >
         <span>
-          {level.kind === 'families'
-            ? t('wheel.head', language)
-            : t('wheel.drag', language, { family: FAMILIES[level.familyIndex].label })}
+          {level.kind === 'families' ? t('wheel.head', language) : FAMILIES[level.familyIndex].label}
         </span>
-        {level.kind !== 'families' && (
-          <button
-            type="button"
-            onClick={goBack}
-            style={{ background: 'none', border: `1px solid ${PANEL_BORDER}`, color: SCRIPT_COLOR, borderRadius: 6, padding: '2px 10px', cursor: 'pointer' }}
-          >
-            {t('action.back', language)}
-          </button>
-        )}
         <button
           type="button"
           onClick={onClose}
-          style={{ background: 'none', border: `1px solid ${PANEL_BORDER}`, color: SCRIPT_COLOR, borderRadius: 6, padding: '2px 10px', cursor: 'pointer' }}
+          title={t('wheel.close', language)}
+          aria-label={t('wheel.close', language)}
+          style={{ background: 'none', border: `1px solid ${PANEL_BORDER}`, color: SCRIPT_COLOR, borderRadius: 6, minWidth: 32, minHeight: 32, padding: 0, fontSize: 16, cursor: 'pointer' }}
         >
-          {t('wheel.close', language)}
+          ✕
         </button>
       </div>
 
-      <div
-        style={{
-          position: 'absolute',
-          bottom: 24,
-          left: '50%',
-          transform: 'translateX(-50%)',
-          display: 'grid',
-          gridTemplateColumns: 'repeat(3, 40px)',
-          gridTemplateRows: 'repeat(2, 40px)',
-          gap: 4,
-        }}
-      >
-        <RotateButton label="▴" gridArea="1 / 2" onClick={() => step('polar', -Math.PI / 6)} title="Rotate up (↑)" />
-        <RotateButton label="‹" gridArea="2 / 1" onClick={() => step('azimuth', -Math.PI / 4)} title="Rotate left (←)" />
-        <RotateButton label="›" gridArea="2 / 3" onClick={() => step('azimuth', Math.PI / 4)} title="Rotate right (→)" />
-        <RotateButton label="▾" gridArea="2 / 2" onClick={() => step('polar', Math.PI / 6)} title="Rotate down (↓)" />
-      </div>
     </div>
-  );
-}
-
-function RotateButton({ label, gridArea, onClick, title }: { label: string; gridArea: string; onClick: () => void; title: string }) {
-  return (
-    <button
-      type="button"
-      onClick={onClick}
-      title={title}
-      style={{
-        gridArea,
-        background: PANEL_BG,
-        border: `1px solid ${PANEL_BORDER}`,
-        color: SCRIPT_COLOR,
-        borderRadius: 6,
-        fontSize: 16,
-        cursor: 'pointer',
-      }}
-    >
-      {label}
-    </button>
   );
 }
