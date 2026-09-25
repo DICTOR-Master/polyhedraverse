@@ -38,7 +38,7 @@ Two shapes joined face to face share that face exactly, a cube on a cube for exa
 
 ### Undo and delete
 
-- **Undo** takes back the last attach, along with anything built on it. Press it again to keep stepping back.
+- **Undo** (↶, top bar) takes back your last change of any kind: an attach, a delete, a Transform, a 4D build step, Start over or an import. Tap it again to keep stepping back, or hold it to jump back several steps at once.
 - Select a shape and tap **Delete** to remove it, along with anything built on top of it.
 
 ## Browsing the catalogue
@@ -123,7 +123,7 @@ Some shapes can also **Attach via Duoprism…**, which joins an exact copy throu
 | i | Description of the named assembly |
 | What's New | Recent changes |
 | View | Cycles Solid, Translucent and Inside view |
-| Undo | Takes back the last attach. Press again to step further back |
+| ↶ Undo | Takes back your last change of any kind. Tap again to step further back; hold to jump back several steps |
 | Save | Stores the build in this browser |
 | File ▾ | Export JSON, Import JSON…, Copy share link |
 

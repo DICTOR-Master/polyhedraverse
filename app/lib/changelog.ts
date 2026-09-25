@@ -19,7 +19,7 @@ export const CHANGELOG: ChangelogDay[] = [
     entries: [
       'New "How to use" guide, opened from the welcome screen (About on the corner wheel brings the welcome screen back any time). It walks through choosing shapes, attaching them, browsing the catalogue and building in 4D, then lists every control. It is also a page you can share: polyhedraverse.vercel.app/guide.',
       'The welcome screen now describes Polyhedraverse as the portrait gallery of shapes, alongside Rhombiverse\'s landscape view of lattices, and is now in all 7 languages.',
-      'Undo now steps back through every attach you\'ve made, not just the last one: press it again to keep going.',
+      'Undo (↶ in the top bar) now takes back any change, not just attaches: deletes, Transform, 4D build steps, Start over and imports too. Tap to step back, or hold to jump back several steps at once, the same as in Rhombiverse.',
       'Cleaner shape wheel: each family now has a Home face (an H in a hexagon, the same Home icon Rhombiverse uses), the arrow pad and text buttons are gone (drag or use the arrow keys), and Close is a simple ✕. Star polyhedra stay in the Full Catalog.',
       'RCP-Coordinates now picks its colours per build, from bright tones chosen to stand apart from that build\'s own colours (including Shell colours), so the points and lines are always easy to see.',
       'The welcome screen now appears on every visit.',

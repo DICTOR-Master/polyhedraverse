@@ -226,15 +226,40 @@ export default function Home() {
     setTimeout(() => setRewriteNote(null), 4000);
   };
 
-  const handleUndo = () => {
-    const result = handleRef.current?.undo();
-    if (!result) return;
-    setRewriteNote(
-      result.deletedCount > 1
-        ? `Undid last attach (and ${result.deletedCount - 1} piece(s) built on top of it)`
-        : 'Undid last attach',
-    );
-    setTimeout(() => setRewriteNote(null), 4000);
+  // Undo: tap for one step, hold for a strip of past steps (same as
+  // Rhombiverse's ↶). The viewer records every change as a snapshot.
+  const [undoStrip, setUndoStrip] = useState<number | null>(null); // steps available while the strip is open
+  const undoHoldRef = useRef<ReturnType<typeof setTimeout> | null>(null);
+  const undoWrapRef = useRef<HTMLDivElement | null>(null);
+  useEffect(() => {
+    if (undoStrip === null) return;
+    const onPointerDown = (e: PointerEvent) => {
+      if (!undoWrapRef.current?.contains(e.target as Node)) setUndoStrip(null);
+    };
+    window.addEventListener('pointerdown', onPointerDown);
+    return () => window.removeEventListener('pointerdown', onPointerDown);
+  }, [undoStrip]);
+  const undoBy = (steps: number) => {
+    const done = handleRef.current?.undoSteps(steps) ?? 0;
+    setUndoStrip(null);
+    if (done) showNote(done === 1 ? 'Undone.' : `Undone ${done} steps.`, 2000);
+  };
+  const onUndoPointerDown = () => {
+    if (undoHoldRef.current) clearTimeout(undoHoldRef.current);
+    undoHoldRef.current = setTimeout(() => {
+      undoHoldRef.current = null;
+      setUndoStrip(handleRef.current?.undoCount() ?? 0);
+    }, 350);
+  };
+  const onUndoPointerUp = () => {
+    if (!undoHoldRef.current) return; // the hold already opened the strip
+    clearTimeout(undoHoldRef.current);
+    undoHoldRef.current = null;
+    undoBy(1);
+  };
+  const cancelUndoHold = () => {
+    if (undoHoldRef.current) clearTimeout(undoHoldRef.current);
+    undoHoldRef.current = null;
   };
 
   const handleExport = () => {
@@ -425,16 +450,46 @@ export default function Home() {
           >
             View: {VIEW_MODE_LABELS[viewMode]}
           </button>
-          <button
-            type="button"
-            onClick={handleUndo}
-            disabled={!canUndo || pending !== null}
-            title="Undo the last attach (and anything built on it). Press again to keep stepping back."
-            className="shrink-0 whitespace-nowrap rounded-full px-4 py-1.5 text-sm font-medium transition-colors disabled:opacity-50"
-            style={{ background: '#0e1209', border: '1px solid rgba(71,204,36,.3)', color: '#5ee233' }}
-          >
-            Undo
-          </button>
+          <div ref={undoWrapRef} className="relative shrink-0">
+            <button
+              type="button"
+              onPointerDown={onUndoPointerDown}
+              onPointerUp={onUndoPointerUp}
+              onPointerLeave={cancelUndoHold}
+              onPointerCancel={cancelUndoHold}
+              onClick={(e) => { if (e.detail === 0) undoBy(1); }} // keyboard (Enter/Space): no pointer events
+              onContextMenu={(e) => e.preventDefault()}
+              disabled={!canUndo || pending !== null}
+              title="Undo: tap for one step, hold to go back further"
+              aria-label="Undo"
+              className="shrink-0 whitespace-nowrap rounded-full px-4 py-1.5 text-base font-medium transition-colors disabled:opacity-50"
+              style={{ background: '#0e1209', border: '1px solid rgba(71,204,36,.3)', color: '#5ee233', touchAction: 'none' }}
+            >
+              ↶
+            </button>
+            {undoStrip !== null && undoStrip > 0 && (
+              <div
+                className="absolute left-0 z-30 mt-2 flex max-w-72 flex-wrap gap-1.5 rounded-lg p-2 lg:left-auto lg:right-0"
+                style={{ background: '#0e1209', border: '1px solid rgba(71,204,36,.3)' }}
+                onPointerLeave={() => setUndoStrip(null)}
+              >
+                <div className="w-full text-center text-xs" style={{ color: '#5ee233', opacity: 0.8 }}>
+                  {undoStrip} step{undoStrip === 1 ? '' : 's'} back
+                </div>
+                {Array.from({ length: undoStrip }, (_, i) => undoStrip - i).map((back) => (
+                  <button
+                    key={back}
+                    type="button"
+                    onClick={() => undoBy(back)}
+                    title={`Go back ${back} step${back === 1 ? '' : 's'}`}
+                    aria-label={`Go back ${back} step${back === 1 ? '' : 's'}`}
+                    className="h-5 w-5 rotate-45"
+                    style={{ background: 'rgba(71,204,36,.35)', border: '1px solid #5ee233' }}
+                  />
+                ))}
+              </div>
+            )}
+          </div>
           <button
             type="button"
             onClick={handleSave}

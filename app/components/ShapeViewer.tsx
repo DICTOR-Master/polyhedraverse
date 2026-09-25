@@ -280,14 +280,17 @@ export interface ShapeViewerHandle {
   /** Removes the currently selected node and its whole subtree. Null if nothing is selected. */
   deleteSelectedNode(): DeleteResult | null;
   /**
-   * Removes the most recently CONFIRMED attach (vertex or face) that's
-   * still in the scene, and whatever's been built on top of it since, if
-   * anything. Multi-step: each call steps one attach further back, until
-   * every attach confirmed this session is gone. Null if there's nothing
-   * left to undo (nothing confirmed yet, or everything already undone,
-   * deleted or reset past).
+   * Steps the whole build back to how it was before the last change --
+   * any change: attach, delete, Transform, an RCP-C2B cell/shell or
+   * Open/Closed switch, Start over, an import or a shared link. Snapshot
+   * based (see checkpoint()), so nothing is special-cased. False if there
+   * is nothing to undo or a new shape is still waiting to be placed.
    */
-  undo(): DeleteResult | null;
+  undo(): boolean;
+  /** Undoes up to `count` steps (the hold-to-scrub strip); returns how many it did. */
+  undoSteps(count: number): number;
+  /** How many steps back are available. */
+  undoCount(): number;
   /** The current assembly graph, exactly as saved -- for client-side export (JSON download), not persistence. */
   getAssembly(): Assembly;
   /**
@@ -699,12 +702,13 @@ export default function ShapeViewer({
   const selectedFaceIndexRef = useRef<number | null>(null);
   const pendingRef = useRef<PendingAttach | null>(null);
   const viewModeRef = useRef<ViewMode>('normal');
-  // Every CONFIRMED attach's node id this session, oldest first -- undo()
-  // pops from the end (see its doc comment on ShapeViewerHandle). Was a
-  // single id (single-level undo) until 2026-09-25, raised to a stack for
-  // parity with Rhombiverse's multi-step undo. Cleared on reset; any ids
-  // a delete removes (the node or its subtree) are dropped from it.
-  const addedNodeStackRef = useRef<string[]>([]);
+  // Undo history (2026-09-25, parity with Rhombiverse): snapshots of the
+  // whole graph. committedRef is the graph as of the last settled state;
+  // checkpoint() (run after every handle call) pushes it onto historyRef
+  // whenever the graph has really changed since. Was a stack of attach
+  // node ids (undo covered attaches only).
+  const historyRef = useRef<string[]>([]);
+  const committedRef = useRef<string | null>(null);
   // Duoprism wall-prism meshes, keyed by their own CHILD node's id (see
   // confirmAttach's own duoprism branch) -- plain extra scene meshes,
   // never part of either node's own PlacedShape, since a wall-prism
@@ -1881,10 +1885,6 @@ export default function ShapeViewer({
       hoveredFaceIndexRef.current = null;
       selectedFaceIndexRef.current = null;
       label.style.display = 'none';
-      if (addedNodeStackRef.current.length > 0) {
-        addedNodeStackRef.current = [];
-        onCanUndoChangeRef.current?.(false);
-      }
     };
 
     const placeRoot = (specId: string) => {
@@ -1916,7 +1916,7 @@ export default function ShapeViewer({
     };
 
     /** Rebuilds the scene from a previously saved graph — used on load, not on user actions. */
-    const loadAssembly = (assembly: Assembly) => {
+    const loadAssembly = (assembly: Assembly, { fitCamera = true }: { fitCamera?: boolean } = {}) => {
       resetScene();
       const byNodeId = new Map<string, PlacedShape>();
       const nodeById = new Map(assembly.nodes.map((n) => [n.id, n]));
@@ -2049,7 +2049,7 @@ export default function ShapeViewer({
 
       graphRef.current = assembly;
       for (const node of assembly.nodes) if (node.rcpPolytope) rebuildRcpGapOverlay(node.id);
-      fitCameraToObjects(placedRef.current.map((p) => p.object));
+      if (fitCamera) fitCameraToObjects(placedRef.current.map((p) => p.object));
       onSelectionChangeRef.current?.(null);
       reportCageStatus();
     };
@@ -2474,10 +2474,6 @@ export default function ShapeViewer({
         }
       }
 
-      if (pending.kind !== 'duoprism' || pending.isNewNode) {
-        addedNodeStackRef.current.push(pending.nodeId);
-        onCanUndoChangeRef.current?.(true);
-      }
 
       pendingRef.current = null;
       controls.enabled = true;
@@ -2689,11 +2685,6 @@ export default function ShapeViewer({
         if (parentPlaced) applyNodeAppearance(parentPlaced, parentPlaced === selectedNodeRef.current);
       }
 
-      // Anything removed here (the node or its subtree) is no longer
-      // something undo can step back to.
-      const stackBefore = addedNodeStackRef.current.length;
-      addedNodeStackRef.current = addedNodeStackRef.current.filter((id) => !subtreeIds.has(id));
-      if (stackBefore > 0 && addedNodeStackRef.current.length === 0) onCanUndoChangeRef.current?.(false);
 
       clearNodeSelection();
       label.style.display = 'none';
@@ -2709,24 +2700,41 @@ export default function ShapeViewer({
       return deleteNodeById(nodeId);
     };
 
-    /**
-     * Removes the most recent confirmed attach still in the scene (and
-     * whatever's been built on top of it since) -- see undo()'s own doc
-     * comment on ShapeViewerHandle. deleteNodeById drops it (and any
-     * later attaches in its subtree) from the stack.
-     */
-    const undo = (): DeleteResult | null => {
-      const nodeId = addedNodeStackRef.current.at(-1);
-      if (!nodeId) return null;
-      const result = deleteNodeById(nodeId);
-      // Guard: if the node had somehow already gone stale (removed
-      // without going through deleteNodeById), pop it anyway so undo can
-      // never get stuck on it.
-      if (addedNodeStackRef.current.at(-1) === nodeId) {
-        addedNodeStackRef.current.pop();
-        if (addedNodeStackRef.current.length === 0) onCanUndoChangeRef.current?.(false);
-      }
-      return result;
+    const MAX_UNDO = 40;
+    /** Records a settled change: see historyRef. No-op mid-placement. */
+    const checkpoint = () => {
+      if (pendingRef.current) return;
+      const now = JSON.stringify(graphRef.current);
+      if (committedRef.current === null) { committedRef.current = now; return; }
+      if (now === committedRef.current) return;
+      historyRef.current.push(committedRef.current);
+      if (historyRef.current.length > MAX_UNDO) historyRef.current.shift();
+      committedRef.current = now;
+      onCanUndoChangeRef.current?.(true);
+    };
+
+    const undo = (): boolean => {
+      if (pendingRef.current) return false;
+      const prev = historyRef.current.pop();
+      if (prev === undefined) return false;
+      // RCP-Coordinates / Shell colours are per-root view settings, not
+      // graph data -- carry them over for roots that still exist.
+      const coordIds = [...rcpCoordVisibleRef.current];
+      const shellIds = [...rcpShellColorsRef.current];
+      loadAssembly(JSON.parse(prev), { fitCamera: false });
+      committedRef.current = prev;
+      const exists = (id: string) => graphRef.current.nodes.some((n) => n.id === id && n.rcpPolytope);
+      for (const id of shellIds) if (exists(id)) rcpShellColorsRef.current.add(id);
+      for (const id of coordIds) if (exists(id)) rcpCoordVisibleRef.current.add(id);
+      for (const placed of placedRef.current) applyViewModeToPlaced(placed, viewModeRef.current);
+      for (const id of coordIds) if (exists(id)) rebuildRcpCoordOverlay(id);
+      onCanUndoChangeRef.current?.(historyRef.current.length > 0);
+      return true;
+    };
+    const undoSteps = (count: number): number => {
+      let done = 0;
+      while (done < count && undo()) done++;
+      return done;
     };
 
     // graphRef.current is the SAME object saveAssembly below POSTs to the
@@ -2767,31 +2775,40 @@ export default function ShapeViewer({
       return { x: rect.left + (ndc.x * 0.5 + 0.5) * rect.width, y: rect.top + (-ndc.y * 0.5 + 0.5) * rect.height };
     };
 
+    // Every handle call is followed by checkpoint(), so any change made
+    // through the handle -- whatever it is -- becomes one undo step.
+    const withCheckpoint = <A extends unknown[], R>(fn: (...args: A) => R) => (...args: A): R => {
+      const result = fn(...args);
+      checkpoint();
+      return result;
+    };
     onReadyRef.current?.({
-      reset: placeRoot,
-      beginAttach,
-      beginFaceAttach,
-      beginDuoprismAttach,
-      confirmAttach,
-      cancelAttach,
+      reset: withCheckpoint(placeRoot),
+      beginAttach: withCheckpoint(beginAttach),
+      beginFaceAttach: withCheckpoint(beginFaceAttach),
+      beginDuoprismAttach: withCheckpoint(beginDuoprismAttach),
+      confirmAttach: withCheckpoint(confirmAttach),
+      cancelAttach: withCheckpoint(cancelAttach),
       save: saveAssembly,
-      rewriteSelectedNode,
-      deleteSelectedNode,
+      rewriteSelectedNode: withCheckpoint(rewriteSelectedNode),
+      deleteSelectedNode: withCheckpoint(deleteSelectedNode),
       undo,
-      importAssembly: (data: unknown) => {
+      undoSteps,
+      undoCount: () => historyRef.current.length,
+      importAssembly: withCheckpoint((data: unknown) => {
         const migrated = migrateLegacyAssembly(data);
         if (!isValidAssembly(migrated) || migrated.nodes.length === 0) return false;
         loadAssembly(migrated);
         return true;
-      },
+      }),
       getAssembly,
       setViewMode,
-      beginRcpBuild,
-      buildNextRcpCell,
-      removeLastRcpCell,
-      buildNextRcpShell,
-      removeLastRcpShell,
-      setRcpView3D,
+      beginRcpBuild: withCheckpoint(beginRcpBuild),
+      buildNextRcpCell: withCheckpoint(buildNextRcpCell),
+      removeLastRcpCell: withCheckpoint(removeLastRcpCell),
+      buildNextRcpShell: withCheckpoint(buildNextRcpShell),
+      removeLastRcpShell: withCheckpoint(removeLastRcpShell),
+      setRcpView3D: withCheckpoint(setRcpView3D),
       setRcpCoordinatesVisible,
       setRcpShellColorsVisible,
       getRootScreenPosition,
@@ -2812,6 +2829,7 @@ export default function ShapeViewer({
       }
       if (!cancelled) placeRoot(initialShapeId);
     })();
+    checkpoint(); // the startup build is the baseline, not an undo step
 
     const raycaster = new THREE.Raycaster();
     const pointer = new THREE.Vector2();

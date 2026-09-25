@@ -1,5 +1,5 @@
 import { test, expect } from './fixtures';
-import { getCanvasCenter, resetTo, findOnCanvas, openBrowserWheel, clickWheelLabel, exactLabel, getSavedAssembly } from './utils';
+import { getCanvasCenter, resetTo, findOnCanvas, findNodeBody, openBrowserWheel, clickWheelLabel, exactLabel, getSavedAssembly } from './utils';
 
 test.beforeEach(async ({ page }) => {
   await page.goto('/');
@@ -9,7 +9,7 @@ test.beforeEach(async ({ page }) => {
 
 test('Undo removes the most recently confirmed attach and frees its target vertex again', async ({ page }) => {
   const undoBtn = page.getByRole('button', { name: 'Undo', exact: true });
-  await expect(undoBtn).toBeDisabled();
+  // (Not disabled here: the beforeEach Start over is itself an undo step.)
 
   const { cx, cy } = await getCanvasCenter(page);
   const vertexHit = await findOnCanvas(page, cx, cy, (t) => /^vertex \d+ — capacity/.test(t));
@@ -38,8 +38,7 @@ test('Undo removes the most recently confirmed attach and frees its target verte
   expect(assembly.nodes, 'expected two nodes after the confirmed attach').toHaveLength(2);
 
   await undoBtn.click();
-  await expect(page.locator('text=/Undid last attach/')).toBeVisible();
-  await expect(undoBtn).toBeDisabled(); // that was the only attach -- nothing left to undo
+  await expect(page.locator('text=/^Undone\./')).toBeVisible();
 
   await page.getByRole('button', { name: 'Save', exact: true }).click();
   await expect(page.locator('text=Saved')).toBeVisible();
@@ -54,24 +53,23 @@ test('Undo removes the most recently confirmed attach and frees its target verte
   expect(reselect, 'expected the undone vertex to be free again').not.toBeNull();
 });
 
-test('Undo is disabled again after Start Over resets the scene', async ({ page }) => {
+test('Undo is disabled while a new shape is waiting to be placed', async ({ page }) => {
   const undoBtn = page.getByRole('button', { name: 'Undo', exact: true });
   const { cx, cy } = await getCanvasCenter(page);
   const vertexHit = await findOnCanvas(page, cx, cy, (t) => /^vertex \d+ — capacity/.test(t));
   expect(vertexHit).not.toBeNull();
-
   await page.getByRole('button', { name: 'Attach via vertex…' }).click();
   await openBrowserWheel(page);
   await clickWheelLabel(page, exactLabel('Deltahedra'));
   await clickWheelLabel(page, 'D6');
+  await expect(page.locator('text=/Placing D6/')).toBeVisible();
+  await expect(undoBtn).toBeDisabled();
   await page.getByRole('button', { name: 'Confirm' }).click();
   await expect(undoBtn).toBeEnabled();
-
-  await resetTo(page, 'D8');
-  await expect(undoBtn).toBeDisabled();
 });
 
 test('Undo steps back through several attaches, most recent first', async ({ page }) => {
+  test.setTimeout(300_000); // two canvas vertex hunts + four saves -- ran at ~2.5 min, right at the default limit
   const undoBtn = page.getByRole('button', { name: 'Undo', exact: true });
   const { cx, cy } = await getCanvasCenter(page);
   const attachD6AtFreeVertex = async () => {
@@ -100,5 +98,38 @@ test('Undo steps back through several attaches, most recent first', async ({ pag
 
   await undoBtn.click();
   expect(await savedNodeCount(), 'second undo removes the first attach too').toBe(1);
-  await expect(undoBtn).toBeDisabled();
+});
+
+test('Undo also reverses a delete and a Start over, not just attaches', async ({ page }) => {
+  const undoBtn = page.getByRole('button', { name: 'Undo', exact: true });
+  const { cx, cy } = await getCanvasCenter(page);
+  const nodes = async () => {
+    await page.getByRole('button', { name: 'Save', exact: true }).click();
+    await expect(page.locator('text=Saved')).toBeVisible();
+    return (await getSavedAssembly(page)).nodes.map((n) => n.shape).sort().join(',');
+  };
+  const hit = await findOnCanvas(page, cx, cy, (t) => /^vertex \d+ — capacity \d+$/.test(t));
+  expect(hit).not.toBeNull();
+  await page.getByRole('button', { name: 'Attach via vertex…' }).click();
+  await openBrowserWheel(page);
+  await clickWheelLabel(page, exactLabel('Deltahedra'));
+  await clickWheelLabel(page, 'D6');
+  await page.getByRole('button', { name: 'Confirm' }).click();
+  await expect(page.locator('text=/Placing D6/')).toHaveCount(0);
+  expect(await nodes()).toBe('D4,D6');
+
+  // Start over replaces the whole build -- undo brings it back.
+  await resetTo(page, 'D8');
+  expect(await nodes()).toBe('D8');
+  await undoBtn.click();
+  expect(await nodes()).toBe('D4,D6');
+
+  // A delete is undoable too: delete the root (cascades to the D6), undo.
+  const rootHit = await findNodeBody(page, cx, cy, (t) => t.includes('D4') && t.includes('select'));
+  expect(rootHit, 'expected to find the D4 root node body').not.toBeNull();
+  await page.getByRole('button', { name: 'Delete' }).click();
+  await expect(page.locator('text=/Deleted node and 1 attached descendant/')).toBeVisible();
+  expect(await nodes()).toBe('');
+  await undoBtn.click();
+  expect(await nodes()).toBe('D4,D6');
 });
