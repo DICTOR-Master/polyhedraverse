@@ -1,5 +1,5 @@
 import * as THREE from 'three';
-import { POLYHEDRA, POLYHEDRON_IDS, type PolyhedronSpec } from '../app/lib/polyhedra';
+import { POLYHEDRA, POLYHEDRON_IDS, type PolyhedronSpec, isFaceEligibleForAttach } from '../app/lib/polyhedra';
 import { buildFaceConnectors, facesCongruent } from '../app/lib/polyhedra/core';
 
 // Mirrors ShapeViewer.tsx's face-attach math (root parent, identity
@@ -78,6 +78,12 @@ for (const rootId of POLYHEDRON_IDS) {
         // offer isn't useful: their vertices genuinely don't coincide, but
         // that's not an attach-math bug, it's the app correctly declining
         // an incompatible pair before this code ever runs.
+        // Only pairs the app can actually offer: RVCMG wall triangles and
+        // kite-prism rectangles are deliberately not attachable (their
+        // reflection correspondence has no vertex on a mirror axis -- see
+        // polygonPrismSolid.ts), so checking them tested placements no
+        // user can make.
+        if (!isFaceEligibleForAttach(rootSpec, tf) || !isFaceEligibleForAttach(incomingSpec, gf)) continue;
         if (!facesCongruent(rootSpec.vertices, rootSpec.faces[tf], incomingSpec.vertices, incomingSpec.faces[gf])) continue;
         checks++;
 

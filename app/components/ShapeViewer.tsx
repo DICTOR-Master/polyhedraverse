@@ -11,8 +11,7 @@ import {
   buildFaceConnectors,
   facesCongruent,
   faceRotationalSymmetry,
-  isRegularFace,
-  MISCELLANEOUS_ADDITION_IDS,
+  isFaceEligibleForAttach,
 } from '../lib/polyhedra';
 import { DELTAHEDRA } from '../lib/polyhedra/deltahedra';
 import { emptyAssembly, isValidAssembly, migrateLegacyAssembly, ASSEMBLY_STORAGE_KEY, type Assembly } from '../lib/assembly';
@@ -23,26 +22,6 @@ import { FOURD_CAPABLE_IDS } from '../lib/polyhedra/fourD';
 import { buildWallPrism, duoprismBuildDepth } from '../lib/polyhedra/duoprism';
 import { buildRcpComplex, buildSyntheticCellSpec, cellsAtShell, maxShell, parseRcpTarget, rcpTargetOptions, rootSpecForView, type RcpComplex } from '../lib/polyhedra/rcpBuild';
 import { resolveParamsKey, FOUR_D_SHAPE_PARAMS } from '../lib/polyhedra/radialProjection';
-
-/**
- * The Miscellaneous family's face-attach eligibility policy, in one
- * place rather than duplicated at each call site. `spec.attachableFaceIndices`
- * (set only by RVCMG connector pieces, see rvcmg-connectors/index.ts)
- * takes priority when present -- exactly those faces are eligible,
- * regardless of `isRegularFace` (a wall/side triangle can coincidentally
- * BE a genuine regular polygon, and the golden-rhombus/kite pieces' own
- * real target faces are deliberately NOT regular polygons -- both wrong
- * under a pure regularity rule, direct user report 2026-09-15: wall
- * faces "look confusingly attachable to squares etc"). Everything else
- * in the Miscellaneous family (graded pyramids) falls back to
- * `isRegularFace`, unchanged from before. Every other family is fully
- * unrestricted, exactly as already shipped.
- */
-function isFaceEligibleForAttach(spec: PolyhedronSpec, faceIndex: number): boolean {
-  if (spec.attachableFaceIndices) return spec.attachableFaceIndices.includes(faceIndex);
-  if (!MISCELLANEOUS_ADDITION_IDS.includes(spec.id)) return true;
-  return isRegularFace(spec.vertices, spec.faces[faceIndex]);
-}
 
 const VERTEX_RADIUS = 0.06; // relative to unit edge length
 const COLOR_FREE = 0xffcc33;

@@ -24,6 +24,7 @@ export { JOHNSON_ADDITIONS, JOHNSON_ADDITION_IDS } from './johnson';
 export { CATALAN_ADDITIONS, CATALAN_ADDITION_IDS } from './catalan';
 export { PRISM_ANTIPRISM_ADDITIONS, PRISM_ANTIPRISM_ADDITION_IDS } from './prisms';
 export { MISCELLANEOUS_ADDITIONS, MISCELLANEOUS_ADDITION_IDS } from './miscellaneous';
+export { isFaceEligibleForAttach } from './attachEligibility';
 
 export const POLYHEDRA: Record<string, PolyhedronSpec> = {
   ...DELTAHEDRA,
