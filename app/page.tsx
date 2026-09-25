@@ -859,22 +859,13 @@ export default function Home() {
           buttons in the top nav, so this would be redundant there. */}
       {!pending && !nodeSelection && !selection && !instructionsDismissed && (
         <div
+          className="pv-instructions"
           style={{
             position: 'fixed',
-            left: '50%',
-            transform: 'translateX(-50%)',
-            bottom: 'calc(1.5rem + env(safe-area-inset-bottom))',
             zIndex: 10,
             background: 'rgba(5,5,10,.6)',
             border: '1px solid rgba(71,204,36,.2)',
-            borderRadius: 999,
             padding: '0.5rem 2.25rem 0.5rem 1rem',
-            // Leaves clearance for CornerHudWheel, now also bottom-right
-            // (160px + margin) -- the pill body itself still has
-            // pointerEvents:'none' so it can never block a click either
-            // way, but a narrower cap avoids a purely visual overlap in
-            // the common case where both are showing at once.
-            maxWidth: 'calc(100vw - 220px)',
             textAlign: 'center',
             color: '#5ee233',
             fontSize: 13,

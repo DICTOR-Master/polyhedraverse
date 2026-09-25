@@ -24,3 +24,27 @@ body {
   color: var(--foreground);
   font-family: Arial, Helvetica, sans-serif;
 }
+
+/* Default-state instructions pill (app/page.tsx). Position lives here,
+   not inline, so phones can override it: at the default it's centred on
+   the bottom row, capped to leave clearance for the 160px CornerHudWheel
+   bottom-right. Under 640px that cap left it ~170px wide, wrapped into a
+   tall column over the shape and still overlapping the wheel -- so there
+   it spans the width and sits above the wheel (16px + 160px + 12px). */
+.pv-instructions {
+  left: 50%;
+  transform: translateX(-50%);
+  bottom: calc(1.5rem + env(safe-area-inset-bottom));
+  max-width: calc(100vw - 220px);
+  border-radius: 999px;
+}
+@media (max-width: 639px) {
+  .pv-instructions {
+    left: 16px;
+    right: 16px;
+    transform: none;
+    bottom: calc(188px + env(safe-area-inset-bottom));
+    max-width: none;
+    border-radius: 16px;
+  }
+}
