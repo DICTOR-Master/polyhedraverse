@@ -12,9 +12,9 @@ export function generateStaticParams() {
 }
 
 export const metadata: Metadata = {
-  title: 'How to use Polyhedraverse',
+  title: 'Polyhedraverse User Guide',
   description:
-    'How to use Polyhedraverse: pick shapes, connect them face to face or vertex to vertex, browse the catalogue and build real 4D polytopes, plus a reference for every control.',
+    'Polyhedraverse User Guide: pick shapes, connect them face to face or vertex to vertex, browse the catalogue and build real 4D polytopes, plus a reference for every control.',
 };
 
 export default async function GuideLangPage({ params }: { params: Promise<{ lang: string }> }) {

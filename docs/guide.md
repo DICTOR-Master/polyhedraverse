@@ -1,4 +1,4 @@
-# How to use Polyhedraverse
+# Polyhedraverse User Guide
 
 Polyhedraverse and its twin, [Rhombiverse](https://rhombiverse.vercel.app), are two ways of looking at the same geometry. Rhombiverse is the **landscape**: the lattices themselves, stretching out in every direction. Polyhedraverse is the **portrait gallery**: the shapes that live in those lattices, one at a time, up close.
 

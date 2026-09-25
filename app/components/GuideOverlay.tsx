@@ -1,7 +1,7 @@
 'use client';
 
 /**
- * In-app "How to use" guide: renders docs/guide.md (fetched from the
+ * In-app User Guide: renders docs/guide.md (fetched from the
  * static /guide.md route -- the same file the shareable /guide page
  * renders) in a full-screen overlay, in the current language
  * (/guide/<lang>/guide.md; English fallback), with the language picker.
@@ -71,7 +71,7 @@ export default function GuideOverlay({ open, onClose }: GuideOverlayProps) {
   return (
     <div
       role="dialog"
-      aria-label="How to use Polyhedraverse"
+      aria-label="Polyhedraverse User Guide"
       lang={language}
       style={{ position: 'fixed', inset: 0, zIndex: 1000, display: 'flex', flexDirection: 'column', background: '#000' }}
     >

@@ -1,4 +1,4 @@
-# Mode d'emploi de Polyhedraverse
+# Guide de l'utilisateur de Polyhedraverse
 
 Polyhedraverse et son jumeau, [Rhombiverse](https://rhombiverse.vercel.app), sont deux façons de regarder la même géométrie. Rhombiverse est le **paysage** : les réseaux eux-mêmes, qui s'étendent dans toutes les directions. Polyhedraverse est la **galerie de portraits** : les formes qui habitent ces réseaux, une à la fois, vues de près.
 
