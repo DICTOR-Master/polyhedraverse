@@ -200,12 +200,10 @@ export default function WelcomeOverlay({ open, onClose, onOpenGuide }: WelcomeOv
         </div>
 
         <div style={{ display: 'flex', gap: 8, fontSize: 11, opacity: 0.7, color: GREEN_BRIGHT }}>
-          {/* These .md files live at the repo root, not in public/, so
-              Next.js doesn't serve them at a same-origin path (only
-              public/ and real routes are servable) -- linking to GitHub's
-              own rendered copies instead of a route that would 404. */}
+          {/* Rendered on-site from the repo-root .md files (app/terms,
+              app/privacy, app/security), like Rhombiverse's own. */}
           <a
-            href="https://github.com/DICTOR-Master/polyhedraverse/blob/main/TERMS.md"
+            href="/terms"
             target="_blank"
             rel="noopener"
             style={{ color: 'inherit' }}
@@ -214,7 +212,7 @@ export default function WelcomeOverlay({ open, onClose, onOpenGuide }: WelcomeOv
           </a>
           ·
           <a
-            href="https://github.com/DICTOR-Master/polyhedraverse/blob/main/PRIVACY.md"
+            href="/privacy"
             target="_blank"
             rel="noopener"
             style={{ color: 'inherit' }}
@@ -223,7 +221,7 @@ export default function WelcomeOverlay({ open, onClose, onOpenGuide }: WelcomeOv
           </a>
           ·
           <a
-            href="https://github.com/DICTOR-Master/polyhedraverse/blob/main/SECURITY.md"
+            href="/security"
             target="_blank"
             rel="noopener"
             style={{ color: 'inherit' }}

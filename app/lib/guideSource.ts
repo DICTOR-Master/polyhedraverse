@@ -1,9 +1,14 @@
-// Server-only: reads docs/guide.md, the one source for both the /guide
-// page and the in-app overlay (served raw at /guide.md). Read at build
-// time -- both routes are force-static.
+// Server-only: reads Markdown docs from the repo at build time (every
+// route using these is force-static). docs/guide.md is the one source
+// for both the /guide page and the in-app overlay (served raw at
+// /guide.md); the legal pages render the root TERMS/PRIVACY/SECURITY.md.
 import { readFile } from 'node:fs/promises';
 import path from 'node:path';
 
+export function readRepoDoc(relPath: string): Promise<string> {
+  return readFile(path.join(process.cwd(), relPath), 'utf8');
+}
+
 export function readGuide(): Promise<string> {
-  return readFile(path.join(process.cwd(), 'docs/guide.md'), 'utf8');
+  return readRepoDoc('docs/guide.md');
 }
