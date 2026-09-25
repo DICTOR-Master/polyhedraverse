@@ -592,7 +592,7 @@ function applyNodeAppearance(placed: PlacedShape, selected: boolean) {
  * internal, away-facing triangle of each piece is simply never
  * rasterized at all, not just less likely to conflict) and is also the
  * geometrically correct choice for an opaque solid regardless. Kept
- * DoubleSide for Translucent/Inside view, where seeing the far/interior
+ * DoubleSide for Translucent/Skeleton, where seeing the far/interior
  * surface through the near one is the whole point of those modes, not
  * an oversight to also fix.
  */

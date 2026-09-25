@@ -86,7 +86,7 @@ export interface CornerHudWheelProps {
   onAbout: () => void;
 }
 
-const VIEW_MODE_SHORT: Record<ViewMode, string> = { normal: 'Solid', translucent: 'Translucent', skeleton: 'Inside' };
+const VIEW_MODE_SHORT: Record<ViewMode, string> = { normal: 'Solid', translucent: 'Translucent', skeleton: 'Skeleton' };
 
 export default function CornerHudWheel({
   wheelOpen,

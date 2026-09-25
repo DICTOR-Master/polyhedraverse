@@ -82,7 +82,7 @@ Polyhedraverse 和它的孪生网站 [Rhombiverse](https://rhombiverse.vercel.ap
 
 - **Solid：** 普通的面。
 - **Translucent：** 半透明的面。
-- **Inside view：** 只显示边，可以看到嵌套结构的内部。
+- **Skeleton：** 只显示边，可以看到嵌套结构的内部。
 
 当一组部件闭合成一个完整的笼子时，会出现 **Closed cage!**。一些著名的排列有自己的名字，比如 Stella Octangula。轻点名字旁边的 **i** 可以查看说明。
 
@@ -123,7 +123,7 @@ Polyhedraverse 和它的孪生网站 [Rhombiverse](https://rhombiverse.vercel.ap
 |---|---|
 | i | 已命名排列的说明 |
 | What's New | 最近的更改 |
-| View | 在 Solid、Translucent 和 Inside view 之间循环 |
+| View | 在 Solid、Translucent 和 Skeleton 之间循环 |
 | ↶ Undo | 撤销你最近的任何一种更改。再轻点继续回退；按住可回退好几步 |
 | Save | 把作品保存在这个浏览器中 |
 | File ▾ | Export JSON、Import JSON… |

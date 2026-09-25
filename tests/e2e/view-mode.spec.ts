@@ -1,6 +1,6 @@
 import { test, expect } from './fixtures';
 
-test('the view-mode button cycles through Solid, Translucent, and Inside view', async ({ page }) => {
+test('the view-mode button cycles through Solid, Translucent, and Skeleton', async ({ page }) => {
   await page.goto('/');
   await page.waitForTimeout(500);
 
@@ -10,7 +10,7 @@ test('the view-mode button cycles through Solid, Translucent, and Inside view', 
   await viewButton.click();
   await expect(viewButton).toHaveText('View: Translucent');
   await viewButton.click();
-  await expect(viewButton).toHaveText('View: Inside view');
+  await expect(viewButton).toHaveText('View: Skeleton');
   await viewButton.click();
   await expect(viewButton).toHaveText('View: Solid');
 });

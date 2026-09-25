@@ -3,7 +3,7 @@
 /**
  * Stage 2+4 of docs/star-polyhedra-spec.md: a real, standalone 3D
  * drag-rotate viewer for the 4 Kepler-Poinsot solids, with 4 view modes
- * (Wireframe/Solid/Translucent/Inside view -- the same 3 non-wireframe
+ * (Wireframe/Solid/Translucent/Skeleton -- the same 3 non-wireframe
  * modes ShapeViewer offers every other shape, plus the original
  * wireframe-only view from Stage 2) -- neither ShapePreview (2D canvas,
  * auto-spin only, no drag, no fill) nor ShapeViewer (its own
@@ -37,7 +37,7 @@ const MODE_LABELS: Record<StarViewMode, string> = {
   wireframe: 'Wireframe',
   solid: 'Solid',
   translucent: 'Translucent',
-  inside: 'Inside view',
+  inside: 'Skeleton',
 };
 
 export interface StarShapeViewerProps {
@@ -207,7 +207,7 @@ export default function StarShapeViewer({ specId, height = 260 }: StarShapeViewe
   // angle the user has already dragged to. Opacity values match
   // ShapeViewer's own applyViewMode exactly (translucent=0.35→0.4 here
   // for a slightly richer star silhouette at this smaller size,
-  // inside=0.04) so "Inside view" reads the same way it does for every
+  // inside=0.04) so "Skeleton" reads the same way it does for every
   // other shape in the main viewer.
   useEffect(() => {
     const material = meshMaterialRef.current;

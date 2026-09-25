@@ -45,7 +45,7 @@ tile space and their dihedral angles are incompatible across types), or
 click a free face and glue on a shape with a matching face size for a
 real shared-face join (a cube onto a cube, say), with a discrete
 rotational registration instead of a free twist. A view toggle (Solid /
-Translucent / Inside view) lets you see through a structure once pieces
+Translucent / Skeleton) lets you see through a structure once pieces
 start nesting.
 
 The intention is for this to grow into a sibling of
@@ -252,7 +252,7 @@ Since then:
   multiple of 360°/n from zero" is already correct turned out false for
   most shape pairs: the fix was computing the angle analytically instead
   of guessing.
-- **A view toggle** (Solid / Translucent / Inside view) for seeing
+- **A view toggle** (Solid / Translucent / Skeleton) for seeing
   through a structure once pieces start nesting — applies to every
   placed shape at once.
 - **PolyhedralWheel** — a dodecahedron-shaped 3D radial menu (`Tab` /

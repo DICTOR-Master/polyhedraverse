@@ -82,7 +82,7 @@ Touchez **View** pour passer d'un mode à l'autre parmi trois :
 
 - **Solid :** faces ordinaires.
 - **Translucent :** faces transparentes.
-- **Inside view :** seulement les arêtes, pour voir l'intérieur des structures imbriquées.
+- **Skeleton :** seulement les arêtes, pour voir l'intérieur des structures imbriquées.
 
 Quand un groupe de pièces se referme en une cage complète, **Closed cage!** apparaît. Certains assemblages connus ont leur propre nom, comme la Stella Octangula. Touchez **i** à côté du nom pour une description.
 
@@ -123,7 +123,7 @@ Certaines formes peuvent aussi utiliser **Attach via Duoprism…**, qui relie un
 |---|---|
 | i | Description de l'assemblage nommé |
 | What's New | Changements récents |
-| View | Alterne Solid, Translucent et Inside view |
+| View | Alterne Solid, Translucent et Skeleton |
 | ↶ Undo | Annule votre dernière modification, quelle qu'elle soit. Touchez de nouveau pour remonter plus loin ; maintenez pour revenir plusieurs étapes |
 | Save | Enregistre la construction dans ce navigateur |
 | File ▾ | Export JSON, Import JSON… |

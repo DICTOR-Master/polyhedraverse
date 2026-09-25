@@ -80,7 +80,7 @@ Tap **View** to cycle through three modes:
 
 - **Solid:** ordinary faces.
 - **Translucent:** see-through faces.
-- **Inside view:** only the edges, so you can see inside nested structures.
+- **Skeleton:** only the edges, so you can see inside nested structures.
 
 When a group of pieces closes into a complete cage, **Closed cage!** appears. Some well-known arrangements get their own name, such as the Stella Octangula. Tap **i** next to the name for a description.
 
@@ -121,7 +121,7 @@ Some shapes can also **Attach via Duoprism…**, which joins an exact copy throu
 |---|---|
 | i | Description of the named assembly |
 | What's New | Recent changes |
-| View | Cycles Solid, Translucent and Inside view |
+| View | Cycles Solid, Translucent and Skeleton |
 | ↶ Undo | Takes back your last change of any kind. Tap again to step further back; hold to jump back several steps |
 | Save | Stores the build in this browser |
 | File ▾ | Export JSON, Import JSON… |

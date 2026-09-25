@@ -82,7 +82,7 @@ Polyhedraverse とその双子の [Rhombiverse](https://rhombiverse.vercel.app) 
 
 - **Solid：** 普通の面。
 - **Translucent：** 透けて見える面。
-- **Inside view：** 辺だけを表示するので、入れ子になった構造の内側が見えます。
+- **Skeleton：** 辺だけを表示するので、入れ子になった構造の内側が見えます。
 
 いくつかのピースが閉じて完全なかごになると、**Closed cage!** と表示されます。よく知られた配置には、Stella Octangula のように名前が付きます。名前の横の **i** をタップすると説明が出ます。
 
@@ -123,7 +123,7 @@ Polyhedraverse とその双子の [Rhombiverse](https://rhombiverse.vercel.app) 
 |---|---|
 | i | 名前の付いた配置の説明 |
 | What's New | 最近の変更 |
-| View | Solid、Translucent、Inside view を順に切り替え |
+| View | Solid、Translucent、Skeleton を順に切り替え |
 | ↶ Undo | 直前の変更を種類を問わず取り消し。もう一度タップでさらに戻り、押し続けると何段階も戻る |
 | Save | 作品をこのブラウザに保存 |
 | File ▾ | Export JSON、Import JSON… |

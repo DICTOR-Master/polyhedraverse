@@ -82,7 +82,7 @@ Toca **View** para pasar por tres modos:
 
 - **Solid:** caras normales.
 - **Translucent:** caras transparentes.
-- **Inside view:** solo las aristas, para ver el interior de estructuras anidadas.
+- **Skeleton:** solo las aristas, para ver el interior de estructuras anidadas.
 
 Cuando un grupo de piezas se cierra en una jaula completa, aparece **Closed cage!**. Algunas disposiciones conocidas tienen su propio nombre, como la Stella Octangula. Toca **i** junto al nombre para ver una descripción.
 
@@ -123,7 +123,7 @@ Algunas formas también pueden usar **Attach via Duoprism…**, que une una copi
 |---|---|
 | i | Descripción de la disposición con nombre |
 | What's New | Cambios recientes |
-| View | Alterna entre Solid, Translucent e Inside view |
+| View | Alterna entre Solid, Translucent e Skeleton |
 | ↶ Undo | Deshace tu último cambio de cualquier tipo. Tócalo otra vez para retroceder más; mantenlo pulsado para retroceder varios pasos |
 | Save | Guarda la construcción en este navegador |
 | File ▾ | Export JSON, Import JSON… |

@@ -82,7 +82,7 @@ Polyhedraverse와 그 쌍둥이인 [Rhombiverse](https://rhombiverse.vercel.app)
 
 - **Solid:** 보통의 면.
 - **Translucent:** 비쳐 보이는 면.
-- **Inside view:** 모서리만 보여 주어 겹겹이 쌓인 구조의 안쪽을 볼 수 있습니다.
+- **Skeleton:** 모서리만 보여 주어 겹겹이 쌓인 구조의 안쪽을 볼 수 있습니다.
 
 조각 여러 개가 닫혀 완전한 새장이 되면 **Closed cage!**가 나타납니다. 잘 알려진 배치에는 Stella Octangula처럼 이름이 붙습니다. 이름 옆의 **i**를 탭하면 설명이 나옵니다.
 
@@ -123,7 +123,7 @@ Polyhedraverse와 그 쌍둥이인 [Rhombiverse](https://rhombiverse.vercel.app)
 |---|---|
 | i | 이름 붙은 배치에 대한 설명 |
 | What's New | 최근 변경 사항 |
-| View | Solid, Translucent, Inside view를 차례로 전환 |
+| View | Solid, Translucent, Skeleton을 차례로 전환 |
 | ↶ Undo | 종류에 상관없이 마지막 변경을 되돌림. 다시 탭하면 더 되돌리고, 계속 누르면 여러 단계를 되돌림 |
 | Save | 작품을 이 브라우저에 저장 |
 | File ▾ | Export JSON, Import JSON… |

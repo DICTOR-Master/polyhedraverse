@@ -30,7 +30,7 @@ const VIEW_MODES: ViewMode[] = ['normal', 'translucent', 'skeleton'];
 const VIEW_MODE_LABELS: Record<ViewMode, string> = {
   normal: 'Solid',
   translucent: 'Translucent',
-  skeleton: 'Inside view',
+  skeleton: 'Skeleton',
 };
 
 export default function Home() {
