@@ -23,6 +23,7 @@ import { usePrefs } from '../lib/prefs';
 import { POLYHEDRON_IDS } from '../lib/polyhedra';
 import { STAR_POLYHEDRON_IDS } from '../lib/polyhedra/starPolyhedra';
 import { t } from '../lib/i18n';
+import LanguagePicker from './LanguagePicker';
 
 export interface WelcomeOverlayProps {
   open: boolean;
@@ -87,6 +88,7 @@ export default function WelcomeOverlay({ open, onClose, onOpenGuide }: WelcomeOv
           textAlign: 'center',
         }}
       >
+        <LanguagePicker />
         <h1 style={{ margin: 0, fontSize: 26, fontWeight: 800, color: GREEN_PALE, letterSpacing: 0.5 }}>
           Polyhedra<span style={{ color: GREEN }}>verse</span>
         </h1>

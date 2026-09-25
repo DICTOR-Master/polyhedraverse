@@ -53,7 +53,7 @@ import * as THREE from 'three';
 import { POLYHEDRA, triangulateFace, buildFaceConnectors, type Vec3 } from '../lib/polyhedra';
 import type { ViewMode } from './ShapeViewer';
 import { usePrefs } from '../lib/prefs';
-import { LANG_ORDER } from '../lib/i18n';
+import { LANG_META, LANG_ORDER } from '../lib/i18n';
 
 const HUD_SILVER_HEX = 0xc7ccd1;
 const RELIEF_LINE_COLOR = 0x0a0a0c;
@@ -69,6 +69,8 @@ const SIZE = 160;
 interface ActionSlot {
   faceIndex: number;
   symbol: string;
+  /** Small second line under the symbol (the language face's native name). */
+  sub?: string;
   label: string;
   onSelect: () => void;
 }
@@ -195,7 +197,7 @@ export default function CornerHudWheel({
         { faceIndex: 2, symbol: '⛶', label: `View: ${VIEW_MODE_SHORT[s.viewMode]}`, onSelect: a.onCycleView },
         { faceIndex: 10, symbol: '▣', label: 'Save', onSelect: a.onSave },
         { faceIndex: 5, symbol: 'ℹ', label: 'About', onSelect: a.onAbout },
-        { faceIndex: 1, symbol: s.language.toUpperCase(), label: `Language: ${nextLang.toUpperCase()}`, onSelect: () => a.setLanguage(nextLang) },
+        { faceIndex: 1, symbol: '🌐', sub: LANG_META[s.language].native, label: `Language: ${LANG_META[nextLang].native}`, onSelect: () => a.setLanguage(nextLang) },
       ];
       const ANTIPODE: Record<number, number> = { 3: 7, 11: 8, 2: 6, 10: 0, 5: 9, 1: 4 };
       const clones: ActionSlot[] = primary.map((slot) => ({ ...slot, faceIndex: ANTIPODE[slot.faceIndex] }));
@@ -218,6 +220,12 @@ export default function CornerHudWheel({
       slots.forEach((slot, i) => {
         slotByFace.set(slot.faceIndex, slot);
         labelEls[i].textContent = slot.symbol;
+        if (slot.sub) {
+          const sub = document.createElement('span');
+          sub.className = 'hud-label-sub';
+          sub.textContent = slot.sub;
+          labelEls[i].appendChild(sub);
+        }
         labelEls[i].title = slot.label;
         labelEls[i].setAttribute('aria-label', slot.label);
       });
@@ -376,6 +384,14 @@ export default function CornerHudWheel({
           cursor: pointer;
           user-select: none;
           transition: opacity 0.1s linear;
+          text-align: center;
+        }
+        .hud-label-sub {
+          display: block;
+          margin-top: 2px;
+          font: 600 9px/1 system-ui, sans-serif;
+          -webkit-text-stroke: 0;
+          white-space: nowrap;
         }
       `}</style>
       <div

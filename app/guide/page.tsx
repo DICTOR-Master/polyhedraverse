@@ -10,5 +10,5 @@ export const metadata: Metadata = {
 };
 
 export default function GuidePage() {
-  return <DocPage file="docs/guide.md" />;
+  return <DocPage file="docs/guide.md" guideLang="en" />;
 }

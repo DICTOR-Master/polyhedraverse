@@ -17,6 +17,7 @@ export const CHANGELOG: ChangelogDay[] = [
   {
     date: '2026-09-25',
     entries: [
+      'The How to use guide is now in all 7 languages, and a 🌐 language picker sits at the top of the welcome screen and the guide. The corner wheel\'s language face now shows 🌐 with the current language\'s name; all of them stay in step. Shared guide links keep their language (e.g. /guide/ja).',
       'New "How to use" guide, opened from the welcome screen (About on the corner wheel brings the welcome screen back any time). It walks through choosing shapes, attaching them, browsing the catalogue and building in 4D, then lists every control. It is also a page you can share: polyhedraverse.vercel.app/guide.',
       'The welcome screen now describes Polyhedraverse as the portrait gallery of shapes, alongside Rhombiverse\'s landscape view of lattices, and is now in all 7 languages.',
       'Undo (↶ in the top bar) now takes back any change, not just attaches: deletes, Transform, 4D build steps, Start over and imports too. Tap to step back, or hold to jump back several steps at once, the same as in Rhombiverse.',

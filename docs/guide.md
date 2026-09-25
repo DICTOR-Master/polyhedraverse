@@ -109,7 +109,7 @@ Some shapes can also **Attach via Duoprism…**, which joins an exact copy throu
 - **File → Export JSON:** downloads your build as a file, to keep a backup or move it to another device.
 - **File → Import JSON…:** opens a file you exported earlier. It replaces what's on screen, and **Undo** takes it back.
 - **What's New:** recent changes.
-- **Language:** tap the language face on the corner wheel to change language. There are 7 languages.
+- **Language:** use the 🌐 picker at the top of the welcome screen or this guide, or tap the 🌐 face on the corner wheel to step to the next language. There are 7 languages, and all of these stay in step.
 
 ---
 
@@ -148,7 +148,7 @@ The small dodecahedron in the corner. Drag to turn it, and tap a face.
 | ⛶ | View mode |
 | ▣ | Save |
 | ℹ | About (reopens the welcome screen) |
-| EN, JA… | Switch to the next language |
+| 🌐 | Switch to the next language (shows the current one's name) |
 
 ## Keyboard and mouse
 

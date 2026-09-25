@@ -75,7 +75,7 @@ const check = (file, text, where) => {
 };
 
 for (const f of walk(path.join(root, 'app'))) for (const s of jsStrings(fs.readFileSync(f, 'utf8'), f)) check(f, s);
-for (const f of ['README.md', 'docs/guide.md', 'TERMS.md', 'PRIVACY.md', 'SECURITY.md']) {
+for (const f of ['README.md', 'docs/guide.md', ...['ja', 'es', 'fr', 'ko', 'zh', 'ru'].map((l) => `docs/guide.${l}.md`), 'TERMS.md', 'PRIVACY.md', 'SECURITY.md']) {
   if (!fs.existsSync(path.join(root, f))) continue;
   // Markdown: prose only -- fenced code blocks and `inline code` (real
   // file and function names, e.g. `fold4.ts`) are facts, not wording.

@@ -70,6 +70,10 @@ const en: Dict = {
   'welcome.overview': 'The portrait gallery: {n} shapes up close — connect them face to face, vertex to vertex.',
   'welcome.stars': '+ {n} impossible star solids to explore in Full Catalog — look, don\'t build.',
   'welcome.howTo': 'How to use →',
+  'guide.openPage': 'Open as a page to share →',
+  'guide.close': 'Close (Esc)',
+  'guide.loading': 'Loading…',
+  'guide.failed': 'The guide could not be loaded. Check your connection and try again.',
   'welcome.rhombiverseLink': 'New here? Explore Rhombiverse, our twin lattice-based spatial editor →',
 };
 
@@ -121,6 +125,10 @@ const ja: Dict = {
   'welcome.overview': 'ポートレート・ギャラリー：{n}種類の立体を間近で。面と面、頂点と頂点でつなげてみましょう。',
   'welcome.stars': '＋ フルカタログで見られる{n}つの「不可能な」星形多面体 — 見るだけで、組み立てはできません。',
   'welcome.howTo': '使い方 →',
+  'guide.openPage': '共有用のページで開く →',
+  'guide.close': '閉じる (Esc)',
+  'guide.loading': '読み込み中…',
+  'guide.failed': 'ガイドを読み込めませんでした。接続を確認して、もう一度お試しください。',
   'welcome.rhombiverseLink': '初めての方へ：姉妹サイト、格子ベースの空間エディター「Rhombiverse」もどうぞ →',
 };
 
@@ -172,6 +180,10 @@ const es: Dict = {
   'welcome.overview': 'La galería de retratos: {n} formas de cerca — conéctalas cara con cara, vértice con vértice.',
   'welcome.stars': '+ {n} sólidos estrellados imposibles para explorar en el Catálogo Completo — para mirar, no para construir.',
   'welcome.howTo': 'Cómo usarlo →',
+  'guide.openPage': 'Abrir como página para compartir →',
+  'guide.close': 'Cerrar (Esc)',
+  'guide.loading': 'Cargando…',
+  'guide.failed': 'No se pudo cargar la guía. Comprueba tu conexión y vuelve a intentarlo.',
   'welcome.rhombiverseLink': '¿Eres nuevo? Explora Rhombiverse, nuestro editor espacial gemelo basado en redes →',
 };
 
@@ -223,6 +235,10 @@ const fr: Dict = {
   'welcome.overview': 'La galerie de portraits : {n} formes vues de près — reliez-les face à face, sommet à sommet.',
   'welcome.stars': '+ {n} solides étoilés impossibles à explorer dans le Catalogue complet — à regarder, pas à construire.',
   'welcome.howTo': 'Mode d\'emploi →',
+  'guide.openPage': 'Ouvrir en page à partager →',
+  'guide.close': 'Fermer (Échap)',
+  'guide.loading': 'Chargement…',
+  'guide.failed': 'Le guide n\'a pas pu être chargé. Vérifiez votre connexion et réessayez.',
   'welcome.rhombiverseLink': 'Nouveau ici ? Découvrez Rhombiverse, notre éditeur spatial jumeau basé sur les réseaux →',
 };
 
@@ -274,6 +290,10 @@ const ko: Dict = {
   'welcome.overview': '초상화 갤러리: {n}개의 도형을 가까이에서 — 면과 면, 꼭짓점과 꼭짓점으로 연결해 보세요.',
   'welcome.stars': '+ 전체 카탈로그에서 볼 수 있는 {n}개의 불가능한 별 다면체 — 보기만 가능하고 만들 수는 없습니다.',
   'welcome.howTo': '사용 방법 →',
+  'guide.openPage': '공유용 페이지로 열기 →',
+  'guide.close': '닫기 (Esc)',
+  'guide.loading': '불러오는 중…',
+  'guide.failed': '안내서를 불러오지 못했습니다. 연결을 확인하고 다시 시도하세요.',
   'welcome.rhombiverseLink': '처음이신가요? 격자 기반 공간 편집기인 자매 사이트 Rhombiverse도 둘러보세요 →',
 };
 
@@ -325,6 +345,10 @@ const zh: Dict = {
   'welcome.overview': '肖像画廊：近距离欣赏 {n} 种形状 — 面对面、顶点对顶点地连接它们。',
   'welcome.stars': '+ {n} 个不可能的星形多面体，可在完整目录中探索 — 只能观看，不能搭建。',
   'welcome.howTo': '使用指南 →',
+  'guide.openPage': '以可分享的页面打开 →',
+  'guide.close': '关闭 (Esc)',
+  'guide.loading': '加载中…',
+  'guide.failed': '无法加载指南。请检查网络连接后重试。',
   'welcome.rhombiverseLink': '初次来访？看看我们基于晶格的姊妹空间编辑器 Rhombiverse →',
 };
 
@@ -376,6 +400,10 @@ const ru: Dict = {
   'welcome.overview': 'Портретная галерея: {n} фигур крупным планом — соединяйте их грань к грани, вершина к вершине.',
   'welcome.stars': '+ {n} невозможных звёздчатых тела в Полном каталоге — только смотреть, не строить.',
   'welcome.howTo': 'Как пользоваться →',
+  'guide.openPage': 'Открыть как страницу, чтобы поделиться →',
+  'guide.close': 'Закрыть (Esc)',
+  'guide.loading': 'Загрузка…',
+  'guide.failed': 'Не удалось загрузить руководство. Проверьте подключение и попробуйте ещё раз.',
   'welcome.rhombiverseLink': 'Вы здесь впервые? Загляните в Rhombiverse, наш родственный редактор пространства на основе решёток →',
 };
 

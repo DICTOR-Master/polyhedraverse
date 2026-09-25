@@ -9,6 +9,11 @@ export function readRepoDoc(relPath: string): Promise<string> {
   return readFile(path.join(process.cwd(), relPath), 'utf8');
 }
 
-export function readGuide(): Promise<string> {
-  return readRepoDoc('docs/guide.md');
+/** docs/guide.md is English; each other language has docs/guide.<lang>.md. */
+export function guideFile(lang: string): string {
+  return lang === 'en' ? 'docs/guide.md' : `docs/guide.${lang}.md`;
+}
+
+export function readGuide(lang = 'en'): Promise<string> {
+  return readRepoDoc(guideFile(lang));
 }
