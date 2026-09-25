@@ -316,8 +316,8 @@ export interface ShapeViewerHandle {
    * differ), plus (600-cell only) a second marker color at each cell's
    * own vertices -- the real dual points, already rendered as that
    * cell's own corners. Independent of the 3D/4D toggle by construction
-   * (coordPoint3D doesn't depend on it) and never persisted (session-only,
-   * same as fold4's own foldAmount). No-op if no root is selected.
+   * (coordPoint3D doesn't depend on it) and session-only, never persisted.
+   * No-op if no root is selected.
    */
   setRcpCoordinatesVisible(visible: boolean): void;
   /** Toggles the selected RCP-C2B root's "Shell colours": every built cell tinted by its shell (rcpShellColor), the seed staying yellow. Session-only. No-op if no root is selected. */
@@ -400,7 +400,7 @@ export interface NodeSelection {
     viewToggleLocked: boolean;
     /** The root's own current view choice (`rcpPolytope.view3D`, defaulting to true/3D). */
     view3D: boolean;
-    /** Whether the "show coordinates" overlay (purple coordinate-point lasers, plus dual-point markers for the 600-cell) is currently on for this root -- session-only, never persisted, same as fold4's own foldAmount. */
+    /** Whether the "show coordinates" overlay (purple coordinate-point lasers, plus dual-point markers for the 600-cell) is currently on for this root -- session-only, never persisted. */
     coordinatesVisible: boolean;
     /** Whether "Shell colours" (one hue per shell, rcpShellColor) is on for this root -- session-only, like coordinatesVisible. */
     shellColorsVisible: boolean;
@@ -664,9 +664,8 @@ export default function ShapeViewer({
   const placedRef = useRef<PlacedShape[]>([]);
   const graphRef = useRef<Assembly>(emptyAssembly());
   // Which RCP-C2B roots currently show their "coordinate points" overlay
-  // -- a pure display aid, deliberately session-only/not persisted (same
-  // precedent as fold4's own foldAmount: "never stored, always
-  // re-derived"), so this is empty again after every reload.
+  // -- a pure display aid, deliberately session-only/not persisted, so
+  // this is empty again after every reload.
   const rcpCoordVisibleRef = useRef<Set<string>>(new Set());
   const rcpCoordGroupRef = useRef<Map<string, THREE.Group>>(new Map());
   // "Shell colours" roots (session-only, same precedent as rcpCoordVisibleRef)
@@ -2238,7 +2237,7 @@ export default function ShapeViewer({
       geometry.computeVertexNormals();
       // Distinct teal accent (matches the "Attach via Duoprism…" button's
       // own color in page.tsx) so a wall-prism cell reads as visually
-      // different from an ordinary solid or a fold4 pair, not just an
+      // different from an ordinary solid, not just an
       // unlabeled extra shape.
       const material = new THREE.MeshStandardMaterial({ color: 0x2ad6c9, flatShading: true, transparent: true, opacity: 0.75, side: THREE.DoubleSide });
       return new THREE.Mesh(geometry, material);

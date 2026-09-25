@@ -291,9 +291,9 @@ Since then:
   hyperplane reflections in true 4D coordinates, not a per-pair 3D
   correction — reflections in a finite Coxeter group compose exactly and
   the orbit is *guaranteed* to close, unlike an earlier per-pair-rotation
-  approach (`fold4.ts`, still loaded for backward compatibility with old
-  saves but superseded as the live construction method) which could only
-  ever handle an isolated pair before oscillating. Verified against the
+  approach (the retired 4D fold, whose old saves now load as plain face
+  attaches) which could only ever handle an isolated pair before
+  oscillating. Verified against the
   app's own real, normalized polyhedron data: exact cell counts, exact
   adjacency degrees, exact cell-to-cell angles, and — the decisive check
   — that adjacent cells' shared faces coincide vertex-for-vertex, not
@@ -456,7 +456,6 @@ polyhedraverse/
         fourD.ts         # dihedral-angle-defect classifier -- which shapes are 4D-Capable, and their real closures
         radialProjection.ts # the real 4D system: generic Wythoff/Coxeter reflection engine + dualize() -- 6 verified closures
         rcpBuild.ts      # RCP-C2B: bridges radialProjection.ts to real, placeable scene nodes, one cell/shell at a time
-        fold4.ts         # superseded by RCP-C2B as the live construction method; kept only for backward-compat load/render of old saves
         duoprism.ts      # the 4D Prism (duoprism) construction -- always-exact, any shape, any chaining depth
         gradedPyramids.ts # apex-angle-driven pyramid construction, shared by every graded-pyramid base
         polygonPrismSolid.ts # shared n-agnostic right-prism builder -- quad-prisms (n=4) and the U-Hex spacer (n=6)
@@ -474,7 +473,7 @@ polyhedraverse/
         stateGraph.ts / morph.ts / verify.ts # traversal, smooth preview, Stage 7 transition verification
         adapters/          # every shape-specific adapter piece (both v1 and v2) + shared.ts (assignTargetAngles/fitTargetPolygon)
         split-demos/       # heptagon/octagon -- real proof of the "multiply" (split) direction
-      assembly.ts        # the real {nodes, connections} graph + validation (vertex-, face-, and fold4-kind); ASSEMBLY_STORAGE_KEY for localStorage save/load
+      assembly.ts        # the real {nodes, connections} graph + validation (vertex- and face-kind; old fold4 connections migrate to face on load); ASSEMBLY_STORAGE_KEY for localStorage save/load
       graph.ts           # subtree/cycle graph logic (pure, no three.js)
     components/
       ShapeViewer.tsx    # the whole Three.js scene: render, pick, attach/face-attach, twist, rewrite, delete, view modes
