@@ -7,7 +7,7 @@ test.beforeEach(async ({ page }) => {
   await resetTo(page, 'D4');
 });
 
-test('Undo removes the single most recently confirmed attach and frees its target vertex again', async ({ page }) => {
+test('Undo removes the most recently confirmed attach and frees its target vertex again', async ({ page }) => {
   const undoBtn = page.getByRole('button', { name: 'Undo', exact: true });
   await expect(undoBtn).toBeDisabled();
 
@@ -39,7 +39,7 @@ test('Undo removes the single most recently confirmed attach and frees its targe
 
   await undoBtn.click();
   await expect(page.locator('text=/Undid last attach/')).toBeVisible();
-  await expect(undoBtn).toBeDisabled(); // single-level -- nothing left to undo
+  await expect(undoBtn).toBeDisabled(); // that was the only attach -- nothing left to undo
 
   await page.getByRole('button', { name: 'Save', exact: true }).click();
   await expect(page.locator('text=Saved')).toBeVisible();
@@ -68,5 +68,37 @@ test('Undo is disabled again after Start Over resets the scene', async ({ page }
   await expect(undoBtn).toBeEnabled();
 
   await resetTo(page, 'D8');
+  await expect(undoBtn).toBeDisabled();
+});
+
+test('Undo steps back through several attaches, most recent first', async ({ page }) => {
+  const undoBtn = page.getByRole('button', { name: 'Undo', exact: true });
+  const { cx, cy } = await getCanvasCenter(page);
+  const attachD6AtFreeVertex = async () => {
+    const hit = await findOnCanvas(page, cx, cy, (t) => /^vertex \d+ — capacity \d+$/.test(t));
+    expect(hit, 'expected a free vertex to attach at').not.toBeNull();
+    await page.getByRole('button', { name: 'Attach via vertex…' }).click();
+    await openBrowserWheel(page);
+    await clickWheelLabel(page, exactLabel('Deltahedra'));
+    await clickWheelLabel(page, 'D6');
+    await page.getByRole('button', { name: 'Confirm' }).click();
+    await expect(page.locator('text=/Placing D6/')).toHaveCount(0);
+  };
+  const savedNodeCount = async () => {
+    await page.getByRole('button', { name: 'Save', exact: true }).click();
+    await expect(page.locator('text=Saved')).toBeVisible();
+    return (await getSavedAssembly(page)).nodes.length;
+  };
+
+  await attachD6AtFreeVertex();
+  await attachD6AtFreeVertex();
+  expect(await savedNodeCount()).toBe(3);
+
+  await undoBtn.click();
+  expect(await savedNodeCount(), 'first undo removes only the second attach').toBe(2);
+  await expect(undoBtn).toBeEnabled();
+
+  await undoBtn.click();
+  expect(await savedNodeCount(), 'second undo removes the first attach too').toBe(1);
   await expect(undoBtn).toBeDisabled();
 });

@@ -269,13 +269,12 @@ export interface ShapeViewerHandle {
   /** Removes the currently selected node and its whole subtree. Null if nothing is selected. */
   deleteSelectedNode(): DeleteResult | null;
   /**
-   * Removes the single most recently CONFIRMED attach (vertex or face),
-   * and whatever's been built on top of it since, if anything. Null if
-   * there's nothing to undo (nothing confirmed yet this session, or the
-   * last one was already undone/deleted/reset past). Single-level only
-   * -- calling it again immediately after a successful undo returns null,
-   * not a second step back; a fresh confirmAttach/beginFaceAttach cycle
-   * is what re-arms it.
+   * Removes the most recently CONFIRMED attach (vertex or face) that's
+   * still in the scene, and whatever's been built on top of it since, if
+   * anything. Multi-step: each call steps one attach further back, until
+   * every attach confirmed this session is gone. Null if there's nothing
+   * left to undo (nothing confirmed yet, or everything already undone,
+   * deleted or reset past).
    */
   undo(): DeleteResult | null;
   /** The current assembly graph, exactly as saved -- for client-side export (JSON download), not persistence. */
@@ -712,12 +711,12 @@ export default function ShapeViewer({
   const selectedFaceIndexRef = useRef<number | null>(null);
   const pendingRef = useRef<PendingAttach | null>(null);
   const viewModeRef = useRef<ViewMode>('normal');
-  // The single most recently CONFIRMED attach's node id -- see undo()'s
-  // own doc comment on ShapeViewerHandle for the exact single-level
-  // semantics. Cleared on reset, on undo itself, and whenever that
-  // specific node gets removed some other way (an explicit delete
-  // covering it).
-  const lastAddedNodeIdRef = useRef<string | null>(null);
+  // Every CONFIRMED attach's node id this session, oldest first -- undo()
+  // pops from the end (see its doc comment on ShapeViewerHandle). Was a
+  // single id (single-level undo) until 2026-09-25, raised to a stack for
+  // parity with Rhombiverse's multi-step undo. Cleared on reset; any ids
+  // a delete removes (the node or its subtree) are dropped from it.
+  const addedNodeStackRef = useRef<string[]>([]);
   // 4D extension. foldAmountRef is the slider's own `t`: 0 = raw/ordinary
   // 3D (every fold4-attached sibling sits at its own real, independent
   // flush pose -- the actual geometric gap between siblings sharing an
@@ -2029,8 +2028,8 @@ export default function ShapeViewer({
       hoveredFaceIndexRef.current = null;
       selectedFaceIndexRef.current = null;
       label.style.display = 'none';
-      if (lastAddedNodeIdRef.current !== null) {
-        lastAddedNodeIdRef.current = null;
+      if (addedNodeStackRef.current.length > 0) {
+        addedNodeStackRef.current = [];
         onCanUndoChangeRef.current?.(false);
       }
       if (hasFoldConnectionsRef.current) {
@@ -2648,7 +2647,7 @@ export default function ShapeViewer({
       }
 
       if (pending.kind !== 'duoprism' || pending.isNewNode) {
-        lastAddedNodeIdRef.current = pending.nodeId;
+        addedNodeStackRef.current.push(pending.nodeId);
         onCanUndoChangeRef.current?.(true);
       }
 
@@ -2865,13 +2864,11 @@ export default function ShapeViewer({
       refreshFoldConnectionsFlag();
       recomputeAllFolds(foldAmountRef.current);
 
-      // If the node being removed (or anything in its subtree) was the
-      // tracked "most recently added" node, there's nothing left for
-      // undo to target.
-      if (lastAddedNodeIdRef.current !== null && subtreeIds.has(lastAddedNodeIdRef.current)) {
-        lastAddedNodeIdRef.current = null;
-        onCanUndoChangeRef.current?.(false);
-      }
+      // Anything removed here (the node or its subtree) is no longer
+      // something undo can step back to.
+      const stackBefore = addedNodeStackRef.current.length;
+      addedNodeStackRef.current = addedNodeStackRef.current.filter((id) => !subtreeIds.has(id));
+      if (stackBefore > 0 && addedNodeStackRef.current.length === 0) onCanUndoChangeRef.current?.(false);
 
       clearNodeSelection();
       label.style.display = 'none';
@@ -2888,24 +2885,21 @@ export default function ShapeViewer({
     };
 
     /**
-     * Removes the single most recently confirmed attach (and whatever's
-     * been built on top of it since) -- see undo()'s own doc comment on
-     * ShapeViewerHandle for the exact semantics. Single-level: clears
-     * the tracked node id either way, so calling this again immediately
-     * is a no-op until a fresh confirmAttach/beginFaceAttach re-arms it.
+     * Removes the most recent confirmed attach still in the scene (and
+     * whatever's been built on top of it since) -- see undo()'s own doc
+     * comment on ShapeViewerHandle. deleteNodeById drops it (and any
+     * later attaches in its subtree) from the stack.
      */
     const undo = (): DeleteResult | null => {
-      const nodeId = lastAddedNodeIdRef.current;
+      const nodeId = addedNodeStackRef.current.at(-1);
       if (!nodeId) return null;
       const result = deleteNodeById(nodeId);
-      // deleteNodeById already clears lastAddedNodeIdRef + fires the
-      // callback when it finds the target node in the subtree it
-      // removed -- but guard here too in case the node had somehow
-      // already gone stale (deleted some other way without going
-      // through deleteNodeById), so undo is never callable twice.
-      if (lastAddedNodeIdRef.current === nodeId) {
-        lastAddedNodeIdRef.current = null;
-        onCanUndoChangeRef.current?.(false);
+      // Guard: if the node had somehow already gone stale (removed
+      // without going through deleteNodeById), pop it anyway so undo can
+      // never get stuck on it.
+      if (addedNodeStackRef.current.at(-1) === nodeId) {
+        addedNodeStackRef.current.pop();
+        if (addedNodeStackRef.current.length === 0) onCanUndoChangeRef.current?.(false);
       }
       return result;
     };

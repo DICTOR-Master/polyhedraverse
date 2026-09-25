@@ -38,7 +38,7 @@ Two shapes joined face to face share that face exactly, a cube on a cube for exa
 
 ### Undo and delete
 
-- **Undo** takes back the last attach. It only goes back one step.
+- **Undo** takes back the last attach, along with anything built on it. Press it again to keep stepping back.
 - Select a shape and tap **Delete** to remove it, along with anything built on top of it.
 
 ## Browsing the catalogue
@@ -122,7 +122,7 @@ Some shapes can also **Attach via Duoprism…**, which joins an exact copy throu
 | 3D ↔ 4D slider | Only for older saved 4D folds: opens or closes the fold |
 | What's New | Recent changes |
 | View | Cycles Solid, Translucent and Inside view |
-| Undo | Takes back the last attach (one step) |
+| Undo | Takes back the last attach. Press again to step further back |
 | Save | Stores the build in this browser |
 | Export JSON | Downloads the build |
 

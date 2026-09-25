@@ -422,7 +422,7 @@ export default function Home() {
             type="button"
             onClick={handleUndo}
             disabled={!canUndo || pending !== null}
-            title="Undo the last confirmed attach (single-level -- undoing again does nothing until you attach something new)"
+            title="Undo the last attach (and anything built on it). Press again to keep stepping back."
             className="shrink-0 whitespace-nowrap rounded-full px-4 py-1.5 text-sm font-medium transition-colors disabled:opacity-50"
             style={{ background: '#0e1209', border: '1px solid rgba(71,204,36,.3)', color: '#5ee233' }}
           >
