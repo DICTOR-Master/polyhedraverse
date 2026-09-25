@@ -24,7 +24,7 @@ export const CHANGELOG: ChangelogDay[] = [
       'RCP-Coordinates now picks its colours per build, from bright tones chosen to stand apart from that build\'s own colours (including Shell colours), so the points and lines are always easy to see.',
       'The welcome screen now appears on every visit.',
       'The old 4D fold slider is gone. RCP-C2B (select a 4D-capable shape, then 4D) is how you build in 4D now. Builds saved with an old fold open as ordinary face-to-face attaches.',
-      'Share a build as a link: File → Copy share link puts the whole build in the link itself, with nothing stored on a server. File → Import JSON… opens a build you exported earlier.',
+      'Import a build: File → Import JSON… opens a build you exported earlier (Export JSON now lives in the same File menu). Rhombiverse\'s Export/Import World works the same way.',
     ],
   },
   {

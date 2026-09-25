@@ -11,7 +11,6 @@ import WelcomeOverlay from './components/WelcomeOverlay';
 import GuideOverlay from './components/GuideOverlay';
 import ChangelogOverlay from './components/ChangelogOverlay';
 import AssemblyDescriptionPopover from './components/AssemblyDescriptionPopover';
-import { buildShareUrl, clearSharedAssemblyParam, compressionSupported, decodeAssemblyFromUrl, encodeAssemblyForUrl, getSharedAssemblyParam } from './lib/share';
 import { FAMILY_ORDER, type FamilyKey } from './lib/polyhedra/families';
 
 const ShapeViewer = dynamic(() => import('./components/ShapeViewer'), {
@@ -283,29 +282,6 @@ export default function Home() {
     setTimeout(() => setRewriteNote(null), ms);
   };
 
-  // Share link: the whole assembly, gzip + base64url in ?a= (see
-  // lib/share.ts) -- same client-side scheme as Rhombiverse's ?w=.
-  const handleShare = async () => {
-    setFileMenuOpen(false);
-    const assembly = handleRef.current?.getAssembly();
-    if (!assembly) return;
-    if (!compressionSupported()) {
-      showNote('This browser can’t make share links. Use Export JSON instead.');
-      return;
-    }
-    const url = buildShareUrl(await encodeAssemblyForUrl(assembly));
-    if (url.length > 30000) {
-      showNote('This build is too large to share as a link. Use Export JSON instead.');
-      return;
-    }
-    try {
-      await navigator.clipboard.writeText(url);
-      showNote('Share link copied.');
-    } catch {
-      window.prompt('Copy this share link:', url);
-    }
-  };
-
   const handleImportFile = async (file: File | undefined) => {
     if (!file) return;
     try {
@@ -499,7 +475,7 @@ export default function Home() {
           >
             {saveStatus === 'saving' ? 'Saving…' : 'Save'}
           </button>
-          {/* Export / Import / Share grouped under one button: the header
+          {/* Export / Import grouped under one button: the header
               only just fits on one line at 1024px, so two more buttons
               there would have pushed it to a second row. */}
           <div ref={fileMenuRef} className="relative shrink-0">
@@ -538,16 +514,6 @@ export default function Home() {
                   style={{ color: '#5ee233' }}
                 >
                   Import JSON…
-                </button>
-                <button
-                  type="button"
-                  role="menuitem"
-                  title="Copy a link that contains this whole build -- nothing is stored on a server"
-                  onClick={handleShare}
-                  className="min-h-11 whitespace-nowrap px-4 text-left text-sm hover:bg-white/5"
-                  style={{ color: '#5ee233' }}
-                >
-                  Copy share link
                 </button>
               </div>
             )}
@@ -908,16 +874,6 @@ export default function Home() {
           onCanUndoChange={setCanUndo}
           onReady={(handle) => {
             handleRef.current = handle;
-            // A shared link (?a=) wins over the saved build: the viewer's
-            // own saved-build restore runs synchronously right after this,
-            // and the decode below always resolves after it.
-            const shared = getSharedAssemblyParam();
-            if (shared && compressionSupported()) {
-              decodeAssemblyFromUrl(shared)
-                .then((data) => showNote(handle.importAssembly(data) ? 'Opened a shared build.' : 'That share link is broken or incomplete.'))
-                .catch(() => showNote('That share link is broken or incomplete.'))
-                .finally(clearSharedAssemblyParam);
-            }
           }}
         />
       </main>
