@@ -58,8 +58,15 @@ jobs:
     # way a real user would: vertex select, attach, twist,
     # confirm/cancel, D10<->D12 rewrite, cascade delete, save/reload.
     # playwright.config.ts's webServer starts `npm run dev` itself.
+    # Split into 3 shards (by test file) run side by side: the whole suite
+    # (~84 tests, one worker against the dev server) takes over 20 min in
+    # one job, and a single 15-min job was being cut off near test 51.
     runs-on: ubuntu-latest
-    timeout-minutes: 15
+    timeout-minutes: 25
+    strategy:
+      fail-fast: false
+      matrix:
+        shard: [1, 2, 3]
     steps:
       - uses: actions/checkout@v7
       - uses: actions/setup-node@v7
@@ -68,4 +75,4 @@ jobs:
           cache: npm
       - run: npm ci
       - run: npx playwright install --with-deps chromium
-      - run: npm run test:e2e
+      - run: npm run test:e2e -- --shard=${{ matrix.shard }}/3
