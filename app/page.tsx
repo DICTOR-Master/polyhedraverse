@@ -11,6 +11,7 @@ import WelcomeOverlay from './components/WelcomeOverlay';
 import GuideOverlay from './components/GuideOverlay';
 import ChangelogOverlay from './components/ChangelogOverlay';
 import AssemblyDescriptionPopover from './components/AssemblyDescriptionPopover';
+import GoldenHelperBar from './components/GoldenHelperBar';
 import { FAMILY_ORDER, type FamilyKey } from './lib/polyhedra/families';
 import { GOLDEN_BUILDS, goldenZonohedron } from './lib/goldenBuilds';
 
@@ -896,6 +897,7 @@ export default function Home() {
             handleRef.current = handle;
           }}
         />
+        <GoldenHelperBar handleRef={handleRef} assemblyName={assemblyName} showNote={showNote} />
       </main>
 
       <PolyhedralWheel

@@ -26,7 +26,7 @@ const det4 = (m: number[][]) => new Matrix4().set(...(m.flat() as [number, numbe
 
 // The rotation taking a spec's corner-0 edges onto a triple (any order and
 // signs), or null.
-function rotationFor(spec: PolyhedronSpec, triple: Vector3[]): Quaternion | null {
+export function rotationFor(spec: PolyhedronSpec, triple: Vector3[]): Quaternion | null {
   const e = [1, 2, 4].map((m) => V(spec.vertices[m]).sub(V(spec.vertices[0])));
   const perms = [[0, 1, 2], [0, 2, 1], [1, 0, 2], [1, 2, 0], [2, 0, 1], [2, 1, 0]];
   for (const p of perms) for (let s = 0; s < 8; s++) {
@@ -70,7 +70,7 @@ export function goldenZonohedronNodes(k: number): AssemblyNode[] {
 }
 
 // World-space centre of each face of a placed node.
-function faceCentres(n: AssemblyNode): Vector3[] {
+export function faceCentres(n: AssemblyNode): Vector3[] {
   const spec = POLYHEDRA[n.shape];
   const q = new Quaternion(...n.transform.quaternion), p = V(n.transform.position);
   return spec.faces.map((f) => f.reduce((s, i) => s.add(V(spec.vertices[i]).applyQuaternion(q).add(p)), new Vector3()).divideScalar(f.length));
@@ -98,4 +98,24 @@ export function goldenZonohedron(k: number): Assembly {
     }
   }
   return { nodes, connections };
+}
+
+// Step-by-step: the build plus the next piece of golden build `k` (the
+// recipe order is the build's own face-connection tree, so each new piece
+// joins one already there). If the build isn't part of that recipe, it
+// starts over from the recipe's first piece.
+export function withNextRecipePiece(a: Assembly, k: number): { assembly: Assembly; step: number; total: number } {
+  const target = goldenZonohedron(k);
+  const key = (n: AssemblyNode) => `${n.shape}|${n.transform.position.map((x) => Math.round(x * 1e4) + 0).join(',')}`;
+  const have = new Map(a.nodes.map((n) => [key(n), n]));
+  const inRecipe = target.nodes.filter((n) => have.has(key(n))).length;
+  if (!a.nodes.length || inRecipe !== a.nodes.length) return { assembly: { nodes: [target.nodes[0]], connections: [] }, step: 1, total: target.nodes.length };
+  const byId = new Map(target.nodes.map((n) => [n.id, n]));
+  for (const c of target.connections) {
+    const A = byId.get(c.nodeA)!, B = byId.get(c.nodeB)!;
+    if (have.has(key(A)) && !have.has(key(B))) {
+      return { assembly: { nodes: [...a.nodes, B], connections: [...a.connections, { ...c, nodeA: have.get(key(A))!.id }] }, step: a.nodes.length + 1, total: target.nodes.length };
+    }
+  }
+  return { assembly: a, step: target.nodes.length, total: target.nodes.length };
 }

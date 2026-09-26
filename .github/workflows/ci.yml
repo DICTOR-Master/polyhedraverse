@@ -52,6 +52,7 @@ jobs:
       - run: npm run verify:face-connectors
       - run: npm run verify:face-attach
       - run: npm run verify:aperiodic-sets
+      - run: npm run verify:golden-helper
       - run: npm run verify:face-twist
 
   e2e:
