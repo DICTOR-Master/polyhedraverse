@@ -12,6 +12,7 @@ import GuideOverlay from './components/GuideOverlay';
 import ChangelogOverlay from './components/ChangelogOverlay';
 import AssemblyDescriptionPopover from './components/AssemblyDescriptionPopover';
 import { FAMILY_ORDER, type FamilyKey } from './lib/polyhedra/families';
+import { GOLDEN_BUILDS, goldenZonohedron } from './lib/goldenBuilds';
 
 const ShapeViewer = dynamic(() => import('./components/ShapeViewer'), {
   ssr: false,
@@ -515,6 +516,25 @@ export default function Home() {
                 >
                   Import JSON…
                 </button>
+                {/* Ready-made golden builds (goldenBuilds.ts): see how the
+                    golden rhombohedra fit before building them by hand. */}
+                {GOLDEN_BUILDS.map((b) => (
+                  <button
+                    key={b.axes}
+                    type="button"
+                    role="menuitem"
+                    title={`Load a finished ${b.name} made of golden rhombohedra (replaces the current build; Undo brings it back)`}
+                    onClick={() => {
+                      setFileMenuOpen(false);
+                      const ok = handleRef.current?.importAssembly(goldenZonohedron(b.axes)) ?? false;
+                      showNote(ok ? `Loaded the ${b.name}.` : 'Could not load that build.');
+                    }}
+                    className="min-h-11 whitespace-nowrap px-4 text-left text-sm hover:bg-white/5"
+                    style={{ color: '#5ee233' }}
+                  >
+                    Load golden {b.name.toLowerCase()}
+                  </button>
+                ))}
               </div>
             )}
             <input
