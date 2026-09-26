@@ -20,6 +20,8 @@
 import { POLYHEDRA } from './polyhedra';
 import type { AssemblyNode, AssemblyConnection } from './assembly';
 import { findParentConnection } from './graph';
+import { Quaternion, Vector3 } from 'three';
+import { ConvexHull } from 'three/examples/jsm/math/ConvexHull.js';
 
 function capitalize(s: string): string {
   return s.length === 0 ? s : s.charAt(0).toUpperCase() + s.slice(1);
@@ -55,6 +57,38 @@ interface NamedSignature {
  * node the build started from (either side of a face connection can be
  * the parent), unlike Tetrahedral Star's root-based check.
  */
+// Volume and flat-face count of the convex hull of `points`.
+function hullOf(points: Vector3[]): { volume: number; faces: number } {
+  const hull = new ConvexHull().setFromPoints(points);
+  let volume = 0;
+  const planes = new Set<string>();
+  for (const face of hull.faces) {
+    const pts: Vector3[] = [];
+    let e = face.edge;
+    do { pts.push(e.head().point); e = e.next; } while (e !== face.edge);
+    for (let i = 1; i + 1 < pts.length; i++) volume += pts[0].dot(pts[i].clone().cross(pts[i + 1])) / 6;
+    const n = face.normal;
+    planes.add([n.x, n.y, n.z, n.dot(pts[0])].map((x) => Math.round(x * 1e4) / 1e4 + 0).join(','));
+  }
+  return { volume: Math.abs(volume), faces: planes.size };
+}
+const pieceVolume = new Map<string, number>();
+function goldenZonohedron(nodes: AssemblyNode[], each: number, hullFaces: number): boolean {
+  const P = 'GOLDEN_RHOMBOHEDRON_PROLATE', O = 'GOLDEN_RHOMBOHEDRON_OBLATE';
+  if (nodes.length !== 2 * each || nodes.filter((n) => n.shape === P).length !== each || nodes.filter((n) => n.shape === O).length !== each) return false;
+  const all: Vector3[] = [];
+  let volume = 0;
+  for (const n of nodes) {
+    const spec = POLYHEDRA[n.shape];
+    if (!pieceVolume.has(n.shape)) pieceVolume.set(n.shape, hullOf(spec.vertices.map((v) => new Vector3(...v))).volume);
+    volume += pieceVolume.get(n.shape)!;
+    const q = new Quaternion(...n.transform.quaternion);
+    for (const v of spec.vertices) all.push(new Vector3(...v).applyQuaternion(q).add(new Vector3(...n.transform.position)));
+  }
+  const hull = hullOf(all);
+  return hull.faces === hullFaces && Math.abs(hull.volume - volume) < 1e-6 * Math.max(1, volume);
+}
+
 function centralWithCaps(nodes: AssemblyNode[], connections: AssemblyConnection[], centerShape: string, capShape: string, capCount: number, faceSize: number): boolean {
   if (nodes.length !== capCount + 1) return false;
   const centers = nodes.filter((n) => n.shape === centerShape);
@@ -82,6 +116,14 @@ const NAMED_ASSEMBLIES: NamedSignature[] = [
    * faces -- one big tetrahedron, the repeating block of the pyrochlore
    * (quarter cubic) honeycomb. User-chosen name.
    */
+  // The golden zonohedra (aperiodic.ts): 2 prolate + 2 oblate golden
+  // rhombohedra make the Bilinski dodecahedron, 5 + 5 the rhombic
+  // icosahedron, 10 + 10 the rhombic triacontahedron. Matched by geometry,
+  // not just counts: the pieces must fill their convex hull exactly (no
+  // gap, no overlap) and the hull must have the zonohedron's face count.
+  { name: 'Bilinski Dodecahedron', match: (_root, nodes) => goldenZonohedron(nodes, 2, 12) },
+  { name: 'Rhombic Icosahedron', match: (_root, nodes) => goldenZonohedron(nodes, 5, 20) },
+  { name: 'Rhombic Triacontahedron (golden rhombohedra)', match: (_root, nodes) => goldenZonohedron(nodes, 10, 30) },
   {
     name: 'Pyrochlore Cell',
     match: (_root, nodes, connections) => centralWithCaps(nodes, connections, 'TRUNCATED_TETRAHEDRON', 'D4', 4, 3),

@@ -17,6 +17,7 @@ export const CHANGELOG: ChangelogDay[] = [
   {
     date: '2026-09-26',
     entries: [
+      'New family, Aperiodic Sets: the prolate and oblate golden rhombohedra, the two pieces of the 3D Penrose tiling. Their faces match the rhombic triacontahedron\'s, so they attach to it and to each other. Build 2 + 2 into a Bilinski dodecahedron, 5 + 5 into a rhombic icosahedron or 10 + 10 into a rhombic triacontahedron, and the build is named. Each piece also fills space alone; together they can fill it without ever repeating. Find them in the Full Catalog or search.',
       'The welcome screen now says what Polyhedraverse can build in 4D: real 4D polytopes, from the tesseract to the 600-cell, one 3D cell at a time. Its link to Rhombiverse now mentions that twin\'s range, from 2D to 6D with quasicrystals.',
     ],
   },

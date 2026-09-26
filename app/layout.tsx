@@ -13,9 +13,9 @@ const geistMono = Geist_Mono({
 });
 
 const SITE = "https://polyhedraverse.vercel.app";
-const title = "Polyhedraverse — Build 165 Polyhedra in 3D and Real 4D Polytopes";
+const title = "Polyhedraverse — Build 167 Polyhedra in 3D and Real 4D Polytopes";
 const description =
-  "Snap together 165 polyhedra face to face in your browser — Platonic, Archimedean, Johnson, Catalan, prisms, parallelohedra and space-filling pairs — and build real 4D polytopes (tesseract, 24-cell, 120-cell, 600-cell) one cell at a time. Free, open source, 7 languages.";
+  "Snap together 167 polyhedra face to face in your browser — Platonic, Archimedean, Johnson, Catalan, prisms, parallelohedra, space-filling pairs and the golden rhombohedra of the 3D Penrose tiling — and build real 4D polytopes (tesseract, 24-cell, 120-cell, 600-cell) one cell at a time. Free, open source, 7 languages.";
 // Structured data for search engines: what the app is and does.
 const jsonLd = {
   "@context": "https://schema.org",
@@ -29,7 +29,8 @@ const jsonLd = {
   offers: { "@type": "Offer", price: "0", priceCurrency: "USD" },
   inLanguage: ["en", "ja", "es", "fr", "ko", "zh", "ru"],
   featureList: [
-    "165 polyhedra in 11 families: Deltahedra, Platonic, Archimedean, Johnson, Catalan, prisms, antiprisms, 4D-capable seeds, parallelohedra, space-filling pairs and more",
+    "167 polyhedra in 12 families: Deltahedra, Platonic, Archimedean, Johnson, Catalan, prisms, antiprisms, 4D-capable seeds, parallelohedra, space-filling pairs, aperiodic sets and more",
+    "Aperiodic sets: the prolate and oblate golden rhombohedra of the 3D Penrose tiling, which build the Bilinski dodecahedron, rhombic icosahedron and rhombic triacontahedron",
     "Attach shapes face to face or vertex to vertex, with twist, undo and a live name for the assembly",
     "RCP-C2B: build the 5-cell, tesseract, 16-cell, 24-cell, 120-cell and 600-cell one 3D cell at a time",
     "Open and Closed views of each 4D cell, shell colours and the RCP-Coordinates overlay",

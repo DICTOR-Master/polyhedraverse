@@ -16,7 +16,7 @@ your browser, nothing to install.
 > transforming, and interconnecting polyhedral forms in three dimensions
 > — and, uniquely, in four.
 
-A browser-based construction kit with over 160 shapes, browsable in 11
+A browser-based construction kit with over 160 shapes, browsable in 12
 families — the classical convex polyhedra (Platonic, Archimedean, Johnson,
 Catalan, prisms, antiprisms, and the original Deltahedra set this
 project started from), Parallelohedra, Space-Filling Pairs, the 4D-capable
@@ -82,11 +82,14 @@ direction, not yet delivered.
 
 ## What you can do
 
-- **165 shapes in 11 families** — Deltahedra, Platonic, Archimedean,
+- **167 shapes in 12 families** — Deltahedra, Platonic, Archimedean,
   Johnson, Catalan, prisms, antiprisms, the 4D-capable seeds,
   Parallelohedra (the five shapes that fill space alone), Space-Filling
-  Pairs (seven pairs that fill space together, such as the octet truss)
-  and Miscellaneous (graded pyramids, RVCMG connector pieces, prism
+  Pairs (seven pairs that fill space together, such as the octet truss),
+  Aperiodic Sets (the prolate and oblate golden rhombohedra of the 3D
+  Penrose tiling: 2 + 2 build the Bilinski dodecahedron, 5 + 5 the rhombic
+  icosahedron, 10 + 10 the rhombic triacontahedron, each recognised by
+  name) and Miscellaneous (graded pyramids, RVCMG connector pieces, prism
   extenders, the rhombohedron and the elongated dodecahedron). Browse them
   on the 3D shape wheel or in the Full Catalog, which also shows the **4
   Kepler–Poinsot star polyhedra** to look at.

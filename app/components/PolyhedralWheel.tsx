@@ -370,6 +370,8 @@ function resolveSlots(
       // Space-Filling Pairs: same cross-cutting "claims no face" placeholder
       // as Parallelohedra -- every member already has its own native face.
       SPACE_FILLING_PAIRS: [],
+      // Aperiodic Sets: no face (direct decision); Full Catalog and search.
+      APERIODIC: [],
       // Miscellaneous (families.ts): graded pyramids and, eventually,
       // the RVCMG adapter pieces. Not yet wired into the wheel's own
       // navigation (no UI integration has happened for this family

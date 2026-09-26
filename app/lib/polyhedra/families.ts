@@ -26,6 +26,7 @@ import {
   type PolyhedronSpec,
 } from './index';
 import { FOURD_CAPABLE_IDS } from './fourD';
+import { APERIODIC_ADDITION_IDS } from './aperiodic';
 
 export type FamilyKey =
   | 'DELTAHEDRA'
@@ -38,6 +39,7 @@ export type FamilyKey =
   | 'FOURD'
   | 'PARALLELOHEDRA'
   | 'SPACE_FILLING_PAIRS'
+  | 'APERIODIC'
   | 'MISCELLANEOUS';
 
 // Parallelohedra + Space-Filling Pairs moved up next to the classical
@@ -54,6 +56,7 @@ export const FAMILY_ORDER: FamilyKey[] = [
   'CATALAN',
   'PARALLELOHEDRA',
   'SPACE_FILLING_PAIRS',
+  'APERIODIC',
   'PRISMS',
   'ANTIPRISMS',
   'FOURD',
@@ -121,6 +124,7 @@ export const FAMILY_META: Record<FamilyKey, { label: string; symbol: string }> =
   // pictograph reads as "a peaked shape sitting on a base," distinct
   // from every base shape already claimed above (no outline triangle,
   // pentagon, hexagon, diamond, or rectangle reused).
+  APERIODIC: { label: 'Aperiodic Sets', symbol: '✺' },
   MISCELLANEOUS: { label: 'Miscellaneous', symbol: '⌂' },
 };
 
@@ -182,6 +186,9 @@ const BASE_IDS: Record<FamilyKey, string[]> = {
   // family above (Miscellaneous was always just a catch-all for shapes
   // without a proper family, and Parallelohedra is one). Every other
   // Miscellaneous shape's membership is untouched.
+  // The 3D Penrose pair (aperiodic.ts): fill space alone, but together
+  // can also fill it with no repeat.
+  APERIODIC: APERIODIC_ADDITION_IDS,
   MISCELLANEOUS: MISCELLANEOUS_ADDITION_IDS.filter((id) => id !== 'ELONGATED_DODECAHEDRON'),
 };
 

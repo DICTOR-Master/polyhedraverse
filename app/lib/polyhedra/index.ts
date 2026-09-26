@@ -15,6 +15,7 @@ import { JOHNSON_ADDITIONS, JOHNSON_ADDITION_IDS } from './johnson';
 import { CATALAN_ADDITIONS, CATALAN_ADDITION_IDS } from './catalan';
 import { PRISM_ANTIPRISM_ADDITIONS, PRISM_ANTIPRISM_ADDITION_IDS } from './prisms';
 import { MISCELLANEOUS_ADDITIONS, MISCELLANEOUS_ADDITION_IDS } from './miscellaneous';
+import { APERIODIC_ADDITIONS, APERIODIC_ADDITION_IDS } from './aperiodic';
 
 export * from './core';
 export { DELTAHEDRA, DELTAHEDRON_IDS } from './deltahedra';
@@ -24,6 +25,7 @@ export { JOHNSON_ADDITIONS, JOHNSON_ADDITION_IDS } from './johnson';
 export { CATALAN_ADDITIONS, CATALAN_ADDITION_IDS } from './catalan';
 export { PRISM_ANTIPRISM_ADDITIONS, PRISM_ANTIPRISM_ADDITION_IDS } from './prisms';
 export { MISCELLANEOUS_ADDITIONS, MISCELLANEOUS_ADDITION_IDS } from './miscellaneous';
+export { APERIODIC_ADDITIONS, APERIODIC_ADDITION_IDS } from './aperiodic';
 export { isFaceEligibleForAttach } from './attachEligibility';
 
 export const POLYHEDRA: Record<string, PolyhedronSpec> = {
@@ -34,6 +36,7 @@ export const POLYHEDRA: Record<string, PolyhedronSpec> = {
   ...CATALAN_ADDITIONS,
   ...PRISM_ANTIPRISM_ADDITIONS,
   ...MISCELLANEOUS_ADDITIONS,
+  ...APERIODIC_ADDITIONS,
 };
 
 export const POLYHEDRON_IDS: string[] = [
@@ -44,4 +47,5 @@ export const POLYHEDRON_IDS: string[] = [
   ...CATALAN_ADDITION_IDS,
   ...PRISM_ANTIPRISM_ADDITION_IDS,
   ...MISCELLANEOUS_ADDITION_IDS,
+  ...APERIODIC_ADDITION_IDS,
 ];
