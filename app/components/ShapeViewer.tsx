@@ -14,6 +14,7 @@ import {
   isFaceEligibleForAttach,
 } from '../lib/polyhedra';
 import { DELTAHEDRA } from '../lib/polyhedra/deltahedra';
+import { DEFAULT_COLOR_PREFS, NODE_BASE_COLOR, newPieceColor, pieceColorHex, type ColorPrefs, type PieceColorKey } from '../lib/pieceColors';
 import { emptyAssembly, isValidAssembly, migrateLegacyAssembly, ASSEMBLY_STORAGE_KEY, type Assembly } from '../lib/assembly';
 import { matchRewriteVertices, REWRITE_TARGET } from '../lib/polyhedra/rewrite';
 import { collectSubtree, findParentConnection, hasCycle } from '../lib/graph';
@@ -84,10 +85,6 @@ function pickRcpOverlayColors(present: number[]): { coord: number; dual: number 
 // the real, built points, just dimmed -- reads as "not built yet"
 // rather than being mistaken for real progress.
 const RCP_PREVIEW_OPACITY = 0.35;
-// Every placed shape's ordinary base color (brand green, see
-// buildPlacedShape) -- what an RCP-C2B cell returns to when "Shell
-// colours" is switched off.
-const NODE_BASE_COLOR = 0x47cc24;
 // Open-view gaps of a vertex-first cluster (RcpComplex.openGaps): red, so
 // the places flat space can't close read as a warning, not a cell.
 const RCP_GAP_COLOR = 0xff3355;
@@ -322,6 +319,10 @@ export interface ShapeViewerHandle {
   setRcpCoordinatesVisible(visible: boolean): void;
   /** Toggles the selected RCP-C2B root's "Shell colours": every built cell tinted by its shell (rcpShellColor), the seed staying yellow. Session-only. No-op if no root is selected. */
   setRcpShellColorsVisible(visible: boolean): void;
+  /** Green / Family / Pick colour mode and the picked colour (pieceColors.ts); repaints every piece. */
+  setColorPrefs(prefs: ColorPrefs): void;
+  /** Pick mode: paints the selected (ordinary, non-RCP) piece in `color`. False if nothing eligible is selected. */
+  paintSelectedNode(color: PieceColorKey): boolean;
   /**
    * The root node's current on-screen position (viewport pixel
    * coordinates), for anchoring a UI element "over the object itself"
@@ -671,6 +672,8 @@ export default function ShapeViewer({
   // "Shell colours" roots (session-only, same precedent as rcpCoordVisibleRef)
   // and each vertex-first root's Open-view gap overlay.
   const rcpShellColorsRef = useRef<Set<string>>(new Set());
+  // Green / Family / Pick colour mode (pieceColors.ts), set by page.tsx.
+  const colorPrefsRef = useRef<ColorPrefs>(DEFAULT_COLOR_PREFS);
   const rcpGapGroupRef = useRef<Map<string, THREE.Group>>(new Map());
   const hoveredRef = useRef<THREE.Mesh | null>(null);
   const selectedRef = useRef<THREE.Mesh | null>(null);
@@ -942,8 +945,15 @@ export default function ShapeViewer({
     /** applyViewMode plus the RCP-C2B per-shell opacity falloff (applyRcpShellOpacity's own doc comment) for whichever node `placed` belongs to -- the one wrapper every call site below should use instead of calling applyViewMode directly, so no creation/reload path has to remember the extra step. */
     const applyViewModeToPlaced = (placed: PlacedShape, mode: ViewMode) => {
       applyViewMode(placed, mode);
-      const { nodeId } = placed.object.userData as ShapeObjectUserData;
+      const { nodeId, specId } = placed.object.userData as ShapeObjectUserData;
       const shell = rcpShellOf(nodeId);
+      if (shell === null) {
+        // Ordinary piece: its colour mode's colour. A pending piece isn't
+        // in the graph yet, so it previews the colour it will be saved with.
+        const node = graphRef.current.nodes.find((n) => n.id === nodeId);
+        const saved = node ? node.color : newPieceColor(colorPrefsRef.current);
+        (placed.mesh.material as THREE.MeshStandardMaterial).color.setHex(pieceColorHex(colorPrefsRef.current, specId, saved));
+      }
       if (shell !== null) applyRcpShellOpacity(placed, shell);
       if (shell !== null && shell > 0) {
         // Shell colour (or back to the base green) -- the root keeps its
@@ -1880,6 +1890,7 @@ export default function ShapeViewer({
           {
             id: nodeId,
             shape: specId,
+            color: newPieceColor(colorPrefsRef.current),
             transform: {
               position: placed.object.position.toArray() as [number, number, number],
               quaternion: placed.object.quaternion.toArray() as [number, number, number, number],
@@ -1957,6 +1968,7 @@ export default function ShapeViewer({
         const shell = node.rcpPolytope ? 0 : (rcpConn?.shell ?? null);
         if (shell !== null) applyRcpShellOpacity(placed, shell);
         if (node.rcpPolytope) applyRcpSeedColor(placed);
+        if (shell === null) (placed.mesh.material as THREE.MeshStandardMaterial).color.setHex(pieceColorHex(colorPrefsRef.current, node.shape, node.color));
         scene.add(placed.object);
         placedRef.current.push(placed);
         byNodeId.set(node.id, placed);
@@ -2372,6 +2384,7 @@ export default function ShapeViewer({
         graphRef.current.nodes.push({
           id: pending.nodeId,
           shape: newSpecId,
+          color: newPieceColor(colorPrefsRef.current),
           transform: {
             position: pending.placed.object.position.toArray() as [number, number, number],
             quaternion: pending.placed.object.quaternion.toArray() as [number, number, number, number],
@@ -2391,6 +2404,7 @@ export default function ShapeViewer({
         graphRef.current.nodes.push({
           id: pending.nodeId,
           shape: newSpecId,
+          color: newPieceColor(colorPrefsRef.current),
           transform: {
             position: pending.placed.object.position.toArray() as [number, number, number],
             quaternion: pending.placed.object.quaternion.toArray() as [number, number, number, number],
@@ -2419,6 +2433,7 @@ export default function ShapeViewer({
           graphRef.current.nodes.push({
             id: pending.nodeId,
             shape: newSpecId,
+            color: newPieceColor(colorPrefsRef.current),
             transform: {
               position: pending.placed.object.position.toArray() as [number, number, number],
               quaternion: pending.placed.object.quaternion.toArray() as [number, number, number, number],
@@ -2760,7 +2775,24 @@ export default function ShapeViewer({
       checkpoint();
       return result;
     };
+    const setColorPrefs = (prefs: ColorPrefs) => {
+      colorPrefsRef.current = prefs;
+      for (const placed of placedRef.current) applyViewModeToPlaced(placed, viewModeRef.current);
+    };
+    const paintSelectedNode = (color: PieceColorKey): boolean => {
+      const placed = selectedNodeRef.current;
+      if (!placed) return false;
+      const { nodeId } = placed.object.userData as ShapeObjectUserData;
+      const node = graphRef.current.nodes.find((n) => n.id === nodeId);
+      if (!node || rcpShellOf(nodeId) !== null) return false;
+      if (color === 'default') delete node.color;
+      else node.color = color;
+      applyViewModeToPlaced(placed, viewModeRef.current);
+      return true;
+    };
     onReadyRef.current?.({
+      setColorPrefs,
+      paintSelectedNode: withCheckpoint(paintSelectedNode),
       reset: withCheckpoint(placeRoot),
       beginAttach: withCheckpoint(beginAttach),
       beginFaceAttach: withCheckpoint(beginFaceAttach),

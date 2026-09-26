@@ -84,6 +84,8 @@ Polyhedraverse 和它的孪生网站 [Rhombiverse](https://rhombiverse.vercel.ap
 - **Translucent：** 半透明的面。
 - **Skeleton：** 只显示边，可以看到嵌套结构的内部。
 
+点按 **🎨**（Colour） 选择部件的着色方式：**Green**（全部绿色，默认）、**Family**（每个部件用其家族的颜色，菜单中有图例）或 **Pick**（从 14 种颜色中选择；新部件使用该颜色，**Paint** 可为选中的部件重新上色）。选定的颜色会随作品一起保存。
+
 当一组部件闭合成一个完整的笼子时，会出现 **Closed cage!**。一些著名的排列有自己的名字，比如 Stella Octangula。轻点名字旁边的 **i** 可以查看说明。
 
 ## 在 4D 中搭建
@@ -124,6 +126,7 @@ Polyhedraverse 和它的孪生网站 [Rhombiverse](https://rhombiverse.vercel.ap
 | i | 已命名排列的说明 |
 | What's New | 最近的更改 |
 | View | 在 Solid、Translucent 和 Skeleton 之间循环 |
+| 🎨 Colour | Green、Family 或 Pick 着色；Pick 模式下可选 14 种颜色 |
 | ↶ Undo | 撤销你最近的任何一种更改。再轻点继续回退；按住可回退好几步 |
 | Save | 把作品保存在这个浏览器中 |
 | File ▾ | Export JSON、Import JSON… |

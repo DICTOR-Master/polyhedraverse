@@ -82,6 +82,8 @@ Tap **View** to cycle through three modes:
 - **Translucent:** see-through faces.
 - **Skeleton:** only the edges, so you can see inside nested structures.
 
+Tap **🎨** (Colour) to choose how pieces are coloured: **Green** (every piece green, the default), **Family** (each piece in its family's colour, with a key in the menu) or **Pick** (choose from 14 colours; new pieces take that colour, and **Paint** recolours a selected piece). Picked colours are saved with the build.
+
 When a group of pieces closes into a complete cage, **Closed cage!** appears. Some well-known arrangements get their own name, such as the Stella Octangula. Tap **i** next to the name for a description.
 
 ## Building in 4D
@@ -122,6 +124,7 @@ Some shapes can also **Attach via Duoprism…**, which joins an exact copy throu
 | i | Description of the named assembly |
 | What's New | Recent changes |
 | View | Cycles Solid, Translucent and Skeleton |
+| 🎨 Colour | Green, Family or Pick colours; in Pick, the 14 colours |
 | ↶ Undo | Takes back your last change of any kind. Tap again to step further back; hold to jump back several steps |
 | Save | Stores the build in this browser |
 | File ▾ | Export JSON, Import JSON… |

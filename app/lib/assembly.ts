@@ -40,6 +40,9 @@ export interface AssemblyNode {
   // chosen view survives save/reload — unlike the superseded
   // rigid-rotation open/closed toggle this replaces.
   rcpPolytope?: { seedSpecId: string; target: string; view3D?: boolean };
+  // The piece's own colour (a PIECE_COLORS key, see pieceColors.ts),
+  // shown in the Pick colour mode; absent = the default green.
+  color?: string;
 }
 
 export interface AssemblyConnection {
@@ -214,6 +217,7 @@ function isNode(v: unknown): v is AssemblyNode {
     if (typeof rp.seedSpecId !== 'string' || typeof rp.target !== 'string') return false;
     if (rp.view3D !== undefined && typeof rp.view3D !== 'boolean') return false;
   }
+  if (n.color !== undefined && typeof n.color !== 'string') return false;
   return true;
 }
 

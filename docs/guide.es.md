@@ -84,6 +84,8 @@ Toca **View** para pasar por tres modos:
 - **Translucent:** caras transparentes.
 - **Skeleton:** solo las aristas, para ver el interior de estructuras anidadas.
 
+Toca **🎨** (Colour) para elegir cómo se colorean las piezas: **Green** (todas verdes, por defecto), **Family** (cada pieza con el color de su familia, con leyenda en el menú) o **Pick** (elige entre 14 colores; las piezas nuevas toman ese color y **Paint** recolorea la pieza seleccionada). Los colores elegidos se guardan con la construcción.
+
 Cuando un grupo de piezas se cierra en una jaula completa, aparece **Closed cage!**. Algunas disposiciones conocidas tienen su propio nombre, como la Stella Octangula. Toca **i** junto al nombre para ver una descripción.
 
 ## Construir en 4D
@@ -124,6 +126,7 @@ Algunas formas también pueden usar **Attach via Duoprism…**, que une una copi
 | i | Descripción de la disposición con nombre |
 | What's New | Cambios recientes |
 | View | Alterna entre Solid, Translucent e Skeleton |
+| 🎨 Colour | Colores Green, Family o Pick; en Pick, los 14 colores |
 | ↶ Undo | Deshace tu último cambio de cualquier tipo. Tócalo otra vez para retroceder más; mantenlo pulsado para retroceder varios pasos |
 | Save | Guarda la construcción en este navegador |
 | File ▾ | Export JSON, Import JSON… |

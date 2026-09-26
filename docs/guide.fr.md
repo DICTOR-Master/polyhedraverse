@@ -84,6 +84,8 @@ Touchez **View** pour passer d'un mode à l'autre parmi trois :
 - **Translucent :** faces transparentes.
 - **Skeleton :** seulement les arêtes, pour voir l'intérieur des structures imbriquées.
 
+Touchez **🎨** (Colour) pour choisir la coloration des pièces : **Green** (toutes vertes, par défaut), **Family** (chaque pièce à la couleur de sa famille, avec une légende dans le menu) ou **Pick** (choisissez parmi 14 couleurs ; les nouvelles pièces prennent cette couleur et **Paint** recolore la pièce sélectionnée). Les couleurs choisies sont enregistrées avec la construction.
+
 Quand un groupe de pièces se referme en une cage complète, **Closed cage!** apparaît. Certains assemblages connus ont leur propre nom, comme la Stella Octangula. Touchez **i** à côté du nom pour une description.
 
 ## Construire en 4D
@@ -124,6 +126,7 @@ Certaines formes peuvent aussi utiliser **Attach via Duoprism…**, qui relie un
 | i | Description de l'assemblage nommé |
 | What's New | Changements récents |
 | View | Alterne Solid, Translucent et Skeleton |
+| 🎨 Colour | Couleurs Green, Family ou Pick ; en Pick, les 14 couleurs |
 | ↶ Undo | Annule votre dernière modification, quelle qu'elle soit. Touchez de nouveau pour remonter plus loin ; maintenez pour revenir plusieurs étapes |
 | Save | Enregistre la construction dans ce navigateur |
 | File ▾ | Export JSON, Import JSON… |

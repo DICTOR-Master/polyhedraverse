@@ -84,6 +84,8 @@ Polyhedraverse とその双子の [Rhombiverse](https://rhombiverse.vercel.app) 
 - **Translucent：** 透けて見える面。
 - **Skeleton：** 辺だけを表示するので、入れ子になった構造の内側が見えます。
 
+**🎨**（Colour）をタップすると、ピースの色の付け方を選べます。**Green**（すべて緑、既定）、**Family**（ファミリーごとの色。メニューに凡例あり）、**Pick**（14 色から選択。新しいピースはその色になり、**Paint** で選択中のピースを塗り替え）。選んだ色は作品と一緒に保存されます。
+
 いくつかのピースが閉じて完全なかごになると、**Closed cage!** と表示されます。よく知られた配置には、Stella Octangula のように名前が付きます。名前の横の **i** をタップすると説明が出ます。
 
 ## 4D で組み立てる
@@ -124,6 +126,7 @@ Polyhedraverse とその双子の [Rhombiverse](https://rhombiverse.vercel.app) 
 | i | 名前の付いた配置の説明 |
 | What's New | 最近の変更 |
 | View | Solid、Translucent、Skeleton を順に切り替え |
+| 🎨 Colour | Green、Family、Pick の色分け。Pick では 14 色から選択 |
 | ↶ Undo | 直前の変更を種類を問わず取り消し。もう一度タップでさらに戻り、押し続けると何段階も戻る |
 | Save | 作品をこのブラウザに保存 |
 | File ▾ | Export JSON、Import JSON… |

@@ -12,8 +12,9 @@ import GuideOverlay from './components/GuideOverlay';
 import ChangelogOverlay from './components/ChangelogOverlay';
 import AssemblyDescriptionPopover from './components/AssemblyDescriptionPopover';
 import GoldenHelperBar from './components/GoldenHelperBar';
-import { FAMILY_ORDER, type FamilyKey } from './lib/polyhedra/families';
+import { FAMILY_META, FAMILY_ORDER, type FamilyKey } from './lib/polyhedra/families';
 import { GOLDEN_BUILDS, goldenZonohedron } from './lib/goldenBuilds';
+import { COLOR_MODES, COLOR_MODE_LABELS, DEFAULT_COLOR_PREFS, FAMILY_COLORS, PIECE_COLORS, PIECE_COLOR_LABELS, loadColorPrefs, saveColorPrefs, type ColorPrefs, type PieceColorKey } from './lib/pieceColors';
 
 const ShapeViewer = dynamic(() => import('./components/ShapeViewer'), {
   ssr: false,
@@ -40,6 +41,9 @@ export default function Home() {
   const saveStatusResetRef = useRef<ReturnType<typeof setTimeout> | null>(null);
   const [fileMenuOpen, setFileMenuOpen] = useState(false);
   const fileMenuRef = useRef<HTMLDivElement | null>(null);
+  const [colorPrefs, setColorPrefsState] = useState<ColorPrefs>(DEFAULT_COLOR_PREFS);
+  const [colorMenuOpen, setColorMenuOpen] = useState(false);
+  const colorMenuRef = useRef<HTMLDivElement | null>(null);
   const importInputRef = useRef<HTMLInputElement | null>(null);
   const [selection, setSelection] = useState<ShapeSelection | null>(null);
   const [pending, setPending] = useState<Pending | null>(null);
@@ -294,6 +298,31 @@ export default function Home() {
     }
   };
 
+  const updateColorPrefs = (next: ColorPrefs) => {
+    setColorPrefsState(next);
+    saveColorPrefs(next);
+    handleRef.current?.setColorPrefs(next);
+  };
+  const handlePaint = () => {
+    if (!handleRef.current?.paintSelectedNode(colorPrefs.pick)) showNote('4D cells keep their own colours.');
+  };
+
+  useEffect(() => {
+    if (!colorMenuOpen) return;
+    const onPointerDown = (e: PointerEvent) => {
+      if (!colorMenuRef.current?.contains(e.target as Node)) setColorMenuOpen(false);
+    };
+    const onKeyDown = (e: KeyboardEvent) => {
+      if (e.key === 'Escape') setColorMenuOpen(false);
+    };
+    window.addEventListener('pointerdown', onPointerDown);
+    window.addEventListener('keydown', onKeyDown);
+    return () => {
+      window.removeEventListener('pointerdown', onPointerDown);
+      window.removeEventListener('keydown', onKeyDown);
+    };
+  }, [colorMenuOpen]);
+
   useEffect(() => {
     if (!fileMenuOpen) return;
     const onPointerDown = (e: PointerEvent) => {
@@ -428,6 +457,80 @@ export default function Home() {
           >
             View: {VIEW_MODE_LABELS[viewMode]}
           </button>
+          <div ref={colorMenuRef} className="relative shrink-0">
+            <button
+              type="button"
+              onClick={() => setColorMenuOpen((o) => !o)}
+              aria-haspopup="menu"
+              aria-expanded={colorMenuOpen}
+              title={`Colour: ${COLOR_MODE_LABELS[colorPrefs.mode]}`}
+              aria-label={`Colour: ${COLOR_MODE_LABELS[colorPrefs.mode]}`}
+              className="shrink-0 whitespace-nowrap rounded-full px-4 py-1.5 text-base font-medium transition-colors"
+              style={{ background: '#0e1209', border: '1px solid rgba(71,204,36,.3)', color: '#5ee233' }}
+            >
+              🎨
+            </button>
+            {colorMenuOpen && (
+              <div
+                role="menu"
+                className="absolute right-0 z-30 mt-2 flex w-64 flex-col gap-2 rounded-xl p-3"
+                style={{ background: '#0e1209', border: '1px solid rgba(71,204,36,.3)' }}
+              >
+                <div className="flex overflow-hidden rounded-full" style={{ border: '1px solid rgba(71,204,36,.3)' }}>
+                  {COLOR_MODES.map((mode) => (
+                    <button
+                      key={mode}
+                      type="button"
+                      onClick={() => updateColorPrefs({ ...colorPrefs, mode })}
+                      className="flex-1 px-2 py-1.5 text-sm font-medium"
+                      style={{ background: colorPrefs.mode === mode ? '#47cc24' : 'transparent', color: colorPrefs.mode === mode ? '#000' : '#5ee233' }}
+                    >
+                      {COLOR_MODE_LABELS[mode]}
+                    </button>
+                  ))}
+                </div>
+                {colorPrefs.mode === 'green' && (
+                  <p className="text-xs" style={{ color: '#5ee233', opacity: 0.8 }}>Every piece in the Polyhedraverse green.</p>
+                )}
+                {colorPrefs.mode === 'family' && (
+                  <div className="grid grid-cols-2 gap-x-3 gap-y-1">
+                    {FAMILY_ORDER.map((family) => (
+                      <span key={family} className="flex items-center gap-1.5 text-xs" style={{ color: '#5ee233' }}>
+                        <span className="h-3 w-3 shrink-0 rounded-full" style={{ background: `#${FAMILY_COLORS[family].toString(16).padStart(6, '0')}` }} />
+                        {FAMILY_META[family].label}
+                      </span>
+                    ))}
+                  </div>
+                )}
+                {colorPrefs.mode === 'pick' && (
+                  <>
+                    <p className="text-xs" style={{ color: '#5ee233', opacity: 0.8 }}>
+                      New pieces take this colour. Select a piece and tap Paint to recolour it.
+                    </p>
+                    <div className="grid grid-cols-7 gap-1.5">
+                      {(Object.keys(PIECE_COLORS) as PieceColorKey[]).map((key) => (
+                        <button
+                          key={key}
+                          type="button"
+                          onClick={() => updateColorPrefs({ ...colorPrefs, pick: key })}
+                          title={PIECE_COLOR_LABELS[key]}
+                          aria-label={PIECE_COLOR_LABELS[key]}
+                          aria-pressed={colorPrefs.pick === key}
+                          className="h-7 w-7 rounded-full"
+                          style={{
+                            background: `#${PIECE_COLORS[key].toString(16).padStart(6, '0')}`,
+                            outline: colorPrefs.pick === key ? '2px solid #fff' : '1px solid rgba(255,255,255,.2)',
+                            outlineOffset: 2,
+                          }}
+                        />
+                      ))}
+                    </div>
+                    <span className="text-xs" style={{ color: '#5ee233' }}>{PIECE_COLOR_LABELS[colorPrefs.pick]}</span>
+                  </>
+                )}
+              </div>
+            )}
+          </div>
           <div ref={undoWrapRef} className="relative shrink-0">
             <button
               type="button"
@@ -608,6 +711,17 @@ export default function Home() {
             >
               Delete
             </button>
+            {colorPrefs.mode === 'pick' && !nodeSelection.rcpRoot && (
+              <button
+                type="button"
+                onClick={handlePaint}
+                className="flex items-center gap-1.5 rounded-full px-4 py-1.5 text-sm font-medium"
+                style={{ background: '#0e1209', border: '1px solid rgba(71,204,36,.3)', color: '#5ee233' }}
+              >
+                <span className="h-3 w-3 rounded-full" style={{ background: `#${PIECE_COLORS[colorPrefs.pick].toString(16).padStart(6, '0')}` }} />
+                Paint
+              </button>
+            )}
             {/* Ordinary, single-shape controls -- hidden while an
                 RCP-C2B-eligible node is in "4D" mode (direct user
                 feedback: showing these alongside the build controls was
@@ -895,6 +1009,9 @@ export default function Home() {
           onCanUndoChange={setCanUndo}
           onReady={(handle) => {
             handleRef.current = handle;
+            const prefs = loadColorPrefs();
+            setColorPrefsState(prefs);
+            handle.setColorPrefs(prefs);
           }}
         />
         <GoldenHelperBar handleRef={handleRef} assemblyName={assemblyName} showNote={showNote} />

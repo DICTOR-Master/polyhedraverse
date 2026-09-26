@@ -17,6 +17,7 @@ export const CHANGELOG: ChangelogDay[] = [
   {
     date: '2026-09-26',
     entries: [
+      'Colours, as in Rhombiverse: the new 🎨 Colour menu switches between Green (the usual look), Family (every piece in its family\'s colour, with a key) and Pick (14 colours: new pieces take the picked colour, and Paint recolours a selected piece). Picked colours are saved with your build.',
       'Golden rhombohedra helper: while your build is all golden rhombohedra, a bar shows how many pieces fit the true 3D Penrose tiling. Next safe piece adds one that keeps the build inside that tiling, so it can never dead-end; Next step builds the Bilinski dodecahedron, rhombic icosahedron or rhombic triacontahedron one piece at a time. Undo takes back each step.',
       'File menu: load a finished golden build (Bilinski dodecahedron, rhombic icosahedron or rhombic triacontahedron) to see exactly how the golden rhombohedra fit, then take it apart or extend it. Undo brings back what you had.',
       'New family, Aperiodic Sets: the prolate and oblate golden rhombohedra, the two pieces of the 3D Penrose tiling. Their faces match the rhombic triacontahedron\'s, so they attach to it and to each other. Build 2 + 2 into a Bilinski dodecahedron, 5 + 5 into a rhombic icosahedron or 10 + 10 into a rhombic triacontahedron, and the build is named. Each piece also fills space alone; together they can fill it without ever repeating. Find them in the Full Catalog or search.',
