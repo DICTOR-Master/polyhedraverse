@@ -11,7 +11,7 @@ The first part of this guide walks through common tasks. The second part lists e
 ### Choose a shape
 
 1. Press **ENTER** on the welcome screen.
-2. Press **Tab** or **Space**, or tap the **shape wheel** button, to open the shape wheel.
+2. Tap the **shape wheel** button (☰, bottom left) or ◐ on the corner wheel to open the shape wheel. (**Start over with…**, Tab or Space open the shape browser instead.)
 3. The wheel is a dodecahedron. Each face is a family of shapes. Drag to turn it (or use the arrow keys), and tap a face to open that family. Hover over a face, or press and hold it, to see its name. Inside a family, the **Home** face (an H in a hexagon) takes you back to the families.
 4. Tap a shape. It replaces whatever is on screen, so you start fresh.
 
@@ -70,6 +70,7 @@ Tap any shape to see its details: vertices, edges, faces and connectors. From th
 | 4D-Capable | Shapes that close up into a regular 4D polytope |
 | Parallelohedra | Shapes that fill space by translation alone |
 | Space-Filling Pairs | Two shapes that fill space together |
+| Aperiodic Sets | The prolate and oblate golden rhombohedra, the two pieces of the 3D Penrose tiling |
 | Miscellaneous | Graded pyramids, connector pieces and prism extenders |
 
 Star polyhedra are also listed. They are for reference only and can't be built with, because their faces pass through each other.
@@ -105,6 +106,10 @@ Tap **3D** to get the ordinary controls back. Your 4D build is kept.
 
 Some shapes can also **Attach via Duoprism…**, which joins an exact copy through a prism, the 4D Prism construction.
 
+## Golden rhombohedra
+
+While your build is all golden rhombohedra, a bar shows how many pieces fit the true 3D Penrose tiling. **Next safe piece** adds one that keeps the build inside that tiling, so it can never dead-end. **Next step** builds the chosen golden shape (Bilinski dodecahedron, rhombic icosahedron or rhombic triacontahedron) one piece at a time. **File** also loads each finished golden build, to take apart or extend. Undo takes back each step.
+
 ## Saving your work
 
 - **Save:** stores your build in this browser. It comes back when you reopen the site on the same device and browser.
@@ -127,7 +132,8 @@ Some shapes can also **Attach via Duoprism…**, which joins an exact copy throu
 | 🎨 Colour | Green, Family or Pick colours; in Pick, the 14 colours |
 | ↶ Undo | Takes back your last change of any kind. Tap again to step further back; hold to jump back several steps |
 | Save | Stores the build in this browser |
-| File ▾ | Export JSON, Import JSON… |
+| File ▾ | Export JSON, Import JSON…, and the finished golden builds |
+| Start over with… | Opens the shape browser to start again with one shape (Tab or Space) |
 
 ## Context bar
 
@@ -161,7 +167,7 @@ The small dodecahedron in the corner. Drag to turn it, and tap a face.
 | Click a vertex | Select it for vertex attach |
 | Left-drag | Rotate the camera, or turn a new shape before confirming |
 | Scroll wheel | Zoom |
-| Tab or Space | Open the shape wheel |
+| Tab or Space | Open the shape browser (Start over with…) |
 | Esc | Cancel placing a shape, or close the wheel |
 
 ## Touch

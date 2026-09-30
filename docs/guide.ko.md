@@ -13,7 +13,7 @@ Polyhedraverse와 그 쌍둥이인 [Rhombiverse](https://rhombiverse.vercel.app)
 ### 도형 고르기
 
 1. 시작 화면에서 **ENTER**를 누릅니다.
-2. **Tab**이나 **Space**를 누르거나 **도형 휠** 버튼을 탭해 도형 휠을 엽니다.
+2. **도형 휠** 버튼(☰, 왼쪽 아래)이나 모서리 휠의 ◐를 탭해 도형 휠을 엽니다. (**Start over with…**, Tab, Space는 도형 브라우저를 엽니다.)
 3. 휠은 십이면체이고, 면마다 하나의 도형 계열입니다. 드래그해서 돌리고(화살표 키도 됩니다) 면을 탭하면 그 계열이 열립니다. 면 위에 마우스를 올리거나 길게 누르면 이름이 보입니다. 계열 안에서는 **Home** 면(육각형 속 H)을 누르면 계열 목록으로 돌아갑니다.
 4. 도형을 탭합니다. 화면에 있던 것을 대신하므로 새로 시작하게 됩니다.
 
@@ -72,6 +72,7 @@ Polyhedraverse와 그 쌍둥이인 [Rhombiverse](https://rhombiverse.vercel.app)
 | 4D-Capable | 닫으면 정규 4D 폴리토프가 되는 도형 |
 | Parallelohedra | 평행 이동만으로 공간을 채우는 도형 |
 | Space-Filling Pairs | 둘이 함께 공간을 채우는 도형 |
+| Aperiodic Sets | 길쭉한 황금 능면체와 납작한 황금 능면체, 3D 펜로즈 타일링의 두 조각 |
 | Miscellaneous | 단계별 피라미드, 연결용 조각, 각기둥 연장 조각 |
 
 별 다면체도 목록에 있습니다. 면이 서로를 뚫고 지나가기 때문에 참고용일 뿐, 만들기에는 쓸 수 없습니다.
@@ -107,6 +108,10 @@ Polyhedraverse와 그 쌍둥이인 [Rhombiverse](https://rhombiverse.vercel.app)
 
 몇몇 도형은 **Attach via Duoprism…**도 쓸 수 있습니다. 각기둥을 통해 똑같은 복사본을 잇는 4D Prism 구성입니다.
 
+## 황금 능면체
+
+작품이 모두 황금 능면체일 때, 진짜 3D 펜로즈 타일링에 맞는 조각 수가 막대에 표시됩니다. **Next safe piece**는 작품을 그 타일링 안에 머무르게 하는 조각을 더하므로 막히는 일이 없습니다. **Next step**은 고른 황금 도형(빌린스키 십이면체, 마름모 이십면체, 마름모 삼십면체)을 한 조각씩 만듭니다. **File**에서 완성된 황금 구조물을 불러와 분해하거나 넓힐 수도 있습니다. Undo로 한 단계씩 되돌립니다.
+
 ## 작품 저장하기
 
 - **Save:** 작품을 이 브라우저에 저장합니다. 같은 기기, 같은 브라우저에서 사이트를 다시 열면 돌아옵니다.
@@ -129,7 +134,8 @@ Polyhedraverse와 그 쌍둥이인 [Rhombiverse](https://rhombiverse.vercel.app)
 | 🎨 Colour | Green, Family, Pick 색칠. Pick에서는 14가지 색 |
 | ↶ Undo | 종류에 상관없이 마지막 변경을 되돌림. 다시 탭하면 더 되돌리고, 계속 누르면 여러 단계를 되돌림 |
 | Save | 작품을 이 브라우저에 저장 |
-| File ▾ | Export JSON, Import JSON… |
+| File ▾ | Export JSON, Import JSON…, 완성된 황금 구조물 |
+| Start over with… | 도형 하나로 다시 시작하도록 도형 브라우저를 엽니다 (Tab 또는 Space) |
 
 ## 상황 막대
 
@@ -163,7 +169,7 @@ Polyhedraverse와 그 쌍둥이인 [Rhombiverse](https://rhombiverse.vercel.app)
 | 꼭짓점 클릭 | 꼭짓점 붙이기를 위해 선택 |
 | 왼쪽 드래그 | 카메라 회전, 또는 확정 전 새 도형의 방향 돌리기 |
 | 스크롤 휠 | 확대/축소 |
-| Tab 또는 Space | 도형 휠 열기 |
+| Tab 또는 Space | 도형 브라우저 열기 (Start over with…) |
 | Esc | 도형 놓기 취소, 또는 휠 닫기 |
 
 ## 터치

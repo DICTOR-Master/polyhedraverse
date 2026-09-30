@@ -13,7 +13,7 @@ Polyhedraverse とその双子の [Rhombiverse](https://rhombiverse.vercel.app) 
 ### 形を選ぶ
 
 1. ようこそ画面で **ENTER** を押します。
-2. **Tab** か **Space** を押すか、**シェイプホイール** のボタンをタップして、シェイプホイールを開きます。
+2. **シェイプホイール** のボタン（☰、左下）かコーナーホイールの ◐ をタップして、シェイプホイールを開きます（**Start over with…**、Tab、Space ではシェイプブラウザが開きます）。
 3. ホイールは十二面体で、各面が形のファミリーです。ドラッグで回し（矢印キーでも回せます）、面をタップするとそのファミリーが開きます。面にカーソルを合わせるか長押しすると名前が表示されます。ファミリーの中では、**Home** の面（六角形に H）でファミリー一覧に戻れます。
 4. 形をタップします。画面上のものと入れ替わるので、まっさらな状態から始まります。
 
@@ -72,6 +72,7 @@ Polyhedraverse とその双子の [Rhombiverse](https://rhombiverse.vercel.app) 
 | 4D-Capable | 閉じると正則な 4D 多胞体になる形 |
 | Parallelohedra | 平行移動だけで空間を埋める形 |
 | Space-Filling Pairs | 2 つ一緒に空間を埋める形 |
+| Aperiodic Sets | 細長い黄金菱面体と平たい黄金菱面体。3D ペンローズ・タイリングの 2 ピース |
 | Miscellaneous | 段階的なピラミッド、コネクタ用のピース、角柱の延長パーツ |
 
 星形多面体も載っています。面どうしが互いを突き抜けているので、見るだけで、組み立てには使えません。
@@ -107,6 +108,10 @@ Polyhedraverse とその双子の [Rhombiverse](https://rhombiverse.vercel.app) 
 
 いくつかの形では **Attach via Duoprism…** も使えます。角柱を介して同じ形のコピーをつなぐ、4D Prism の構成です。
 
+## 黄金菱面体
+
+作品がすべて黄金菱面体のとき、真の 3D ペンローズ・タイリングに合うピースの数がバーに表示されます。**Next safe piece** はそのタイリングの中にとどまるピースを加えるので、行き詰まりません。**Next step** は選んだ黄金の形（ビリンスキー十二面体、菱形二十面体、菱形三十面体）を 1 ピースずつ作ります。**File** からは完成した黄金ビルドも読み込めるので、分解したり広げたりできます。Undo で 1 ステップずつ戻せます。
+
 ## 作品を保存する
 
 - **Save：** 作品をこのブラウザに保存します。同じ端末・同じブラウザでサイトを開き直すと元に戻ります。
@@ -129,7 +134,8 @@ Polyhedraverse とその双子の [Rhombiverse](https://rhombiverse.vercel.app) 
 | 🎨 Colour | Green、Family、Pick の色分け。Pick では 14 色から選択 |
 | ↶ Undo | 直前の変更を種類を問わず取り消し。もう一度タップでさらに戻り、押し続けると何段階も戻る |
 | Save | 作品をこのブラウザに保存 |
-| File ▾ | Export JSON、Import JSON… |
+| File ▾ | Export JSON、Import JSON…、完成した黄金ビルド |
+| Start over with… | 形を 1 つ選んでやり直すため、シェイプブラウザを開く（Tab か Space） |
 
 ## コンテキストバー
 
@@ -163,7 +169,7 @@ Polyhedraverse とその双子の [Rhombiverse](https://rhombiverse.vercel.app) 
 | 頂点をクリック | 頂点でつなげるために選択 |
 | 左ドラッグ | カメラを回転、または確定前の新しい形の向きを変える |
 | スクロールホイール | ズーム |
-| Tab または Space | シェイプホイールを開く |
+| Tab または Space | シェイプブラウザを開く（Start over with…） |
 | Esc | 形の配置を取り消す、またはホイールを閉じる |
 
 ## タッチ

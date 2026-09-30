@@ -13,7 +13,7 @@ Polyhedraverse 和它的孪生网站 [Rhombiverse](https://rhombiverse.vercel.ap
 ### 选择形状
 
 1. 在欢迎界面按下 **ENTER**。
-2. 按 **Tab** 或 **空格**，或轻点 **形状轮盘** 按钮，打开形状轮盘。
+2. 轻点 **形状轮盘** 按钮（☰，左下角）或角落轮盘上的 ◐，打开形状轮盘。（**Start over with…**、Tab 或空格打开的是形状浏览器。）
 3. 轮盘是一个十二面体，每个面是一个形状家族。拖动可以转动它（也可以用方向键），轻点一个面就会打开那个家族。将鼠标悬停在面上或长按，可以看到名称。在家族里面，**Home** 面（六边形里的 H）会带你回到家族列表。
 4. 轻点一个形状。它会替换屏幕上已有的内容，让你从头开始。
 
@@ -72,6 +72,7 @@ Polyhedraverse 和它的孪生网站 [Rhombiverse](https://rhombiverse.vercel.ap
 | 4D-Capable | 能闭合成正 4D 多胞体的形状 |
 | Parallelohedra | 只靠平移就能填满空间的形状 |
 | Space-Filling Pairs | 两个一起填满空间的形状 |
+| Aperiodic Sets | 长形和扁形黄金菱面体，3D 彭罗斯镶嵌的两种块 |
 | Miscellaneous | 分级棱锥、连接件和棱柱延长件 |
 
 星形多面体也列在其中。它们仅供参考，不能用来搭建，因为它们的面会互相穿过。
@@ -107,6 +108,10 @@ Polyhedraverse 和它的孪生网站 [Rhombiverse](https://rhombiverse.vercel.ap
 
 有些形状还可以使用 **Attach via Duoprism…**，它通过一个棱柱连接一个完全相同的副本，也就是 4D Prism 构造。
 
+## 黄金菱面体
+
+当你的作品全部由黄金菱面体组成时，一个条会显示有多少块符合真正的 3D 彭罗斯镶嵌。**Next safe piece** 添加一块让作品留在该镶嵌之内，所以永远不会卡住。**Next step** 一块一块地搭出所选的黄金形状（比林斯基十二面体、菱形二十面体或菱形三十面体）。**File** 也能载入每个完成的黄金作品，供你拆开或扩展。Undo 逐步撤销。
+
 ## 保存你的作品
 
 - **Save：** 把作品保存在这个浏览器中。在同一台设备、同一个浏览器上重新打开网站，它就会回来。
@@ -129,7 +134,8 @@ Polyhedraverse 和它的孪生网站 [Rhombiverse](https://rhombiverse.vercel.ap
 | 🎨 Colour | Green、Family 或 Pick 着色；Pick 模式下可选 14 种颜色 |
 | ↶ Undo | 撤销你最近的任何一种更改。再轻点继续回退；按住可回退好几步 |
 | Save | 把作品保存在这个浏览器中 |
-| File ▾ | Export JSON、Import JSON… |
+| File ▾ | Export JSON、Import JSON…，以及完成的黄金作品 |
+| Start over with… | 打开形状浏览器，用一个形状重新开始（Tab 或空格） |
 
 ## 上下文栏
 
@@ -163,7 +169,7 @@ Polyhedraverse 和它的孪生网站 [Rhombiverse](https://rhombiverse.vercel.ap
 | 点击一个顶点 | 选中它，用于顶点连接 |
 | 左键拖动 | 旋转镜头，或在确认前转动新形状 |
 | 滚轮 | 缩放 |
-| Tab 或空格 | 打开形状轮盘 |
+| Tab 或空格 | 打开形状浏览器（Start over with…） |
 | Esc | 取消放置形状，或关闭轮盘 |
 
 ## 触屏

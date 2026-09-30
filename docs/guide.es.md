@@ -13,7 +13,7 @@ Los nombres de los botones aparecen tal como se ven en la aplicación (los que l
 ### Elige una forma
 
 1. Pulsa **ENTER** en la pantalla de bienvenida.
-2. Pulsa **Tab** o **Espacio**, o toca el botón de la **rueda de formas**, para abrir la rueda de formas.
+2. Toca el botón de la **rueda de formas** (☰, abajo a la izquierda) o ◐ en la rueda de la esquina para abrir la rueda de formas. (**Start over with…**, Tab o Espacio abren el explorador de formas.)
 3. La rueda es un dodecaedro. Cada cara es una familia de formas. Arrástrala para girarla (o usa las flechas del teclado) y toca una cara para abrir esa familia. Pasa el cursor por una cara, o mantenla pulsada, para ver su nombre. Dentro de una familia, la cara **Home** (una H dentro de un hexágono) te lleva de vuelta a las familias.
 4. Toca una forma. Sustituye lo que haya en pantalla, así que empiezas desde cero.
 
@@ -72,6 +72,7 @@ Toca cualquier forma para ver sus detalles: vértices, aristas, caras y conector
 | 4D-Capable | Formas que se cierran en un politopo 4D regular |
 | Parallelohedra | Formas que llenan el espacio solo por traslación |
 | Space-Filling Pairs | Dos formas que llenan el espacio juntas |
+| Aperiodic Sets | Los romboedros áureos alargado y achatado, las dos piezas de la teselación de Penrose en 3D |
 | Miscellaneous | Pirámides graduadas, piezas conectoras y extensores de prisma |
 
 También aparecen los poliedros estrellados. Son solo de referencia y no sirven para construir, porque sus caras se atraviesan entre sí.
@@ -107,6 +108,10 @@ Toca **3D** para recuperar los controles normales. Tu construcción 4D se conser
 
 Algunas formas también pueden usar **Attach via Duoprism…**, que une una copia exacta a través de un prisma: la construcción 4D Prism.
 
+## Romboedros áureos
+
+Mientras tu construcción sea solo de romboedros áureos, una barra muestra cuántas piezas encajan en la verdadera teselación de Penrose en 3D. **Next safe piece** añade una que mantiene la construcción dentro de esa teselación, así que nunca se atasca. **Next step** construye la forma áurea elegida (dodecaedro de Bilinski, icosaedro rómbico o triacontaedro rómbico) pieza a pieza. **File** también carga cada construcción áurea terminada, para desmontarla o ampliarla. Undo deshace cada paso.
+
 ## Guarda tu trabajo
 
 - **Save:** guarda tu construcción en este navegador. Vuelve a aparecer cuando abres el sitio en el mismo dispositivo y navegador.
@@ -129,7 +134,8 @@ Algunas formas también pueden usar **Attach via Duoprism…**, que une una copi
 | 🎨 Colour | Colores Green, Family o Pick; en Pick, los 14 colores |
 | ↶ Undo | Deshace tu último cambio de cualquier tipo. Tócalo otra vez para retroceder más; mantenlo pulsado para retroceder varios pasos |
 | Save | Guarda la construcción en este navegador |
-| File ▾ | Export JSON, Import JSON… |
+| File ▾ | Export JSON, Import JSON… y las construcciones áureas terminadas |
+| Start over with… | Abre el explorador de formas para empezar de nuevo con una forma (Tab o Espacio) |
 
 ## Barra contextual
 
@@ -163,7 +169,7 @@ El pequeño dodecaedro de la esquina. Arrástralo para girarlo y toca una cara.
 | Clic en un vértice | Seleccionarlo para unir por vértice |
 | Arrastrar con el botón izquierdo | Girar la cámara, o girar una forma nueva antes de confirmar |
 | Rueda del ratón | Zoom |
-| Tab o Espacio | Abrir la rueda de formas |
+| Tab o Espacio | Abrir el explorador de formas (Start over with…) |
 | Esc | Cancelar la colocación de una forma, o cerrar la rueda |
 
 ## Táctil

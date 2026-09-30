@@ -13,7 +13,7 @@ Les noms des boutons sont écrits tels qu'ils apparaissent dans l'application (c
 ### Choisir une forme
 
 1. Appuyez sur **ENTER** sur l'écran d'accueil.
-2. Appuyez sur **Tab** ou **Espace**, ou touchez le bouton de la **roue des formes**, pour ouvrir la roue des formes.
+2. Touchez le bouton de la **roue des formes** (☰, en bas à gauche) ou ◐ sur la roue du coin pour ouvrir la roue des formes. (**Start over with…**, Tab ou Espace ouvrent plutôt le navigateur de formes.)
 3. La roue est un dodécaèdre. Chaque face est une famille de formes. Faites-la glisser pour la tourner (ou utilisez les flèches du clavier), et touchez une face pour ouvrir cette famille. Survolez une face, ou appuyez longuement dessus, pour voir son nom. Dans une famille, la face **Home** (un H dans un hexagone) vous ramène aux familles.
 4. Touchez une forme. Elle remplace ce qui est à l'écran : vous repartez de zéro.
 
@@ -72,6 +72,7 @@ Touchez une forme pour voir ses détails : sommets, arêtes, faces et connecteur
 | 4D-Capable | Des formes qui se referment en un polytope 4D régulier |
 | Parallelohedra | Des formes qui remplissent l'espace par simple translation |
 | Space-Filling Pairs | Deux formes qui remplissent l'espace ensemble |
+| Aperiodic Sets | Les rhomboèdres dorés allongé et aplati, les deux pièces du pavage de Penrose en 3D |
 | Miscellaneous | Pyramides graduées, pièces de connexion et rallonges de prisme |
 
 Les polyèdres étoilés sont aussi listés. Ils sont là pour référence seulement et ne servent pas à construire, car leurs faces se traversent.
@@ -107,6 +108,10 @@ Touchez **3D** pour retrouver les commandes habituelles. Votre construction 4D e
 
 Certaines formes peuvent aussi utiliser **Attach via Duoprism…**, qui relie une copie exacte à travers un prisme : la construction 4D Prism.
 
+## Rhomboèdres dorés
+
+Tant que votre construction n'est faite que de rhomboèdres dorés, une barre indique combien de pièces s'accordent avec le vrai pavage de Penrose en 3D. **Next safe piece** ajoute une pièce qui garde la construction dans ce pavage, pour qu'elle ne soit jamais bloquée. **Next step** construit la forme dorée choisie (dodécaèdre de Bilinski, icosaèdre rhombique ou triacontaèdre rhombique) pièce par pièce. **File** charge aussi chaque construction dorée terminée, à démonter ou à prolonger. Undo annule chaque étape.
+
 ## Enregistrer votre travail
 
 - **Save :** enregistre votre construction dans ce navigateur. Elle revient quand vous rouvrez le site sur le même appareil et le même navigateur.
@@ -129,7 +134,8 @@ Certaines formes peuvent aussi utiliser **Attach via Duoprism…**, qui relie un
 | 🎨 Colour | Couleurs Green, Family ou Pick ; en Pick, les 14 couleurs |
 | ↶ Undo | Annule votre dernière modification, quelle qu'elle soit. Touchez de nouveau pour remonter plus loin ; maintenez pour revenir plusieurs étapes |
 | Save | Enregistre la construction dans ce navigateur |
-| File ▾ | Export JSON, Import JSON… |
+| File ▾ | Export JSON, Import JSON… et les constructions dorées terminées |
+| Start over with… | Ouvre le navigateur de formes pour recommencer avec une forme (Tab ou Espace) |
 
 ## Barre contextuelle
 
@@ -163,7 +169,7 @@ Le petit dodécaèdre dans le coin. Faites-le glisser pour le tourner, et touche
 | Clic sur un sommet | Le sélectionner pour une attache par sommet |
 | Glisser avec le bouton gauche | Tourner la caméra, ou tourner une nouvelle forme avant de confirmer |
 | Molette | Zoomer |
-| Tab ou Espace | Ouvrir la roue des formes |
+| Tab ou Espace | Ouvrir le navigateur de formes (Start over with…) |
 | Échap | Annuler la pose d'une forme, ou fermer la roue |
 
 ## Tactile
