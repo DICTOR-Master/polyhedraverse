@@ -107,14 +107,14 @@ const en: Dict = {
   'duoprism.referenceOnly': 'Reference only — 3D shadow of the 4D duoprism, not buildable here',
   'radialProjection.referenceOnly': 'Extend a regular 3D cell through its fourth-dimensional continuation, recursively projecting each new cell into 3D',
   'welcome.overview': 'The portrait gallery: {n} shapes up close — connect them face to face, vertex to vertex.',
-  'welcome.stars': '+ {n} impossible star solids to explore in Full Catalog — look, don\'t build.',
+  'welcome.stars': '+ {n} star solids in the Full Catalog; three of them you can build from Stellations pieces.',
   'welcome.fourD': 'Build real 4D polytopes, the tesseract to the 600-cell, one 3D cell at a time.',
   'welcome.howTo': 'User Guide →',
   'guide.openPage': 'Open as a page to share →',
   'guide.close': 'Close (Esc)',
   'guide.loading': 'Loading…',
   'guide.failed': 'The guide could not be loaded. Check your connection and try again.',
-  'welcome.rhombiverseLink': 'New here? Explore Rhombiverse, our twin: lattices from 2D to 6D, including quasicrystals →',
+  'welcome.rhombiverseLink': 'New here? Explore Rhombiverse, our twin: worlds from 1D to 6D, from lattices to quasicrystals →',
 };
 
 const ja: Dict = {
@@ -202,14 +202,14 @@ const ja: Dict = {
   'duoprism.referenceOnly': '参照専用 — 4Dデュオプリズムの3D投影（組み立て不可）',
   'radialProjection.referenceOnly': '正多面体セルを第4次元へ拡張し、新しいセルを再帰的に3Dへ投影したもの',
   'welcome.overview': 'ポートレート・ギャラリー：{n}種類の立体を間近で。面と面、頂点と頂点でつなげてみましょう。',
-  'welcome.stars': '＋ フルカタログで見られる{n}つの「不可能な」星形多面体 — 見るだけで、組み立てはできません。',
+  'welcome.stars': '＋ フルカタログに{n}つの星形多面体。そのうち3つは Stellations のピースで組み立てられます。',
   'welcome.fourD': '本物の 4D ポリトープを、テッセラクトから 600 胞体まで、3D のセルを 1 つずつ組み立てられます。',
   'welcome.howTo': 'ユーザーガイド →',
   'guide.openPage': '共有用のページで開く →',
   'guide.close': '閉じる (Esc)',
   'guide.loading': '読み込み中…',
   'guide.failed': 'ガイドを読み込めませんでした。接続を確認して、もう一度お試しください。',
-  'welcome.rhombiverseLink': '初めての方へ：姉妹サイト Rhombiverse もどうぞ。2D から 6D までの格子と準結晶 →',
+  'welcome.rhombiverseLink': '初めての方へ：姉妹サイト Rhombiverse もどうぞ。1D から 6D までの世界、格子から準結晶まで →',
 };
 
 const es: Dict = {
@@ -297,14 +297,14 @@ const es: Dict = {
   'duoprism.referenceOnly': 'Solo referencia — sombra 3D del duoprisma 4D, no se puede construir aquí',
   'radialProjection.referenceOnly': 'Extiende una celda 3D regular a través de su continuación en la cuarta dimensión, proyectando recursivamente cada nueva celda a 3D',
   'welcome.overview': 'La galería de retratos: {n} formas de cerca — conéctalas cara con cara, vértice con vértice.',
-  'welcome.stars': '+ {n} sólidos estrellados imposibles para explorar en el Catálogo Completo — para mirar, no para construir.',
+  'welcome.stars': '+ {n} sólidos estrellados en el Catálogo Completo; tres de ellos se pueden construir con piezas de Stellations.',
   'welcome.fourD': 'Construye politopos 4D reales, del teseracto a la 600-celda, una celda 3D cada vez.',
   'welcome.howTo': 'Guía del usuario →',
   'guide.openPage': 'Abrir como página para compartir →',
   'guide.close': 'Cerrar (Esc)',
   'guide.loading': 'Cargando…',
   'guide.failed': 'No se pudo cargar la guía. Comprueba tu conexión y vuelve a intentarlo.',
-  'welcome.rhombiverseLink': '¿Eres nuevo? Explora Rhombiverse, nuestro gemelo: redes de 2D a 6D, incluidos cuasicristales →',
+  'welcome.rhombiverseLink': '¿Eres nuevo? Explora Rhombiverse, nuestro gemelo: mundos de 1D a 6D, de redes a cuasicristales →',
 };
 
 const fr: Dict = {
@@ -392,14 +392,14 @@ const fr: Dict = {
   'duoprism.referenceOnly': 'Référence uniquement — ombre 3D du duoprisme 4D, non assemblable ici',
   'radialProjection.referenceOnly': 'Étend une cellule 3D régulière à travers sa continuation en quatrième dimension, en projetant récursivement chaque nouvelle cellule en 3D',
   'welcome.overview': 'La galerie de portraits : {n} formes vues de près — reliez-les face à face, sommet à sommet.',
-  'welcome.stars': '+ {n} solides étoilés impossibles à explorer dans le Catalogue complet — à regarder, pas à construire.',
+  'welcome.stars': '+ {n} solides étoilés dans le Catalogue complet ; trois d\'entre eux se construisent avec des pièces Stellations.',
   'welcome.fourD': 'Construisez de vrais polytopes 4D, du tesseract au 600-cellules, une cellule 3D à la fois.',
   'welcome.howTo': 'Guide de l\'utilisateur →',
   'guide.openPage': 'Ouvrir en page à partager →',
   'guide.close': 'Fermer (Échap)',
   'guide.loading': 'Chargement…',
   'guide.failed': 'Le guide n\'a pas pu être chargé. Vérifiez votre connexion et réessayez.',
-  'welcome.rhombiverseLink': 'Nouveau ici ? Découvrez Rhombiverse, notre jumeau : des réseaux de la 2D à la 6D, quasicristaux compris →',
+  'welcome.rhombiverseLink': 'Nouveau ici ? Découvrez Rhombiverse, notre jumeau : des mondes de la 1D à la 6D, des réseaux aux quasicristaux →',
 };
 
 const ko: Dict = {
@@ -487,14 +487,14 @@ const ko: Dict = {
   'duoprism.referenceOnly': '참고 전용 — 4D 듀오프리즘의 3D 그림자, 여기서는 조립 불가',
   'radialProjection.referenceOnly': '정다면체 셀을 그 4차원 연속체를 통해 확장하며, 새로운 셀을 재귀적으로 3D에 투영합니다',
   'welcome.overview': '초상화 갤러리: {n}개의 도형을 가까이에서 — 면과 면, 꼭짓점과 꼭짓점으로 연결해 보세요.',
-  'welcome.stars': '+ 전체 카탈로그에서 볼 수 있는 {n}개의 불가능한 별 다면체 — 보기만 가능하고 만들 수는 없습니다.',
+  'welcome.stars': '+ 전체 카탈로그에 별 다면체 {n}개. 그중 셋은 Stellations 조각으로 만들 수 있습니다.',
   'welcome.fourD': '테서랙트부터 600포체까지, 진짜 4D 폴리토프를 3D 셀 하나씩 쌓아 만들어 보세요.',
   'welcome.howTo': '사용자 가이드 →',
   'guide.openPage': '공유용 페이지로 열기 →',
   'guide.close': '닫기 (Esc)',
   'guide.loading': '불러오는 중…',
   'guide.failed': '안내서를 불러오지 못했습니다. 연결을 확인하고 다시 시도하세요.',
-  'welcome.rhombiverseLink': '처음이신가요? 쌍둥이 사이트 Rhombiverse도 둘러보세요: 2D부터 6D까지의 격자와 준결정 →',
+  'welcome.rhombiverseLink': '처음이신가요? 쌍둥이 사이트 Rhombiverse도 둘러보세요: 1D부터 6D까지의 세계, 격자부터 준결정까지 →',
 };
 
 const zh: Dict = {
@@ -582,14 +582,14 @@ const zh: Dict = {
   'duoprism.referenceOnly': '仅供参考 — 4D双棱柱的3D投影，此处无法构建',
   'radialProjection.referenceOnly': '将一个正三维单元沿其四维延伸方向扩展，并递归地将每个新单元投影回三维空间',
   'welcome.overview': '肖像画廊：近距离欣赏 {n} 种形状 — 面对面、顶点对顶点地连接它们。',
-  'welcome.stars': '+ {n} 个不可能的星形多面体，可在完整目录中探索 — 只能观看，不能搭建。',
+  'welcome.stars': '+ 完整目录中有 {n} 个星形多面体，其中三个可以用 Stellations 部件搭出来。',
   'welcome.fourD': '逐个 3D 胞搭建真正的 4D 多胞体，从超立方体到 600 胞体。',
   'welcome.howTo': '用户指南 →',
   'guide.openPage': '以可分享的页面打开 →',
   'guide.close': '关闭 (Esc)',
   'guide.loading': '加载中…',
   'guide.failed': '无法加载指南。请检查网络连接后重试。',
-  'welcome.rhombiverseLink': '初次来访？也来看看我们的姊妹站 Rhombiverse：从 2D 到 6D 的晶格，包括准晶 →',
+  'welcome.rhombiverseLink': '初次来访？也来看看我们的姊妹站 Rhombiverse：从 1D 到 6D 的世界，从晶格到准晶 →',
 };
 
 const ru: Dict = {
@@ -677,14 +677,14 @@ const ru: Dict = {
   'duoprism.referenceOnly': 'Только для справки — 3D-тень 4D-дуопризмы, здесь не строится',
   'radialProjection.referenceOnly': 'Расширьте правильную 3D-ячейку через её четырёхмерное продолжение, рекурсивно проецируя каждую новую ячейку обратно в 3D',
   'welcome.overview': 'Портретная галерея: {n} фигур крупным планом — соединяйте их грань к грани, вершина к вершине.',
-  'welcome.stars': '+ {n} невозможных звёздчатых тела в Полном каталоге — только смотреть, не строить.',
+  'welcome.stars': '+ {n} звёздчатых тела в Полном каталоге; три из них можно построить из деталей Stellations.',
   'welcome.fourD': 'Стройте настоящие 4D-политопы, от тессеракта до 600-ячейника, по одной 3D-ячейке.',
   'welcome.howTo': 'Руководство пользователя →',
   'guide.openPage': 'Открыть как страницу, чтобы поделиться →',
   'guide.close': 'Закрыть (Esc)',
   'guide.loading': 'Загрузка…',
   'guide.failed': 'Не удалось загрузить руководство. Проверьте подключение и попробуйте ещё раз.',
-  'welcome.rhombiverseLink': 'Впервые здесь? Загляните в Rhombiverse, наш сайт-близнец: решётки от 2D до 6D, включая квазикристаллы →',
+  'welcome.rhombiverseLink': 'Впервые здесь? Загляните в Rhombiverse, наш сайт-близнец: миры от 1D до 6D, от решёток до квазикристаллов →',
 };
 
 /** Exported for scripts/verify-i18n.ts's own key-parity check -- not otherwise consumed outside this module. */

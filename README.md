@@ -125,8 +125,8 @@ direction, not yet delivered.
 - **What's New** lists every change, newest first.
 
 Its twin, **[Rhombiverse](https://rhombiverse.vercel.app)**, builds on
-lattices instead: tilings, crystal lattices, 4D worlds and 5D/6D
-quasicrystals, from 2D to 6D.
+lattices instead: a 1D signal and constructions, tilings, crystal
+lattices, 4D worlds and 5D/6D quasicrystals, from 1D to 6D.
 
 ## Structure
 
