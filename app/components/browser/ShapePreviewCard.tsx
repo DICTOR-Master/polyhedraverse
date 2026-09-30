@@ -1,11 +1,14 @@
 'use client';
 
 import { getAnySpec } from '../../lib/polyhedra/lookup';
-import { FAMILY_META, familiesFor, catalogByFamily, type FamilyKey } from '../../lib/polyhedra/families';
+import { FAMILY_META, familiesFor, catalogByFamily, pairPartners, type FamilyKey } from '../../lib/polyhedra/families';
 import { t, type LangCode } from '../../lib/i18n';
 import ShapePreview from './ShapePreview';
 
 const CARD_PREVIEW_SIZE = 88;
+const PAIR_MINI_SIZE = 22;
+const PAIR_GOLD = '#ffd54a';
+const PAIR_GOLD_DIM = 'rgba(255, 213, 74, 0.4)';
 
 /** Family to show as the card's badge when a shape has more than one --
  * prefer whichever family the user is currently browsing by, otherwise
@@ -27,6 +30,9 @@ export interface ShapePreviewCardProps {
   onOpen: (specId: string) => void;
   onToggleFavorite: (specId: string) => void;
   onToggleCompare: (specId: string) => void;
+  /** Hide the pair-partner minis where the partner already sits beside
+   *  this card (the Space-Filling Pairs rows, the ⇄ Pairs with list). */
+  hidePartners?: boolean;
 }
 
 export default function ShapePreviewCard({
@@ -38,6 +44,7 @@ export default function ShapePreviewCard({
   onOpen,
   onToggleFavorite,
   onToggleCompare,
+  hidePartners = false,
 }: ShapePreviewCardProps) {
   const spec = getAnySpec(specId);
   if (!spec) return null;
@@ -50,6 +57,11 @@ export default function ShapePreviewCard({
   // direct user request for a "clear 4D additional highlighted label for
   // clarity," separate from and more prominent than the plain count.
   const isFourD = families.includes('FOURD');
+  // Pair partners as small, still, gold wireframes down the right edge,
+  // under the 4D badge when there is one (direct decisions 2026-09-30:
+  // they name the partner outright, so no colour can imply a wrong match;
+  // all partners shown, three at most, for the octahedron).
+  const partners = hidePartners ? [] : pairPartners(specId);
 
   return (
     <div
@@ -127,6 +139,17 @@ export default function ShapePreviewCard({
           title={t('fourD.badgeTitle', lang)}
         >
           4D
+        </span>
+      )}
+      {partners.length > 0 && (
+        <span
+          data-testid="pair-minis"
+          title={t('catalog.pairsWith', lang) + ': ' + partners.map((id) => (getAnySpec(id)?.name ?? id).replaceAll('_', ' ')).join(', ')}
+          style={{ position: 'absolute', top: isFourD ? 26 : 6, right: 6, display: 'flex', flexDirection: 'column', gap: 2 }}
+        >
+          {partners.map((id) => (
+            <ShapePreview key={id} specId={id} size={PAIR_MINI_SIZE} colors={[PAIR_GOLD, PAIR_GOLD_DIM]} />
+          ))}
         </span>
       )}
       <ShapePreview specId={specId} size={CARD_PREVIEW_SIZE} />

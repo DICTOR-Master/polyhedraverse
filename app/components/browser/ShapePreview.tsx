@@ -69,9 +69,12 @@ export interface ShapePreviewProps {
   specId: string;
   size: number;
   spin?: boolean;
+  /** Line colours, near and far (default: the app's green). */
+  colors?: [string, string];
 }
 
-export default function ShapePreview({ specId, size, spin = false }: ShapePreviewProps) {
+export default function ShapePreview({ specId, size, spin = false, colors = [LINE_COLOR, LINE_COLOR_DIM] }: ShapePreviewProps) {
+  const [nearColor, farColor] = colors;
   const canvasRef = useRef<HTMLCanvasElement | null>(null);
   // A per-instance phase offset so multiple static cards don't all freeze
   // at the exact same angle -- a purely cosmetic touch. useState's lazy
@@ -124,7 +127,7 @@ export default function ShapePreview({ specId, size, spin = false }: ShapePrevie
         const [ax, ay] = rotated[a];
         const [bx, by] = rotated[b];
         const depthT = (avgZ - minZ) / zRange; // 0 (far) .. 1 (near)
-        ctx.strokeStyle = depthT > 0.5 ? LINE_COLOR : LINE_COLOR_DIM;
+        ctx.strokeStyle = depthT > 0.5 ? nearColor : farColor;
         ctx.lineWidth = Math.max(1, dpr);
         ctx.beginPath();
         ctx.moveTo(half + ax * scale, half - ay * scale);
@@ -143,7 +146,7 @@ export default function ShapePreview({ specId, size, spin = false }: ShapePrevie
     }
     draw();
     return undefined;
-  }, [specId, size, spin, phase]);
+  }, [specId, size, spin, phase, nearColor, farColor]);
 
   return (
     <canvas

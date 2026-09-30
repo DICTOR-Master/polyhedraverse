@@ -24,3 +24,17 @@ test('Full Catalog shows Space-Filling Pairs as 7 named pair rows', async ({ pag
   await expect(pyro).toBeVisible();
   await expect(pyro.locator('text=/truncated tetrahedron/i').first()).toBeVisible();
 });
+
+// Direct decision 2026-09-30: a pair piece's card shows its partners as
+// small gold wireframes -- but not in the pair rows, where the partner
+// already sits beside it.
+test('pair pieces show gold partner minis, except in the pair rows', async ({ page }) => {
+  await page.getByRole('button', { name: /^Start over with/ }).click();
+  await openBrowserWheel(page);
+  await clickWheelLabel(page, exactLabel('Full Catalog'));
+  await expect(page.locator('[data-testid="space-filling-pair"] [data-testid="pair-minis"]')).toHaveCount(0);
+  const octa = page.locator('[data-testid="pair-minis"][title*="tetrahedron, cuboctahedron, truncated cube"]').first();
+  await octa.scrollIntoViewIfNeeded();
+  await expect(octa).toBeVisible();
+  await expect(octa.locator('canvas')).toHaveCount(3);
+});

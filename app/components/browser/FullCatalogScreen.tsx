@@ -95,6 +95,7 @@ export default function FullCatalogScreen({
                 key={id}
                 specId={id}
                 lang={lang}
+                hidePartners
                 isFavorite={isFavorite(id)}
                 inCompare={isInCompare(id)}
                 onOpen={onOpenShape}
@@ -136,6 +137,7 @@ export default function FullCatalogScreen({
                               specId={id}
                               lang={lang}
                               activeFamilies={[fam]}
+                              hidePartners
                               isFavorite={isFavorite(id)}
                               inCompare={isInCompare(id)}
                               onOpen={onOpenShape}
