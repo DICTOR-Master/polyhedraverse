@@ -444,6 +444,7 @@ function buildVertexGroup(spec: PolyhedronSpec): THREE.Group {
         color: COLOR_FREE,
         transparent: true,
         opacity: 0,
+        visible: false, // not drawn until painted; raycasting ignores material.visible
         depthTest: false, // stay visible over the shape's own faces once highlighted
       }),
     );
@@ -519,6 +520,13 @@ function disposePlacedShape(placed: PlacedShape) {
 
 /** Paints a vertex sphere according to its current state (free/selected/occupied/pending). */
 function paintVertex(sphere: THREE.Mesh, opts: { selected?: boolean; hovered?: boolean; pending?: boolean }) {
+  paintVertexMaterial(sphere, opts);
+  // Skip drawing fully transparent spheres: one draw call per vertex of every piece otherwise.
+  const material = sphere.material as THREE.MeshBasicMaterial;
+  material.visible = material.opacity > 0;
+}
+
+function paintVertexMaterial(sphere: THREE.Mesh, opts: { selected?: boolean; hovered?: boolean; pending?: boolean }) {
   const data = sphere.userData as VertexUserData;
   const material = sphere.material as THREE.MeshBasicMaterial;
   if (opts.pending) {
