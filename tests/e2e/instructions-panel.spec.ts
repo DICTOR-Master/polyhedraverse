@@ -8,9 +8,8 @@ test.beforeEach(async ({ page }) => {
 
 /**
  * Real user request: "make instruction panel with little x in the
- * corner so you can clear the space." Session-lived only (not
- * persisted) -- a page reload brings it back, same as every other
- * transient UI state in this app.
+ * corner so you can clear the space." Remembered on the device (direct
+ * decision 2026-09-30: on a phone it covered the shape on every visit).
  */
 test('the default-state instruction pill can be dismissed via its own × button', async ({ page }) => {
   const pillText = page.locator('text=/Click a highlighted, free vertex/');
@@ -19,10 +18,10 @@ test('the default-state instruction pill can be dismissed via its own × button'
   await page.getByRole('button', { name: 'Dismiss instructions' }).click();
   await expect(pillText).toHaveCount(0);
 
-  // A page reload (not persisted) brings it back.
+  // It stays dismissed after a reload.
   await page.reload();
   await page.waitForTimeout(500);
-  await expect(pillText).toBeVisible();
+  await expect(pillText).toHaveCount(0);
 });
 
 test('the instruction pill is hidden while a node/vertex is selected, unaffected by the dismiss button', async ({ page }) => {

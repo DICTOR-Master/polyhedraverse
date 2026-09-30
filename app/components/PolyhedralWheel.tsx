@@ -1090,7 +1090,7 @@ export default function PolyhedralWheel({
           onClick={onClose}
           title={t('wheel.close', language)}
           aria-label={t('wheel.close', language)}
-          style={{ background: 'none', border: `1px solid ${PANEL_BORDER}`, color: SCRIPT_COLOR, borderRadius: 6, minWidth: 32, minHeight: 32, padding: 0, fontSize: 16, cursor: 'pointer' }}
+          style={{ background: 'none', border: `1px solid ${PANEL_BORDER}`, color: SCRIPT_COLOR, borderRadius: 6, minWidth: 36, minHeight: 36, padding: 0, fontSize: 16, cursor: 'pointer' }}
         >
           ✕
         </button>

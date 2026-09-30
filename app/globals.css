@@ -28,10 +28,9 @@ body {
 /* Default-state instructions pill (app/page.tsx). Position lives here,
    not inline, so phones can override it: at the default it's centred on
    the bottom row, capped to leave clearance for the 160px CornerHudWheel
-   bottom-right. Under 640px that cap left it ~170px wide, wrapped into a
-   tall column over the shape and still overlapping the wheel -- so there
-   it spans the width and sits above the wheel (16px + 160px + 12px). */
+   bottom-right. Under 640px it joins the page column instead (below). */
 .pv-instructions {
+  position: fixed;
   left: 50%;
   transform: translateX(-50%);
   bottom: calc(1.5rem + env(safe-area-inset-bottom));
@@ -39,12 +38,29 @@ body {
   border-radius: 999px;
 }
 @media (max-width: 639px) {
+  /* Phones: in the page column above the scene, so it never covers the
+     shape (direct decision 2026-09-30). */
   .pv-instructions {
-    left: 16px;
-    right: 16px;
+    position: relative;
+    left: auto;
+    bottom: auto;
     transform: none;
-    bottom: calc(188px + env(safe-area-inset-bottom));
     max-width: none;
+    margin: 0 16px 8px;
     border-radius: 16px;
+    font-size: 12px !important;
   }
 }
+
+/* Phones (375px is the smallest supported width): every button and the
+   welcome screen's legal links are at least a 36px tap target (screens
+   audit, 2026-09-30). */
+@media (max-width: 639px) {
+  button { min-height: 36px; min-width: 36px; }
+  [aria-label="Welcome to Polyhedraverse"] a { display: inline-block; padding: 10px 4px; }
+}
+
+/* Shape browser lists: room at the bottom so the last cards can scroll up
+   clear of the always-on-top CornerHudWheel (160px + 16px, bottom-right),
+   which sits about 132px above the tab bar. */
+[aria-label="Shape browser"] [style*="overflow-y: auto"] { padding-bottom: 150px !important; }

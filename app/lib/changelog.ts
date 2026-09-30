@@ -15,6 +15,12 @@ export interface ChangelogDay {
 
 export const CHANGELOG: ChangelogDay[] = [
   {
+    date: '2026-09-30',
+    entries: [
+      'Better on phones: the instructions box now sits above the 3D view instead of over your shape, and once you close it with its × it stays closed on that device. The view grows to fill the space. The subtitle is hidden on narrow screens, every button is at least a comfortable 36px to tap, and the Shape browser\'s lists scroll far enough that the last cards clear the corner wheel.',
+    ],
+  },
+  {
     date: '2026-09-26',
     entries: [
       'Colours, as in Rhombiverse: the new 🎨 Colour menu switches between Green (the usual look), Family (every piece in its family\'s colour, with a key) and Pick (14 colours: new pieces take the picked colour, and Paint recolours a selected piece). Picked colours are saved with your build.',

@@ -36,6 +36,9 @@ const VIEW_MODE_LABELS: Record<ViewMode, string> = {
   skeleton: 'Skeleton',
 };
 
+// The default-state instructions box, once dismissed, stays dismissed.
+const INSTRUCTIONS_DISMISSED_KEY = 'polyhedraverse:instructionsDismissed';
+
 export default function Home() {
   const handleRef = useRef<ShapeViewerHandle | null>(null);
   const saveStatusResetRef = useRef<ReturnType<typeof setTimeout> | null>(null);
@@ -119,12 +122,17 @@ export default function Home() {
   const [rcpPickerOpen, setRcpPickerOpen] = useState(false);
   const [changelogOpen, setChangelogOpen] = useState(false);
   // Real user request: "a little x in the corner so you can clear the
-  // space" -- the default-state instruction pill has no way to dismiss
-  // itself otherwise. Plain session-lived state (not persisted) -- a
-  // page reload brings it back, same as every other transient UI state
-  // here; the request was "clear the space" for the current session,
-  // not "never show me this again."
+  // space". Remembered on the device (direct decision 2026-09-30: on a
+  // phone it covered the shape on every visit). Read after mount, so the
+  // server render and the first client render agree.
   const [instructionsDismissed, setInstructionsDismissed] = useState(false);
+  useEffect(() => {
+    try { if (localStorage.getItem(INSTRUCTIONS_DISMISSED_KEY) === '1') setInstructionsDismissed(true); } catch { /* storage blocked: show it */ }
+  }, []);
+  const dismissInstructions = () => {
+    setInstructionsDismissed(true);
+    try { localStorage.setItem(INSTRUCTIONS_DISMISSED_KEY, '1'); } catch { /* storage blocked: session only */ }
+  };
 
   // Welcome overlay: shown on every visit (direct decision 2026-09-25 --
   // the "Don't show this again" opt-out was removed), reopenable anytime
@@ -396,7 +404,7 @@ export default function Home() {
           <h1 className="text-lg font-semibold tracking-tight" style={{ color: '#a9f795' }}>
             Polyhedra<span style={{ color: '#47cc24' }}>verse</span>
           </h1>
-          <p className="text-sm" style={{ color: '#5ee233', opacity: 0.8 }}>
+          <p className="text-sm max-sm:hidden" style={{ color: '#5ee233', opacity: 0.8 }}>
             {/* Real bug, direct report ("Entry page is stale... many more
                 shapes than 137"): this used to be a hand-typed "162
                 shapes across 8 families" that quietly went stale again
@@ -998,6 +1006,64 @@ export default function Home() {
         </div>
       )}
 
+      {/* Default instructional text, moved off the top nav to a fixed
+          bottom-center pill sitting below/over the shape itself --
+          matches Rhombiverse's own RHOMBIS puzzle's #rhombis-hud exactly
+          (position: fixed, centered, pill-shaped, translucent dark
+          background), which shows this same kind of "what to do right
+          now" status text in the same spot regardless of game state.
+          Only shown in the true default state -- an active
+          pending/nodeSelection/selection already has its own action
+          buttons in the top nav, so this would be redundant there.
+          On phones it sits in the page column above the scene instead
+          (globals.css), so it never covers the shape. */}
+      {!pending && !nodeSelection && !selection && !instructionsDismissed && (
+        <div
+          className="pv-instructions"
+          style={{
+            zIndex: 10,
+            background: 'rgba(5,5,10,.6)',
+            border: '1px solid rgba(71,204,36,.2)',
+            padding: '0.5rem 2.5rem 0.5rem 1rem',
+            textAlign: 'center',
+            color: '#5ee233',
+            fontSize: 13,
+            pointerEvents: 'none',
+          }}
+        >
+          Click a highlighted, free vertex to attach a shape, or click a node&apos;s body to
+          select it — a free face offers face-to-face attach for shapes with a matching face
+          size (glowing nodes still have room to build from).
+          <button
+            type="button"
+            onClick={dismissInstructions}
+            aria-label="Dismiss instructions"
+            title="Dismiss instructions"
+            style={{
+              position: 'absolute',
+              top: '50%',
+              right: 0,
+              transform: 'translateY(-50%)',
+              // The pill itself is pointerEvents:'none' so it never
+              // blocks a click through to whatever's underneath -- this
+              // button opts back in on its own, the only truly
+              // interactive part of the pill.
+              pointerEvents: 'auto',
+              background: 'none',
+              border: 'none',
+              color: '#5ee233',
+              opacity: 0.7,
+              fontSize: 14,
+              lineHeight: 1,
+              cursor: 'pointer',
+              width: 36,
+              height: 36,
+            }}
+          >
+            ✕
+          </button>
+        </div>
+      )}
       <main className="flex-1">
         <ShapeViewer
           initialShapeId={POLYHEDRON_IDS[0]}
@@ -1058,62 +1124,6 @@ export default function Home() {
           else handleRef.current?.reset(id);
         }}
       />
-      {/* Default instructional text, moved off the top nav to a fixed
-          bottom-center pill sitting below/over the shape itself --
-          matches Rhombiverse's own RHOMBIS puzzle's #rhombis-hud exactly
-          (position: fixed, centered, pill-shaped, translucent dark
-          background), which shows this same kind of "what to do right
-          now" status text in the same spot regardless of game state.
-          Only shown in the true default state -- an active
-          pending/nodeSelection/selection already has its own action
-          buttons in the top nav, so this would be redundant there. */}
-      {!pending && !nodeSelection && !selection && !instructionsDismissed && (
-        <div
-          className="pv-instructions"
-          style={{
-            position: 'fixed',
-            zIndex: 10,
-            background: 'rgba(5,5,10,.6)',
-            border: '1px solid rgba(71,204,36,.2)',
-            padding: '0.5rem 2.25rem 0.5rem 1rem',
-            textAlign: 'center',
-            color: '#5ee233',
-            fontSize: 13,
-            pointerEvents: 'none',
-          }}
-        >
-          Click a highlighted, free vertex to attach a shape, or click a node&apos;s body to
-          select it — a free face offers face-to-face attach for shapes with a matching face
-          size (glowing nodes still have room to build from).
-          <button
-            type="button"
-            onClick={() => setInstructionsDismissed(true)}
-            aria-label="Dismiss instructions"
-            title="Dismiss instructions"
-            style={{
-              position: 'absolute',
-              top: '50%',
-              right: 8,
-              transform: 'translateY(-50%)',
-              // The pill itself is pointerEvents:'none' so it never
-              // blocks a click through to whatever's underneath -- this
-              // button opts back in on its own, the only truly
-              // interactive part of the pill.
-              pointerEvents: 'auto',
-              background: 'none',
-              border: 'none',
-              color: '#5ee233',
-              opacity: 0.7,
-              fontSize: 14,
-              lineHeight: 1,
-              cursor: 'pointer',
-              padding: 4,
-            }}
-          >
-            ✕
-          </button>
-        </div>
-      )}
       <WelcomeOverlay open={welcomeOpen} onClose={closeWelcome} onOpenGuide={() => setGuideOpen(true)} />
       <GuideOverlay open={guideOpen} onClose={() => setGuideOpen(false)} />
       <ChangelogOverlay open={changelogOpen} onClose={() => setChangelogOpen(false)} />

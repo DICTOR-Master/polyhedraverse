@@ -3173,9 +3173,14 @@ export default function ShapeViewer({
       renderer.setSize(clientWidth, clientHeight);
     };
     window.addEventListener('resize', onResize);
+    // The scene's own box also changes without a window resize (the
+    // instructions box closing, the button rows wrapping differently).
+    const resizeObserver = new ResizeObserver(onResize);
+    resizeObserver.observe(container);
 
     return () => {
       cancelled = true;
+      resizeObserver.disconnect();
       cancelAnimationFrame(frameId);
       window.removeEventListener('resize', onResize);
       window.removeEventListener('keydown', onKeyDown);
