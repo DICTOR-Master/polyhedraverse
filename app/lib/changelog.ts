@@ -15,6 +15,12 @@ export interface ChangelogDay {
 
 export const CHANGELOG: ChangelogDay[] = [
   {
+    date: '2026-10-01',
+    entries: [
+      'New in Parallelohedra: DICTO\'s skewed rhombic dodecahedron, found in Zometool from medium blue struts: twelve rhombi, six of 60° and six of 72°, the closest all-blue shape to a true rhombic dodecahedron, with volume exactly φ². It fills space as a sheared version of the rhombic dodecahedron packing. Its new block, the flattened rhombohedron, is here too: two of those and two all-rhombus blocks build it with Attach via face.',
+    ],
+  },
+  {
     date: '2026-09-30',
     entries: [
       'Face attach now offers every way a piece can sit on the face: dragging steps through each turn and, when the piece has faces of that size that aren\'t alike, each of those faces too, counted as you go. So pieces with uneven faces can always be set the way you want, such as DICTO\'s blocks into their leaning prism, and the kite prisms\' rectangle sides now attach as well.',

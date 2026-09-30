@@ -236,6 +236,33 @@ for (const spec of [PRISM, SQUARE_BLOCK, RHOMBUS_BLOCK, SKEWED_RD, FLAT_RHOMBOHE
   check(reachable(SQUARE_BLOCK, inFrame(corners(add(B, v), u, w))), 'face attach offers the second square-faced block exactly where it sits in the prism');
 }
 
+// 7b. Face attach can build the skewed rhombic dodecahedron from its four
+// blocks, starting from the all-rhombus block (direct report 2026-10-01:
+// "face rotation problems"). The blocks sit at v,w,d @0; v,w,x @d; v,d,x @w
+// and w,d,x @0, and fill it without overlap.
+{
+  const { v, w, d } = ZOME_DIRECTIONS;
+  const x = ZOME_X;
+  const box = (o: Vec3, a: Vec3, b: Vec3, c: Vec3): Vec3[] => {
+    const out: Vec3[] = [];
+    for (const i of [0, 1]) for (const j of [0, 1]) for (const k of [0, 1]) out.push(add(add(add(o, scale(a, i)), scale(b, j)), scale(c, k)));
+    return out;
+  };
+  const c0 = scale(add(add(v, w), d), 0.5);
+  const rel = (pts: Vec3[]) => pts.map((p) => sub(p, c0));
+  const matches = (a: Vec3[], b: Vec3[]) => a.every((p) => b.some((q) => norm(sub(p, q)) < 1e-6));
+  const identity = new THREE.Matrix4();
+  const reachable = (incoming: typeof PRISM, target: Vec3[]) =>
+    RHOMBUS_BLOCK.faces.some((_, tf) => {
+      const faces = incoming.faces.map((_, gi) => gi).filter((gi) => facesCongruent(RHOMBUS_BLOCK.vertices, RHOMBUS_BLOCK.faces[tf], incoming.vertices, incoming.faces[gi]));
+      return faces.length > 0 && faceAttachOptions(RHOMBUS_BLOCK, tf, identity, incoming, faces).some((o) =>
+        matches(incoming.vertices.map((p) => new THREE.Vector3(...p).applyQuaternion(o.quaternion).add(o.position).toArray() as Vec3), target));
+    });
+  check(reachable(FLAT_RHOMBOHEDRON, rel(box(d, v, w, x))), 'face attach offers a flattened rhombohedron where it sits in the skewed RD (v, w, x)');
+  check(reachable(FLAT_RHOMBOHEDRON, rel(box(w, v, d, x))), 'face attach offers the second flattened rhombohedron where it sits (v, d, x)');
+  check(reachable(RHOMBUS_BLOCK, rel(box([0, 0, 0], w, d, x))), 'face attach offers the second all-rhombus block where it sits (w, d, x)');
+}
+
 // 8. Families.
 for (const id of ['RHOMBOHEDRON', 'DICTO_LEANING_HEX_PRISM', 'DICTO_SQUARE_FACED_BLOCK', 'DICTO_ALL_RHOMBUS_BLOCK', 'DICTO_SKEWED_RD', 'DICTO_FLATTENED_RHOMBOHEDRON']) {
   check(familyIds('PARALLELOHEDRA').includes(id), `${id} is listed in Parallelohedra`);

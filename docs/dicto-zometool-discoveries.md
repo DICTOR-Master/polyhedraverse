@@ -14,9 +14,15 @@ Four findings, each built physically first, then pinned down exactly:
    volume φ/2.
 3. **A skewed rhombic dodecahedron** of medium blue struts that tiles space as a
    sheared FCC lattice (**DICTO FCC**), with volume exactly φ².
-4. Prompted by DICTO's stellation question: **true stellations of rhombic, kite and
-   triangle faces are possible**, contrary to an earlier claim, and the Catalan and
-   Platonic solids' stellations can be built face by face.
+4. **The two rhombohedra that build the skewed rhombic dodecahedron**, which
+   DICTO calls regular and thin: the all-rhombus block (volume φ/2, also a block of
+   the prism) and the flattened rhombohedron (volume ½). Two of each fill the
+   skewed rhombic dodecahedron exactly: 2·φ/2 + 2·½ = φ².
+
+Separately, DICTO's question about stellating rhombic and kite faces led to the
+stellation work in section 5. That isn't a Zometool build, but it is recorded here
+because it overturned an earlier claim that true stellation of those faces wasn't
+possible.
 
 Throughout, φ = (1 + √5)/2 is the golden ratio, and "blue" means Zometool's blue
 struts. They run along the 15 two-fold axes of icosahedral symmetry and meet at 36°,
@@ -90,7 +96,8 @@ cells that four blue directions can make (no three in a plane), it is the one
 whose four directions meet at 60° three times and 72° three times. It is also the
 closest of the fifteen to a true rhombic dodecahedron, whose rhombi are 70.53°.
 
-**Its four blocks**, exactly as DICTO found them inside:
+**Its four blocks**, exactly as DICTO found them inside (DICTO's names: the
+regular and the thin rhombohedron):
 
 | Block | Count | Volume |
 |---|---|---|
@@ -99,6 +106,12 @@ closest of the fifteen to a true rhombic dodecahedron, whose rhombi are 70.53°.
 
 **Its volume** is therefore 2·½ + 2·φ/2 = 1 + φ = **φ²**. That is the golden
 ratio's defining identity, φ² = φ + 1, appearing as a volume.
+
+**Building it in Polyhedraverse:** start with the all-rhombus block. Attach a
+flattened rhombohedron to one of its 60° rhombi (drag to option 3 of 4), a second
+one to the 72° rhombus that meets it edge to edge (option 1 of 2), and a second
+all-rhombus block to the remaining open 72° rhombus (option 4 of 4). The whole
+skewed rhombic dodecahedron is also a single piece in the Parallelohedra family.
 
 **It tiles space as a sheared FCC lattice:**
 
@@ -143,7 +156,7 @@ test) gives about **66**:
 The counts group shapes by their angles, so mirror images count once. The upright
 regular hexagonal prism is not among them: its axis is a yellow direction.
 
-## 5. True stellations of the Catalan and Platonic solids
+## 5. Related: true stellations of the Catalan and Platonic solids
 
 DICTO's specification for "rhombic and flag-faced stellation" started from an
 earlier claim that true stellation of irregular faces wasn't possible. It is
@@ -195,9 +208,9 @@ the Rhombiverse DICTO FCC world's own verify script.
 
 **In the apps:**
 
-- **Polyhedraverse, Parallelohedra family:** the leaning prism and both blocks, as
-  "Variants" beside Fedorov's five, credited to DICTO and Zometool (commit
-  5c887d7).
+- **Polyhedraverse, Parallelohedra family:** the leaning prism and both its blocks
+  (5c887d7), and the skewed rhombic dodecahedron and its flattened rhombohedron
+  (ffae4d9), as "Variants" beside Fedorov's five, credited to DICTO and Zometool.
 - **Polyhedraverse, Stellations family:** the stellation pieces for all 13 Catalan
   and 5 Platonic solids (ce16211).
 - **Face attach:** it now offers every way a piece can sit on a face, which is what
