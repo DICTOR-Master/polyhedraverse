@@ -54,6 +54,8 @@ jobs:
       - run: npm run verify:aperiodic-sets
       - run: npm run verify:golden-helper
       - run: npm run verify:face-twist
+      - run: npm run verify:families
+      - run: npm run verify:search
       # Every other geometry/logic check (leftovers audit 2026-09-30: all
       # passed but CI never ran them), one step so the list stays readable.
       - name: Remaining geometry and logic checks

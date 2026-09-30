@@ -1,4 +1,5 @@
 import { FAMILY_ORDER, FAMILY_META, familyIds, familiesFor } from '../app/lib/polyhedra/families';
+import { POLYHEDRON_IDS } from '../app/lib/polyhedra';
 
 let failures = 0;
 function assert(cond: boolean, msg: string) {
@@ -53,8 +54,8 @@ assert(
 // keeps its original family too, not replaced by FOURD.
 const fourD = familyIds('FOURD');
 assert(
-  fourD.length === 4 && ['D4', 'D8', 'CUBE', 'DODECAHEDRON'].every((id) => fourD.includes(id)),
-  'FOURD = exactly {D4, D8, CUBE, DODECAHEDRON}: ' + JSON.stringify(fourD),
+  fourD.length === 5 && ['D4', 'PYRAMID_TRI_G2', 'D8', 'CUBE', 'DODECAHEDRON'].every((id) => fourD.includes(id)),
+  'FOURD = exactly {D4, PYRAMID_TRI_G2 (the regular tetrahedron as a grade-2 pyramid), D8, CUBE, DODECAHEDRON}: ' + JSON.stringify(fourD),
 );
 assert(
   familiesFor('D4').includes('DELTAHEDRA') && familiesFor('D4').includes('PLATONIC') && familiesFor('D4').includes('FOURD'),
@@ -65,13 +66,16 @@ assert(
   'CUBE keeps Platonic AND Prisms AND gains FOURD: ' + JSON.stringify(familiesFor('CUBE')),
 );
 
-// Every id appears in exactly one family list, EXCEPT the 10 documented
-// overlaps -- DODECAHEDRON is new here (Platonic + FOURD, the 4D
-// extension's own computed cross-cutting family); D4/D8/CUBE already
-// overlapped before FOURD existed and simply gain one more membership.
-const OVERLAP_IDS = new Set(['D4', 'D8', 'D20', 'CUBE', 'D6', 'D10', 'D12', 'D14', 'D16', 'DODECAHEDRON']);
+// Cross-cutting families re-list shapes whose home is elsewhere, by design:
+// 4D-Capable, Parallelohedra, Space-Filling Pairs and 3D+ Bridges (whose
+// one new shape, the rhombic icosahedron, lives only there). Every id has
+// exactly one HOME family, EXCEPT the documented overlaps between the
+// classical families (D4/D8/D20 Deltahedra + Platonic, D8 also
+// Antiprisms, CUBE Platonic + Prisms, D6..D16 Deltahedra + Johnson).
+const CROSS_CUTTING = new Set(['FOURD', 'PARALLELOHEDRA', 'SPACE_FILLING_PAIRS', 'BRIDGES_3D']);
+const OVERLAP_IDS = new Set(['D4', 'D8', 'D20', 'CUBE', 'D6', 'D10', 'D12', 'D14', 'D16']);
 const counts = new Map<string, number>();
-FAMILY_ORDER.forEach((f) => familyIds(f).forEach((id) => counts.set(id, (counts.get(id) ?? 0) + 1)));
+FAMILY_ORDER.filter((f) => !CROSS_CUTTING.has(f)).forEach((f) => familyIds(f).forEach((id) => counts.set(id, (counts.get(id) ?? 0) + 1)));
 let unexpectedMultiMembership = 0;
 counts.forEach((count, id) => {
   if (count > 1 && !OVERLAP_IDS.has(id)) {
@@ -79,7 +83,14 @@ counts.forEach((count, id) => {
     console.error('Unexpected multi-family id:', id, count);
   }
 });
-assert(unexpectedMultiMembership === 0, 'no undocumented multi-family memberships');
+assert(unexpectedMultiMembership === 0, 'no undocumented multi-family memberships among home families');
+// Structural checks only, no member counts: more shapes are coming
+// (direct note 2026-09-30), and a count would break with each one.
+const inAnyFamily = new Set(FAMILY_ORDER.flatMap((f) => familyIds(f)));
+const homeless = POLYHEDRON_IDS.filter((id) => !inAnyFamily.has(id));
+assert(homeless.length === 0, 'every shape belongs to at least one family: ' + JSON.stringify(homeless));
+const unknown = FAMILY_ORDER.flatMap((f) => familyIds(f).filter((id) => !POLYHEDRON_IDS.includes(id)).map((id) => `${f}:${id}`));
+assert(unknown.length === 0, 'every family member is a real registry shape: ' + JSON.stringify(unknown));
 
 console.log(failures === 0 ? `\nAll checks passed.` : `\n${failures} check(s) FAILED.`);
 process.exit(failures === 0 ? 0 : 1);
