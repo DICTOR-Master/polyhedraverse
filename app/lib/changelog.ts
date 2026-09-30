@@ -17,6 +17,7 @@ export const CHANGELOG: ChangelogDay[] = [
   {
     date: '2026-09-30',
     entries: [
+      'Pairs first: when you attach to a face of a shape that has partners (a Space-Filling Pair, or the other piece of an Aperiodic Set), the picker now lists those partners at the top, under ⇄ Pairs with, instead of leaving them down in their own family.',
       'Better on phones: the instructions box now sits above the 3D view instead of over your shape, and once you close it with its × it stays closed on that device. The view grows to fill the space. The subtitle is hidden on narrow screens, every button is at least a comfortable 36px to tap, and the Shape browser\'s lists scroll far enough that the last cards clear the corner wheel.',
     ],
   },

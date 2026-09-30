@@ -38,6 +38,10 @@ export interface FullCatalogScreenProps {
    *  convention), so a family with zero compatible members here just
    *  shows an empty section rather than a jarring dimmed grid. */
   filterIds?: string[];
+  /** Face-attach: the selected shape's complementary pieces (Space-
+   *  Filling Pairs partners, Aperiodic Set mates) that fit the face,
+   *  listed first above every family (direct request 2026-09-30). */
+  partnerIds?: string[];
   /**
    * Real user request ("group by group summoning from wheel"): a
    * family's own "View all" wheel face, or the wheel's dedicated Star
@@ -60,6 +64,7 @@ export interface FullCatalogScreenProps {
 export default function FullCatalogScreen({
   lang,
   filterIds,
+  partnerIds,
   focusSection,
   isFavorite,
   isInCompare,
@@ -78,6 +83,28 @@ export default function FullCatalogScreen({
 
   return (
     <div style={{ overflowY: 'auto', flex: 1, padding: '16px 18px', display: 'flex', flexDirection: 'column', gap: 24 }}>
+      {partnerIds && partnerIds.length > 0 && (
+        <div data-testid="pair-partners">
+          <div style={{ display: 'flex', alignItems: 'baseline', gap: 8, marginBottom: 10 }}>
+            <span style={{ fontSize: 18, color: '#47cc24' }}>⇄</span>
+            <span style={{ fontSize: 13, fontWeight: 700, color: '#a9f795', letterSpacing: '.02em' }}>{t('catalog.pairsWith', lang)}</span>
+          </div>
+          <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fill, minmax(120px, 1fr))', gap: 10 }}>
+            {partnerIds.map((id) => (
+              <ShapePreviewCard
+                key={id}
+                specId={id}
+                lang={lang}
+                isFavorite={isFavorite(id)}
+                inCompare={isInCompare(id)}
+                onOpen={onOpenShape}
+                onToggleFavorite={onToggleFavorite}
+                onToggleCompare={onToggleCompare}
+              />
+            ))}
+          </div>
+        </div>
+      )}
       {FAMILY_ORDER.map((fam) => {
         const meta = FAMILY_META[fam];
         const ids = filterIds ? familyIds(fam).filter((id) => filterIds.includes(id)) : familyIds(fam);

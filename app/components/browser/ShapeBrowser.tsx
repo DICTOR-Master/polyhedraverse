@@ -39,6 +39,9 @@ export interface ShapeBrowserProps {
   /** Mirrors PolyhedralWheelProps.filterIds exactly -- when set, only
    *  these ids are selectable anywhere in the browser (e.g. face-attach). */
   filterIds?: string[];
+  /** Face-attach: the selected shape's pair partners that fit, shown
+   *  first in the Full Catalog. */
+  partnerIds?: string[];
   /** Fired once a shape is chosen for the current intent -- same single
    *  callback contract as PolyhedralWheel's onSelect. */
   onSelect: (shapeId: string) => void;
@@ -85,6 +88,7 @@ export default function ShapeBrowser({
   open,
   onClose,
   filterIds,
+  partnerIds,
   onSelect,
   assemblySummary,
   fullCatalogRequestId,
@@ -262,6 +266,7 @@ export default function ShapeBrowser({
             <FullCatalogScreen
               lang={lang}
               filterIds={filterIds}
+              partnerIds={partnerIds}
               focusSection={focusSection}
               isFavorite={isFavorite}
               isInCompare={isInCompare}

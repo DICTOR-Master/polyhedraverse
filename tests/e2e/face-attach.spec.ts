@@ -258,3 +258,23 @@ test('Miscellaneous pyramid: pointed lateral face offers no attach at all, regul
   await expect(browser.getByRole('button', { name: '← Back' })).toBeVisible();
   await expect(browser.getByRole('button', { name: /Catalan/ })).toHaveCount(0);
 });
+
+// Direct request 2026-09-30: with a pair set, face attach lists the
+// complementary piece first, not down in its own family.
+test('face-attach lists the selected shape\'s pair partners first', async ({ page }) => {
+  const { cx, cy } = await getCanvasCenter(page);
+  await page.mouse.click(cx, cy);
+  await page.getByRole('button', { name: 'Attach via face…' }).click();
+  const partners = page.locator('[data-testid="pair-partners"]');
+  await expect(partners).toBeVisible();
+  // CUBE pairs with the triangular and octagonal prisms (both fit a square face).
+  await expect(partners.locator('text=/3-gonal prism/i').first()).toBeVisible();
+  await expect(partners.locator('text=/8-gonal prism/i').first()).toBeVisible();
+  // Above every family section.
+  const first = await page.evaluate(() => {
+    const p = document.querySelector('[data-testid="pair-partners"]');
+    const s = document.querySelector('[id^="fc-section-"]');
+    return !!p && !!s && !!(p.compareDocumentPosition(s) & Node.DOCUMENT_POSITION_FOLLOWING);
+  });
+  expect(first).toBe(true);
+});

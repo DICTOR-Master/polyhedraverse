@@ -12,7 +12,7 @@ import GuideOverlay from './components/GuideOverlay';
 import ChangelogOverlay from './components/ChangelogOverlay';
 import AssemblyDescriptionPopover from './components/AssemblyDescriptionPopover';
 import GoldenHelperBar from './components/GoldenHelperBar';
-import { FAMILY_META, FAMILY_ORDER, type FamilyKey } from './lib/polyhedra/families';
+import { FAMILY_META, FAMILY_ORDER, pairPartners, type FamilyKey } from './lib/polyhedra/families';
 import { GOLDEN_BUILDS, goldenZonohedron } from './lib/goldenBuilds';
 import { COLOR_MODES, COLOR_MODE_LABELS, DEFAULT_COLOR_PREFS, FAMILY_COLORS, PIECE_COLORS, PIECE_COLOR_LABELS, loadColorPrefs, saveColorPrefs, type ColorPrefs, type PieceColorKey } from './lib/pieceColors';
 
@@ -1118,6 +1118,9 @@ export default function Home() {
         open={browserOpen}
         onClose={() => setBrowserOpen(false)}
         filterIds={wheelMode === 'faceAttach' ? nodeSelection?.faceAttachOptions : undefined}
+        partnerIds={wheelMode === 'faceAttach' && nodeSelection
+          ? pairPartners(nodeSelection.specId).filter((id) => nodeSelection.faceAttachOptions.includes(id))
+          : undefined}
         fullCatalogRequestId={fullCatalogRequestId}
         fullCatalogFocusSection={fullCatalogFocusSection}
         searchRequestId={searchRequestId}

@@ -290,3 +290,21 @@ export function catalogByFamily(family: FamilyKey): Record<string, number> {
   const ids = familyIds(family);
   return Object.fromEntries(ids.map((id, i) => [id, i + 1]));
 }
+
+/**
+ * A shape's complementary pieces: its Space-Filling Pairs partners (in
+ * list order) and the other members of its Aperiodic Set. The face-attach
+ * picker lists these first (direct request 2026-09-30: "the complementary
+ * pair piece should be at top of choices").
+ */
+export function pairPartners(id: string): string[] {
+  const out: string[] = [];
+  for (const { ids: [a, b] } of SPACE_FILLING_PAIR_LIST) {
+    if (a === id && !out.includes(b)) out.push(b);
+    if (b === id && !out.includes(a)) out.push(a);
+  }
+  if (APERIODIC_ADDITION_IDS.includes(id)) {
+    for (const other of APERIODIC_ADDITION_IDS) if (other !== id && !out.includes(other)) out.push(other);
+  }
+  return out;
+}
