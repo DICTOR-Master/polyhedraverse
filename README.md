@@ -184,6 +184,8 @@ polyhedraverse/
 
 ## Design documents (`docs/`)
 
+**[DICTO's Zometool discoveries](docs/dicto-zometool-discoveries.md)** records the shapes DICTO built in Zometool and what they turned out to be: a golden leaning hexagonal parallelohedron and its two blocks, a skewed rhombic dodecahedron of volume φ² that tiles as a sheared FCC, and true stellations of the Catalan and Platonic solids, each with how it was verified.
+
 Read `docs/build-plan.md` first — the stage-by-stage build order, and,
 for each stage, what was actually verified and how (geometry-math
 scripts, direct API calls, and eventually a real-browser Playwright
