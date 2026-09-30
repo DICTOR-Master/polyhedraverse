@@ -17,7 +17,7 @@
  */
 import { POLYHEDRA } from '../app/lib/polyhedra';
 import { type Vec3, facesCongruent, isRegularFace, validateShape } from '../app/lib/polyhedra/core';
-import { ZOME_DIRECTIONS } from '../app/lib/polyhedra/miscellaneous';
+import { ZOME_DIRECTIONS, ZOME_X } from '../app/lib/polyhedra/miscellaneous';
 import { familiesFor, familyIds } from '../app/lib/polyhedra/families';
 import { faceAttachOptions } from '../app/lib/faceAttach';
 import * as THREE from 'three';
@@ -43,6 +43,8 @@ const PHI = (1 + Math.sqrt(5)) / 2;
 const PRISM = POLYHEDRA.DICTO_LEANING_HEX_PRISM;
 const SQUARE_BLOCK = POLYHEDRA.DICTO_SQUARE_FACED_BLOCK;
 const RHOMBUS_BLOCK = POLYHEDRA.DICTO_ALL_RHOMBUS_BLOCK;
+const SKEWED_RD = POLYHEDRA.DICTO_SKEWED_RD;
+const FLAT_RHOMBOHEDRON = POLYHEDRA.DICTO_FLATTENED_RHOMBOHEDRON;
 
 /** 'hexagon', 'square', 'rhombus60', 'rhombus72' or '?' */
 function kind(vertices: Vec3[], face: number[]): string {
@@ -64,7 +66,7 @@ function tally(spec: typeof PRISM): Record<string, number> {
 }
 
 // 1. Edges and faces.
-for (const spec of [PRISM, SQUARE_BLOCK, RHOMBUS_BLOCK]) {
+for (const spec of [PRISM, SQUARE_BLOCK, RHOMBUS_BLOCK, SKEWED_RD, FLAT_RHOMBOHEDRON]) {
   const problems = validateShape(spec);
   check(problems.length === 0, `${spec.id}: every edge length 1 ${problems.slice(0, 2).join('; ')}`);
 }
@@ -72,6 +74,17 @@ const same = (a: Record<string, number>, b: Record<string, number>) => JSON.stri
 check(same(tally(PRISM), { hexagon: 2, square: 2, rhombus72: 4 }), `prism faces: 2 regular hexagons, 2 squares, 4 rhombi of 72 degrees ${JSON.stringify(tally(PRISM))}`);
 check(same(tally(SQUARE_BLOCK), { square: 2, rhombus60: 2, rhombus72: 2 }), `square-faced block: a pair each of squares, 60 and 72 degree rhombi ${JSON.stringify(tally(SQUARE_BLOCK))}`);
 check(same(tally(RHOMBUS_BLOCK), { rhombus60: 2, rhombus72: 4 }), `all-rhombus block: a pair of 60 and two pairs of 72 degree rhombi ${JSON.stringify(tally(RHOMBUS_BLOCK))}`);
+
+check(same(tally(SKEWED_RD), { rhombus60: 6, rhombus72: 6 }) && SKEWED_RD.vertices.length === 14, `skewed RD: 14 corners, six 60 and six 72 degree rhombi ${JSON.stringify(tally(SKEWED_RD))}`);
+check(same(tally(FLAT_RHOMBOHEDRON), { rhombus60: 4, rhombus72: 2 }), `flattened rhombohedron: two pairs of 60 and one of 72 degree rhombi ${JSON.stringify(tally(FLAT_RHOMBOHEDRON))}`);
+{
+  const { v, w, d } = ZOME_DIRECTIONS;
+  const vol = (a: Vec3, b: Vec3, c: Vec3) => Math.abs(dot(a, cross(b, c)));
+  const blocks = [vol(v, w, d), vol(v, w, ZOME_X), vol(v, d, ZOME_X), vol(w, d, ZOME_X)];
+  check(blocks.filter((x) => Math.abs(x - PHI / 2) < 1e-12).length === 2 && blocks.filter((x) => Math.abs(x - 0.5) < 1e-12).length === 2, `skewed RD's blocks: two all-rhombus (phi/2) and two flattened rhombohedra (1/2): ${blocks.map((x) => x.toFixed(6)).join(', ')}`);
+  check(Math.abs(blocks.reduce((a, b) => a + b, 0) - PHI * PHI) < 1e-12, 'skewed RD volume = phi^2 = 1 + phi');
+  check(Math.abs(vol(v, w, ZOME_X) - 0.5) < 1e-12, 'flattened rhombohedron volume = 1/2');
+}
 
 // 2. The lean.
 {
@@ -97,6 +110,7 @@ check(same(tally(RHOMBUS_BLOCK), { rhombus60: 2, rhombus72: 4 }), `all-rhombus b
   }
   check(blue.length === 15, '15 blue-strut lines');
   const { u, v, w, d } = ZOME_DIRECTIONS;
+  const x = ZOME_X;
   const onBlue = (x: Vec3) => blue.some((b) => Math.abs(Math.abs(dot(unit(x), unit(b))) - 1) < 1e-9);
   let found = false;
   // Rotations taking u to a blue line a, and d (at 90 degrees to u) to a blue line b at 90 degrees to a.
@@ -107,9 +121,9 @@ check(same(tally(RHOMBUS_BLOCK), { rhombus60: 2, rhombus72: 4 }), `all-rhombus b
     const [f1, f2, f3] = [unit(u), unit(d), unit(cross(u, d))];
     const [g1, g2, g3] = [A, B, unit(cross(A, B))];
     const rot = (x: Vec3): Vec3 => add(add(scale(g1, dot(x, f1)), scale(g2, dot(x, f2))), scale(g3, dot(x, f3)));
-    if (onBlue(rot(v)) && onBlue(rot(w))) found = true;
+    if (onBlue(rot(v)) && onBlue(rot(w)) && onBlue(rot(x))) found = true;
   }
-  check(found, 'u, v, w and d are all blue-strut directions (one rotation of the icosahedral frame)');
+  check(found, 'u, v, w, d and the skewed RD\'s x are all blue-strut directions (one rotation of the icosahedral frame)');
 }
 
 // 4. The blocks fill the prism: in the prism's own frame, hexagon = P(u,v) + P(u,w) shifted by v + P(v,w).
@@ -157,7 +171,7 @@ check(same(tally(RHOMBUS_BLOCK), { rhombus60: 2, rhombus72: 4 }), `all-rhombus b
 }
 
 // 5. Each tiles space by translation (Venkov's conditions).
-for (const spec of [PRISM, SQUARE_BLOCK, RHOMBUS_BLOCK]) {
+for (const spec of [PRISM, SQUARE_BLOCK, RHOMBUS_BLOCK, SKEWED_RD, FLAT_RHOMBOHEDRON]) {
   const c = scale(spec.vertices.reduce(add, [0, 0, 0] as Vec3), 1 / spec.vertices.length);
   const symmetric = spec.vertices.every((p) => spec.vertices.some((q) => norm(add(sub(p, c), sub(q, c))) < 1e-9));
   const facesSymmetric = spec.faces.every((f) => {
@@ -223,10 +237,10 @@ for (const spec of [PRISM, SQUARE_BLOCK, RHOMBUS_BLOCK]) {
 }
 
 // 8. Families.
-for (const id of ['RHOMBOHEDRON', 'DICTO_LEANING_HEX_PRISM', 'DICTO_SQUARE_FACED_BLOCK', 'DICTO_ALL_RHOMBUS_BLOCK']) {
+for (const id of ['RHOMBOHEDRON', 'DICTO_LEANING_HEX_PRISM', 'DICTO_SQUARE_FACED_BLOCK', 'DICTO_ALL_RHOMBUS_BLOCK', 'DICTO_SKEWED_RD', 'DICTO_FLATTENED_RHOMBOHEDRON']) {
   check(familyIds('PARALLELOHEDRA').includes(id), `${id} is listed in Parallelohedra`);
 }
-for (const id of ['DICTO_LEANING_HEX_PRISM', 'DICTO_SQUARE_FACED_BLOCK', 'DICTO_ALL_RHOMBUS_BLOCK']) {
+for (const id of ['DICTO_LEANING_HEX_PRISM', 'DICTO_SQUARE_FACED_BLOCK', 'DICTO_ALL_RHOMBUS_BLOCK', 'DICTO_SKEWED_RD', 'DICTO_FLATTENED_RHOMBOHEDRON']) {
   check(familiesFor(id).includes('MISCELLANEOUS'), `${id} lives in Miscellaneous`);
 }
 

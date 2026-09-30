@@ -15,7 +15,7 @@ test('Parallelohedra shows Fedorov\'s five and the variants, with the Zometool c
   await expect(fedorov).toBeInViewport();
   // One card per shape: the card is the only role=button element that is a div.
   await expect(fedorov.locator('div[role="button"]')).toHaveCount(5);
-  await expect(variants.locator('div[role="button"]')).toHaveCount(4);
+  await expect(variants.locator('div[role="button"]')).toHaveCount(6);
   const prism = variants.locator('div[role="button"]', { hasText: 'DICTO leaning hexagonal prism' }).first();
   await prism.scrollIntoViewIfNeeded();
   await prism.click();

@@ -77,10 +77,31 @@ function spec(id: string, name: string, shape: { vertices: Vec3[]; faces: number
 
 const { u, v, w, d } = ZOME_DIRECTIONS;
 
+/**
+ * DICTO's skewed rhombic dodecahedron (direct request 2026-09-30): v, w, d
+ * plus one more blue direction x, at 60 degrees to v and d and 72 to w, so
+ * the four meet at 60 degrees three times and 72 three times. Twelve
+ * rhombi (six of 60, six of 72 degrees), volume phi^2 at edge 1: it splits
+ * into two all-rhombus blocks (phi/2) and two flattened rhombohedra (1/2).
+ * It tiles space as a sheared FCC (Rhombiverse's DICTO FCC). x solves
+ * x.v = -cos 60, x.w = cos 72, x.d = cos 60 (unit length).
+ */
+export const ZOME_X: Vec3 = (() => {
+  const c60 = 0.5, c72 = Math.cos((72 * Math.PI) / 180);
+  // In the frame of v, w, d: solve the three dot products (Cramer's rule).
+  const det = (a: Vec3, b: Vec3, c: Vec3) => a[0] * (b[1] * c[2] - b[2] * c[1]) - a[1] * (b[0] * c[2] - b[2] * c[0]) + a[2] * (b[0] * c[1] - b[1] * c[0]);
+  const rows = [v, w, d], r = [-c60, c72, c60];
+  const D = det(v, w, d);
+  const col = (k: number) => rows.map((row, i) => row.map((x, j) => (j === k ? r[i] : x)) as Vec3);
+  return [0, 1, 2].map((k) => { const m = col(k); return det(m[0], m[1], m[2]) / D; }) as Vec3;
+})();
+
 export const ZOME_PARALLELOHEDRA_ADDITIONS: Record<string, PolyhedronSpec> = {
   DICTO_LEANING_HEX_PRISM: spec('DICTO_LEANING_HEX_PRISM', 'DICTO leaning hexagonal prism', leaningPrism()),
   DICTO_SQUARE_FACED_BLOCK: spec('DICTO_SQUARE_FACED_BLOCK', 'DICTO square-faced block', zonohedron([u, v, d])),
   DICTO_ALL_RHOMBUS_BLOCK: spec('DICTO_ALL_RHOMBUS_BLOCK', 'DICTO all-rhombus block', zonohedron([v, w, d])),
+  DICTO_SKEWED_RD: spec('DICTO_SKEWED_RD', 'DICTO skewed rhombic dodecahedron', zonohedron([v, w, d, ZOME_X])),
+  DICTO_FLATTENED_RHOMBOHEDRON: spec('DICTO_FLATTENED_RHOMBOHEDRON', 'DICTO flattened rhombohedron', zonohedron([v, w, ZOME_X])),
 };
 
 export const ZOME_PARALLELOHEDRA_ADDITION_IDS: string[] = Object.keys(ZOME_PARALLELOHEDRA_ADDITIONS);
