@@ -121,8 +121,15 @@ skewed rhombic dodecahedron is also a single piece in the Parallelohedra family.
 - copies at those translations fill space: random points each lie in exactly one
   cell, and the cell's volume equals the lattice's volume per point.
 
-So the packing is the familiar FCC packing of rhombic dodecahedra, sheared, with
-every cell touching 12 neighbours in the same pattern. It becomes the
+So the arrangement is the familiar FCC arrangement, sheared: every cell touches
+12 neighbours in the same pattern. The cell itself, though, is **not** a sheared
+rhombic dodecahedron. The regular RD's four edge directions add up to zero, and
+no linear map can turn them into four equal edges meeting at 60° and 72°, which
+DICTO's directions are. Shearing a regular RD onto this lattice gives unequal
+edges (about 0.94, 0.94, 0.76 and 0.76 times the RD's). DICTO's cell is a
+different member of the rhombic-dodecahedron family that tiles the same sheared
+lattice, and one cell morphs smoothly into the other with every in-between shape
+also tiling it. It becomes the
 **DICTO FCC** world in Rhombiverse, coloured Zome blue.
 
 ## 4. How many blue-strut space-fillers are there?
