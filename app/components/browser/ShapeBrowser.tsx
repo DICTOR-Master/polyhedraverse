@@ -182,8 +182,9 @@ export default function ShapeBrowser({
     // renders it as one row per pair, instead of a flat filtered search.
     // 3D+ Bridges likewise, for its Cells/Shadows/Slices/Corners sections
     // (direct report 2026-09-30: "cant make out four sections"), and
-    // Catalan Stellations for its one section per Catalan solid.
-    if (family === 'SPACE_FILLING_PAIRS' || family === 'BRIDGES_3D' || family === 'STELLATIONS') {
+    // Stellations for its one section per solid, and Parallelohedra for
+    // Fedorov's five and their variants.
+    if (family === 'SPACE_FILLING_PAIRS' || family === 'BRIDGES_3D' || family === 'STELLATIONS' || family === 'PARALLELOHEDRA') {
       setFocusSection(family);
       setShowFullCatalog(true);
       return;

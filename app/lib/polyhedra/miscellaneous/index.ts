@@ -37,6 +37,8 @@
  *     full redesign history.
  *   - "quad-prisms" — 4 prism-like "extender" pieces (done, 2 rhombus
  *     bases + 2 kite bases, square/rectangle lateral faces)
+ *   - "zome-parallelohedra" — DICTO's Zometool leaning hexagonal prism
+ *     and its two blocks, also listed in Parallelohedra (see its index.ts)
  *   - "rd-relatives" — 2 real solids ported from Rhombiverse (Elongated
  *     Dodecahedron, Rhombohedron), both directly related to
  *     RHOMBIC_DODECAHEDRON (catalan.ts) -- see that sub-group's own
@@ -51,19 +53,22 @@ import { RVCMG_V2_CONNECTOR_ADDITIONS, RVCMG_V2_CONNECTOR_ADDITION_IDS } from '.
 import { RVCMG_CONNECTOR_ADDITIONS as ARCHIVED_RVCMG_CONNECTOR_ADDITIONS, RVCMG_CONNECTOR_ADDITION_IDS as ARCHIVED_RVCMG_CONNECTOR_ADDITION_IDS } from './rvcmg-connectors-v1-archived';
 import { QUAD_PRISM_ADDITIONS, QUAD_PRISM_ADDITION_IDS } from './quad-prisms';
 import { RD_RELATIVES_ADDITIONS, RD_RELATIVES_ADDITION_IDS } from './rd-relatives';
+import { ZOME_PARALLELOHEDRA_ADDITIONS, ZOME_PARALLELOHEDRA_ADDITION_IDS } from './zome-parallelohedra';
 
 export { GRADED_PYRAMID_ADDITIONS, GRADED_PYRAMID_ADDITION_IDS } from './pyramids';
 export { RVCMG_V2_CONNECTOR_ADDITIONS, RVCMG_V2_CONNECTOR_ADDITION_IDS } from './rvcmg-connectors-v2';
 export { ARCHIVED_RVCMG_CONNECTOR_ADDITIONS, ARCHIVED_RVCMG_CONNECTOR_ADDITION_IDS };
 export { QUAD_PRISM_ADDITIONS, QUAD_PRISM_ADDITION_IDS } from './quad-prisms';
 export { RD_RELATIVES_ADDITIONS, RD_RELATIVES_ADDITION_IDS } from './rd-relatives';
+export { ZOME_PARALLELOHEDRA_ADDITIONS, ZOME_PARALLELOHEDRA_ADDITION_IDS, ZOME_DIRECTIONS } from './zome-parallelohedra';
 
 export const MISCELLANEOUS_ADDITIONS: Record<string, PolyhedronSpec> = {
   ...GRADED_PYRAMID_ADDITIONS,
   ...RVCMG_V2_CONNECTOR_ADDITIONS,
   ...QUAD_PRISM_ADDITIONS,
   ...RD_RELATIVES_ADDITIONS,
+  ...ZOME_PARALLELOHEDRA_ADDITIONS,
   RVCMG_RD_HEMI: ARCHIVED_RVCMG_CONNECTOR_ADDITIONS.RVCMG_RD_HEMI,
 };
 
-export const MISCELLANEOUS_ADDITION_IDS: string[] = [...GRADED_PYRAMID_ADDITION_IDS, ...RVCMG_V2_CONNECTOR_ADDITION_IDS, ...QUAD_PRISM_ADDITION_IDS, ...RD_RELATIVES_ADDITION_IDS, 'RVCMG_RD_HEMI'];
+export const MISCELLANEOUS_ADDITION_IDS: string[] = [...GRADED_PYRAMID_ADDITION_IDS, ...RVCMG_V2_CONNECTOR_ADDITION_IDS, ...QUAD_PRISM_ADDITION_IDS, ...RD_RELATIVES_ADDITION_IDS, ...ZOME_PARALLELOHEDRA_ADDITION_IDS, 'RVCMG_RD_HEMI'];

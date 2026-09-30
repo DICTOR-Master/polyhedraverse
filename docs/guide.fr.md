@@ -73,7 +73,7 @@ Les formes de **3D+ Bridges** indiquent aussi, dans leurs détails, vers quel po
 | Stellations | Des pièces pour les solides de Platon et de Catalan, chacune s'adaptant à une face : plate (les pyramides se rejoignent en un nouveau solide convexe, comme le cube à partir d'un tétraèdre), puis chaque stellation que le solide possède vraiment, jusqu'à la troisième. Une pièce sur chaque face construit exactement cette stellation, par ex. les petit dodécaèdre étoilé, grand dodécaèdre et grand dodécaèdre étoilé |
 | Prisms, Antiprisms | Deux polygones reliés par une bande de carrés ou de triangles |
 | 4D-Capable | Des formes qui se referment en un polytope 4D régulier |
-| Parallelohedra | Des formes qui remplissent l'espace par simple translation |
+| Parallelohedra | Des formes qui remplissent l'espace par simple translation : les cinq de Fedorov, puis des variantes (le rhomboèdre, et le prisme hexagonal incliné de DICTO avec ses deux blocs, trouvés avec Zometool) |
 | Space-Filling Pairs | Deux formes qui remplissent l'espace ensemble |
 | Aperiodic Sets | Deux paires apériodiques : les rhomboèdres dorés allongé et aplati (le pavage de Penrose en 3D) et les prismes de losange de Penrose épais et fin (le pavage 5D en couches) |
 | 3D+ Bridges | Des formes qui sont l'ombre, la section, la cellule ou le coin d'un polytope de dimension supérieure ; leurs détails disent lequel |

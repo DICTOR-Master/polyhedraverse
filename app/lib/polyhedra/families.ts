@@ -166,6 +166,16 @@ export const SPACE_FILLING_PAIR_LIST: Array<{ ids: [string, string]; honeycomb: 
   { ids: ['CUBE', 'PRISM_8'], honeycomb: 'Truncated square prismatic' },
 ];
 
+/** Fedorov's five parallelohedra, one of each type in its most symmetric form. */
+export const FEDOROV_FIVE = ['CUBE', 'PRISM_6', 'RHOMBIC_DODECAHEDRON', 'ELONGATED_DODECAHEDRON', 'TRUNCATED_OCTAHEDRON'];
+/**
+ * Notable variants (direct decision 2026-09-30: "Fedorov's five + notable
+ * variants"): sheared members of the same types that fill space by
+ * translation just the same. The rhombohedron (a sheared cube), DICTO's
+ * Zometool leaning hexagonal prism and its two blocks (parallelepipeds).
+ */
+export const PARALLELOHEDRON_VARIANTS = ['RHOMBOHEDRON', 'DICTO_LEANING_HEX_PRISM', 'DICTO_SQUARE_FACED_BLOCK', 'DICTO_ALL_RHOMBUS_BLOCK'];
+
 const BASE_IDS: Record<FamilyKey, string[]> = {
   DELTAHEDRA: DELTAHEDRON_IDS,
   PLATONIC: PLATONIC_ADDITION_IDS,
@@ -192,7 +202,7 @@ const BASE_IDS: Record<FamilyKey, string[]> = {
   // no "isParallelohedron" computable property here the way FOURD has
   // closureClass's dihedral-angle math), since there are exactly 5 and
   // they're a fixed, named mathematical result (Fedorov 1885).
-  PARALLELOHEDRA: ['CUBE', 'PRISM_6', 'RHOMBIC_DODECAHEDRON', 'ELONGATED_DODECAHEDRON', 'TRUNCATED_OCTAHEDRON'],
+  PARALLELOHEDRA: [...FEDOROV_FIVE, ...PARALLELOHEDRON_VARIANTS],
   // Every shape appearing in SPACE_FILLING_PAIRS below (deduped) -- the
   // pair structure itself is what the browser shows (pair rows), this is
   // just membership for counts/search/cross-family badges.

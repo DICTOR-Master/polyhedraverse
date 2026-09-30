@@ -16,7 +16,7 @@ your browser, nothing to install.
 > transforming, and interconnecting polyhedral forms in three dimensions
 > — and, uniquely, in four.
 
-A browser-based construction kit with 242 shapes, browsable in 14
+A browser-based construction kit with 245 shapes, browsable in 14
 families — the classical convex polyhedra (Platonic, Archimedean, Johnson,
 Catalan, prisms, antiprisms, and the original Deltahedra set this
 project started from), Stellations, Parallelohedra, Space-Filling Pairs, Aperiodic Sets,
@@ -82,14 +82,16 @@ direction, not yet delivered.
 
 ## What you can do
 
-- **242 shapes in 14 families** — Deltahedra, Platonic, Archimedean,
+- **245 shapes in 14 families** — Deltahedra, Platonic, Archimedean,
   Johnson, Catalan, Stellations (face pieces for the Platonic and Catalan
   solids: flat, then each stellation the solid really has, up to its
   third, exact from the face planes; one on every face builds it, e.g.
   the great stellated dodecahedron or Escher's solid), prisms, antiprisms, the 4D-capable seeds,
   3D+ Bridges (shapes that are a shadow, slice, cell or vertex figure of a
   higher polytope, each with its bridge described),
-  Parallelohedra (the five shapes that fill space alone), Space-Filling
+  Parallelohedra (Fedorov's five that fill space alone, plus variants:
+  the rhombohedron and DICTO's Zometool leaning hexagonal prism and its
+  two blocks), Space-Filling
   Pairs (seven pairs that fill space together, such as the octet truss),
   Aperiodic Sets (the prolate and oblate golden rhombohedra of the 3D
   Penrose tiling: 2 + 2 build the Bilinski dodecahedron, 5 + 5 the rhombic

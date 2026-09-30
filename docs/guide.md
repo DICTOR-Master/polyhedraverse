@@ -71,7 +71,7 @@ Shapes in **3D+ Bridges** also say, in their details, which higher polytope they
 | Stellations | Pieces for the Platonic and Catalan solids, each fitting one face: flat (the pyramids join into a new convex solid, such as the cube from a tetrahedron), then each stellation the solid really has, up to its third. A piece on every face builds that stellation exactly, e.g. the dodecahedron's small stellated, great and great stellated dodecahedra |
 | Prisms, Antiprisms | Two polygons joined by a band of squares or triangles |
 | 4D-Capable | Shapes that close up into a regular 4D polytope |
-| Parallelohedra | Shapes that fill space by translation alone |
+| Parallelohedra | Shapes that fill space by translation alone: Fedorov's five, then variants (the rhombohedron, and DICTO's leaning hexagonal prism and its two blocks, found in Zometool) |
 | Space-Filling Pairs | Two shapes that fill space together |
 | Aperiodic Sets | Two aperiodic pairs: the prolate and oblate golden rhombohedra (the 3D Penrose tiling) and the thick and thin Penrose rhombus prisms (the layered 5D tiling) |
 | 3D+ Bridges | Shapes that are a shadow, slice, cell or corner of a higher-dimensional polytope; each one's details say which |

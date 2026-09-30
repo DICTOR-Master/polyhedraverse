@@ -18,6 +18,7 @@
     "verify:space-filling-pairs": "tsx scripts/verify-space-filling-pairs.ts",
     "verify:aperiodic-sets": "tsx scripts/verify-aperiodic-sets.ts",
     "verify:stellations": "tsx scripts/verify-stellations.ts",
+    "verify:zome-parallelohedra": "tsx scripts/verify-zome-parallelohedra.ts",
     "verify:families": "tsx scripts/verify-families.ts",
     "verify:search": "tsx scripts/verify-search.ts",
     "verify:golden-helper": "tsx scripts/verify-golden-helper.ts",

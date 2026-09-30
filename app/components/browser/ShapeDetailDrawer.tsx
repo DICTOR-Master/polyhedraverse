@@ -5,6 +5,7 @@ import { getAnySpec, isStarPolyhedron } from '../../lib/polyhedra/lookup';
 import { FOURD_CAPABLE_IDS } from '../../lib/polyhedra/fourD';
 import { BRIDGES_3D_IDS } from '../../lib/polyhedra/bridges';
 import { STELLATION_IDS } from '../../lib/polyhedra/stellations';
+import { ZOME_PARALLELOHEDRA_ADDITION_IDS } from '../../lib/polyhedra/miscellaneous';
 import { t, type LangCode } from '../../lib/i18n';
 import ShapePreview from './ShapePreview';
 import ShapeStatsBlock from './ShapeStatsBlock';
@@ -185,6 +186,13 @@ export default function ShapeDetailDrawer({
             <span style={{ color: '#d946a8', fontWeight: 700 }}>⤢ {t('detail.bridges', lang)}</span>
             <br />
             {t(`bridge.${specId}`, lang)}
+          </div>
+        )}
+
+        {/* DICTO's Zometool parallelohedra: credit where the shape came from. */}
+        {ZOME_PARALLELOHEDRA_ADDITION_IDS.includes(specId) && (
+          <div data-testid="zome-credit" style={{ maxWidth: 380, fontSize: 12, color: '#a9f795', lineHeight: 1.45, textAlign: 'center' }}>
+            {t('detail.zomeCredit', lang)}
           </div>
         )}
 

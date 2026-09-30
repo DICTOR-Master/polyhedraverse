@@ -73,7 +73,7 @@ Polyhedraverse 和它的孪生网站 [Rhombiverse](https://rhombiverse.vercel.ap
 | Stellations | 为柏拉图立体和卡塔兰立体准备的部件，各自贴合一个面：平面型（棱锥连成新的凸立体，例如由正四面体得到立方体），以及该立体真正具有的星形化，直到第三个。在每个面上放一个部件就能精确搭出该星形化，例如正十二面体的小星形、大、大星形十二面体 |
 | Prisms、Antiprisms | 由一圈正方形或三角形连接起来的两个多边形 |
 | 4D-Capable | 能闭合成正 4D 多胞体的形状 |
-| Parallelohedra | 只靠平移就能填满空间的形状 |
+| Parallelohedra | 只靠平移就能填满空间的形状：费奥多罗夫五种及其变体（菱面体，以及 DICTO 用 Zometool 发现的倾斜六棱柱和它的两个块） |
 | Space-Filling Pairs | 两个一起填满空间的形状 |
 | Aperiodic Sets | 两对非周期块：长形和扁形黄金菱面体（3D 彭罗斯镶嵌），以及粗、细彭罗斯菱形棱柱（分层的 5D 镶嵌） |
 | 3D+ Bridges | 是更高维多胞体的影子、截面、胞或角的形状；详情里写明是哪一种 |
