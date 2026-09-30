@@ -70,6 +70,7 @@ Polyhedraverse 和它的孪生网站 [Rhombiverse](https://rhombiverse.vercel.ap
 | Archimedean | 13 种半正多面体 |
 | Johnson | 92 种面为正多边形的凸多面体 |
 | Catalan | 阿基米德立体的对偶 |
+| Stellations | 为柏拉图立体和卡塔兰立体准备的部件，各自贴合一个面：平面型（棱锥连成新的凸立体，例如由正四面体得到立方体），以及该立体真正具有的星形化，直到第三个。在每个面上放一个部件就能精确搭出该星形化，例如正十二面体的小星形、大、大星形十二面体 |
 | Prisms、Antiprisms | 由一圈正方形或三角形连接起来的两个多边形 |
 | 4D-Capable | 能闭合成正 4D 多胞体的形状 |
 | Parallelohedra | 只靠平移就能填满空间的形状 |

@@ -427,12 +427,69 @@ export function buildFaceConnectors(spec: PolyhedronSpec): FaceConnector[] {
   });
 }
 
-/** Fan-triangulates a convex n-gon face from its own first vertex — for rendering only, never stored. */
-export function triangulateFace(face: number[]): [number, number, number][] {
+/**
+ * Triangulates a face for rendering (never stored). Convex faces fan from
+ * their first vertex, as always. Given the vertices, a non-convex face
+ * (the Catalan stellation pieces have some) is ear-clipped instead, since
+ * a fan would cover the wrong region.
+ */
+export function triangulateFace(face: number[], vertices?: Vec3[]): [number, number, number][] {
+  if (vertices && face.length > 3 && !isConvexFace(vertices, face)) return earClip(vertices, face);
   const tris: [number, number, number][] = [];
   for (let k = 1; k < face.length - 1; k++) {
     tris.push([face[0], face[k], face[k + 1]]);
   }
+  return tris;
+}
+
+function faceNormal(vertices: Vec3[], face: number[]): Vec3 {
+  // Newell's method: robust for non-convex polygons and collinear corners.
+  const n: Vec3 = [0, 0, 0];
+  for (let i = 0; i < face.length; i++) {
+    const a = vertices[face[i]];
+    const b = vertices[face[(i + 1) % face.length]];
+    n[0] += (a[1] - b[1]) * (a[2] + b[2]);
+    n[1] += (a[2] - b[2]) * (a[0] + b[0]);
+    n[2] += (a[0] - b[0]) * (a[1] + b[1]);
+  }
+  return n;
+}
+
+/** The z of (b - a) x (c - b) along the face normal: positive for a left (convex) turn. */
+function turnAlong(n: Vec3, a: Vec3, b: Vec3, c: Vec3): number {
+  const u: Vec3 = [b[0] - a[0], b[1] - a[1], b[2] - a[2]];
+  const w: Vec3 = [c[0] - b[0], c[1] - b[1], c[2] - b[2]];
+  return n[0] * (u[1] * w[2] - u[2] * w[1]) + n[1] * (u[2] * w[0] - u[0] * w[2]) + n[2] * (u[0] * w[1] - u[1] * w[0]);
+}
+
+function isConvexFace(vertices: Vec3[], face: number[]): boolean {
+  const n = faceNormal(vertices, face);
+  const scaleSq = n[0] * n[0] + n[1] * n[1] + n[2] * n[2];
+  for (let i = 0; i < face.length; i++) {
+    const t = turnAlong(n, vertices[face[i]], vertices[face[(i + 1) % face.length]], vertices[face[(i + 2) % face.length]]);
+    if (t < -1e-9 * scaleSq) return false;
+  }
+  return true;
+}
+
+function earClip(vertices: Vec3[], face: number[]): [number, number, number][] {
+  const n = faceNormal(vertices, face);
+  const tris: [number, number, number][] = [];
+  const ring = [...face];
+  const inside = (p: Vec3, a: Vec3, b: Vec3, c: Vec3) => turnAlong(n, a, b, p) >= 0 && turnAlong(n, b, c, p) >= 0 && turnAlong(n, c, a, p) >= 0;
+  let guard = ring.length * ring.length;
+  while (ring.length > 3 && guard-- > 0) {
+    for (let i = 0; i < ring.length; i++) {
+      const ia = ring[(i - 1 + ring.length) % ring.length], ib = ring[i], ic = ring[(i + 1) % ring.length];
+      const [a, b, c] = [vertices[ia], vertices[ib], vertices[ic]];
+      if (turnAlong(n, a, b, c) <= 0) continue; // reflex or straight: not an ear
+      if (ring.some((v) => v !== ia && v !== ib && v !== ic && inside(vertices[v], a, b, c))) continue;
+      tris.push([ia, ib, ic]);
+      ring.splice(i, 1);
+      break;
+    }
+  }
+  if (ring.length === 3) tris.push([ring[0], ring[1], ring[2]]);
   return tris;
 }
 

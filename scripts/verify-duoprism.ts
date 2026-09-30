@@ -1,4 +1,4 @@
-import { POLYHEDRA, POLYHEDRON_IDS } from '../app/lib/polyhedra';
+import { POLYHEDRA, POLYHEDRON_IDS, STELLATION_IDS } from '../app/lib/polyhedra';
 import { FOURD_CAPABLE_IDS } from '../app/lib/polyhedra/fourD';
 import {
   buildWallPrism,
@@ -177,7 +177,8 @@ for (const id of FOURD_CAPABLE_IDS) {
 
 // Same checks for VIEW's oblique shadow, all 137 shapes (winding/congruence/non-degeneracy still must hold; NOT expected to be right prisms)
 // PLUS the same cap-overlap check the BUILD-mode bug above was missing.
-for (const id of POLYHEDRON_IDS) {
+// Stellation pieces aren't convex and get no duoprism view (ShapeDetailDrawer).
+for (const id of POLYHEDRON_IDS.filter((x) => !STELLATION_IDS.includes(x))) {
   const spec = POLYHEDRA[id];
   const shadow = buildDuoprismShadow(spec);
   spec.faces.forEach((_, faceIndex) => {

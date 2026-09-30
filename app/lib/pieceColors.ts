@@ -59,6 +59,8 @@ export const FAMILY_COLORS: Record<FamilyKey, number> = {
   ARCHIMEDEAN: PIECE_COLORS.blue,
   JOHNSON: PIECE_COLORS.purple,
   CATALAN: PIECE_COLORS.teal,
+  // Indigo: between Archimedean blue and Johnson purple, darker than both.
+  STELLATIONS: 0x5b4fd6,
   PRISMS: PIECE_COLORS.pink,
   ANTIPRISMS: PIECE_COLORS.red,
   FOURD: PIECE_COLORS.skyBlue,

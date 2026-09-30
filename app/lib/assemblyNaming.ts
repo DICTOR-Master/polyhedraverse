@@ -18,6 +18,7 @@
  */
 
 import { POLYHEDRA } from './polyhedra';
+import { STELLATION_IDS, stellationInfo, stellationBuilds, stellatedSolidName } from './polyhedra/stellations';
 import type { AssemblyNode, AssemblyConnection } from './assembly';
 import { findParentConnection } from './graph';
 import { Quaternion, Vector3 } from 'three';
@@ -28,7 +29,8 @@ function capitalize(s: string): string {
 }
 
 function shapeName(shapeId: string): string {
-  return POLYHEDRA[shapeId]?.name ?? shapeId;
+  // Registry names use underscores for spaces (rhombic_dodecahedron); show them as words, as the browser does.
+  return (POLYHEDRA[shapeId]?.name ?? shapeId).replaceAll('_', ' ');
 }
 
 function findRoot(nodes: AssemblyNode[], connections: AssemblyConnection[]): AssemblyNode | null {
@@ -151,6 +153,40 @@ const NAMED_ASSEMBLIES: NamedSignature[] = [
   },
 ];
 
+const ORDINAL = ['', '', 'First', 'Second', 'Third'];
+const titleCase = (s: string) => s.replace(/(^|[\s(-])([a-z])/g, (_m, pre: string, c: string) => pre + c.toUpperCase());
+
+/**
+ * A solid with the same Stellations piece on every face (left and right
+ * pieces mixed, for the disdyakis solids): that stellation, or for the
+ * flat pieces the convex solid they join into. Named from stellations/,
+ * the same names the pieces carry, so the two always agree.
+ */
+function nameStellatedBuild(nodes: AssemblyNode[], connections: AssemblyConnection[]): string | null {
+  const caps = nodes.filter((n) => STELLATION_IDS.includes(n.shape));
+  const centres = nodes.filter((n) => !STELLATION_IDS.includes(n.shape));
+  if (centres.length !== 1 || caps.length === 0) return null;
+  const infos = caps.map((n) => stellationInfo(n.shape)!);
+  const { solid, size } = infos[0];
+  const centre = centres[0];
+  if (centre.shape !== solid || infos.some((i) => i.solid !== solid || i.size !== size)) return null;
+  const faceCount = POLYHEDRA[solid].faces.length;
+  if (caps.length !== faceCount) return null;
+  const live = connections.filter((c) => !c.orphaned);
+  if (live.length !== faceCount || !live.every((c) => c.kind === 'face')) return null;
+  const used = new Set<number>();
+  for (const c of live) {
+    const face = c.nodeA === centre.id ? c.vertexA : c.nodeB === centre.id ? c.vertexB : -1;
+    if (face < 0) return null;
+    used.add(face);
+  }
+  if (used.size !== faceCount) return null;
+  const solidName = stellatedSolidName(solid);
+  const builds = stellationBuilds(caps[0].shape);
+  if (size === 1) return builds ? `${titleCase(builds)} (${solidName} + ${faceCount} flat pyramids)` : titleCase(`${solidName} + ${faceCount} flat pyramids`);
+  return builds ? titleCase(builds) : `${ORDINAL[size]} Stellation of the ${titleCase(solidName)}`;
+}
+
 const KIND_ADJECTIVE: Record<string, string> = {
   vertex: 'vertex-attached',
   face: 'face-attached',
@@ -203,5 +239,7 @@ export function describeAssembly(nodes: AssemblyNode[], connections: AssemblyCon
   for (const signature of NAMED_ASSEMBLIES) {
     if (signature.match(root, nodes, connections)) return signature.name;
   }
+  const stellated = nameStellatedBuild(nodes, connections);
+  if (stellated) return stellated;
   return describeGenerically(root, nodes, connections);
 }

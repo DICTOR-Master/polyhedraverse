@@ -4,6 +4,7 @@ import { useState } from 'react';
 import { getAnySpec, isStarPolyhedron } from '../../lib/polyhedra/lookup';
 import { FOURD_CAPABLE_IDS } from '../../lib/polyhedra/fourD';
 import { BRIDGES_3D_IDS } from '../../lib/polyhedra/bridges';
+import { STELLATION_IDS } from '../../lib/polyhedra/stellations';
 import { t, type LangCode } from '../../lib/i18n';
 import ShapePreview from './ShapePreview';
 import ShapeStatsBlock from './ShapeStatsBlock';
@@ -45,6 +46,7 @@ export default function ShapeDetailDrawer({
   // which has no verified theta and so no radial-projection closure at
   // all, gets duoprism -- the only 4D construction defined for it.
   const [showFourD, setShowFourD] = useState(false);
+  const isStellationPiece = STELLATION_IDS.includes(specId);
   if (!spec) return null;
   const displayName = spec.name.replaceAll('_', ' ');
   const isStar = isStarPolyhedron(specId);
@@ -230,6 +232,9 @@ export default function ShapeDetailDrawer({
           >
             {inCompare ? '✓' : '+'} {t('action.compare', lang)}
           </button>
+          {/* Stellation pieces aren't convex, and the duoprism preview is
+              only built for convex shapes, so they get no View 4D. */}
+          {!isStellationPiece && (
           <button
             type="button"
             onClick={() => setShowFourD((v) => !v)}
@@ -245,6 +250,7 @@ export default function ShapeDetailDrawer({
           >
             {showFourD ? t('fourD.hideButton', lang) : t('fourD.viewButton', lang)}
           </button>
+          )}
         </div>
       </div>
     </div>

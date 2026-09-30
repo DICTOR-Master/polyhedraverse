@@ -181,8 +181,9 @@ export default function ShapeBrowser({
     // decision: pair rows) -- open Full Catalog at its own section, which
     // renders it as one row per pair, instead of a flat filtered search.
     // 3D+ Bridges likewise, for its Cells/Shadows/Slices/Corners sections
-    // (direct report 2026-09-30: "cant make out four sections").
-    if (family === 'SPACE_FILLING_PAIRS' || family === 'BRIDGES_3D') {
+    // (direct report 2026-09-30: "cant make out four sections"), and
+    // Catalan Stellations for its one section per Catalan solid.
+    if (family === 'SPACE_FILLING_PAIRS' || family === 'BRIDGES_3D' || family === 'STELLATIONS') {
       setFocusSection(family);
       setShowFullCatalog(true);
       return;

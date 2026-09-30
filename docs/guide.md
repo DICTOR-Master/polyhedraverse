@@ -68,6 +68,7 @@ Shapes in **3D+ Bridges** also say, in their details, which higher polytope they
 | Archimedean | The 13 semi-regular solids |
 | Johnson | The 92 convex solids with regular faces |
 | Catalan | The duals of the Archimedean solids |
+| Stellations | Pieces for the Platonic and Catalan solids, each fitting one face: flat (the pyramids join into a new convex solid, such as the cube from a tetrahedron), then each stellation the solid really has, up to its third. A piece on every face builds that stellation exactly, e.g. the dodecahedron's small stellated, great and great stellated dodecahedra |
 | Prisms, Antiprisms | Two polygons joined by a band of squares or triangles |
 | 4D-Capable | Shapes that close up into a regular 4D polytope |
 | Parallelohedra | Shapes that fill space by translation alone |

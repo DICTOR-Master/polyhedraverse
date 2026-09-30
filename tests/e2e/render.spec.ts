@@ -46,9 +46,9 @@ test('renders the canvas and every shape in every family that has a wheel face',
   // wheel-reachable yet -- skipping the family here doesn't lose
   // coverage this test could otherwise provide, since there's no wheel
   // path to them to check.
-  // Parallelohedra and Space-Filling Pairs claim no wheel face either
-  // (FAMILY_FACE_SLOTS), for the same reason.
-  const NO_WHEEL_FACE = ['4D-Capable', '3D+ Bridges', 'Miscellaneous', 'Parallelohedra', 'Space-Filling Pairs', 'Aperiodic Sets'];
+  // Parallelohedra, Space-Filling Pairs and Stellations claim no wheel
+  // face either (FAMILY_FACE_SLOTS), for the same reason.
+  const NO_WHEEL_FACE = ['4D-Capable', '3D+ Bridges', 'Miscellaneous', 'Parallelohedra', 'Space-Filling Pairs', 'Aperiodic Sets', 'Stellations'];
   for (const family of WHEEL_FAMILIES.filter((f) => !NO_WHEEL_FACE.includes(f.label))) {
     // Exact match, not substring -- "Prisms" is a substring of "Antiprisms"
     // now that both are separate families, so a plain hasText: family.label

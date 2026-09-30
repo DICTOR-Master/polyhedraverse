@@ -70,6 +70,7 @@ Polyhedraverse와 그 쌍둥이인 [Rhombiverse](https://rhombiverse.vercel.app)
 | Archimedean | 준정다면체 13개 |
 | Johnson | 면이 모두 정다각형인 볼록 입체 92개 |
 | Catalan | 아르키메데스 입체의 쌍대 |
+| Stellations | 플라톤 입체와 카탈랑 입체를 위한 조각. 각각 한 면에 맞습니다: 평면형(피라미드들이 이어져 새 볼록 입체가 됨. 예: 정사면체에서 정육면체), 그리고 그 입체가 실제로 가진 성형을 셋째까지. 모든 면에 조각을 놓으면 그 성형이 정확히 만들어집니다(예: 정십이면체의 작은 별모양·큰·큰 별모양 십이면체) |
 | Prisms, Antiprisms | 두 다각형을 정사각형이나 삼각형의 띠로 이은 것 |
 | 4D-Capable | 닫으면 정규 4D 폴리토프가 되는 도형 |
 | Parallelohedra | 평행 이동만으로 공간을 채우는 도형 |

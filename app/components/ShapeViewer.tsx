@@ -413,7 +413,7 @@ function buildFaceGeometry(spec: PolyhedronSpec): { geometry: THREE.BufferGeomet
   const positions: number[] = [];
   const triangleToFaceIndex: number[] = [];
   spec.faces.forEach((face, faceIndex) => {
-    for (const [i, j, k] of triangulateFace(face)) {
+    for (const [i, j, k] of triangulateFace(face, spec.vertices)) {
       positions.push(...spec.vertices[i], ...spec.vertices[j], ...spec.vertices[k]);
       triangleToFaceIndex.push(faceIndex);
     }
@@ -812,7 +812,7 @@ export default function ShapeViewer({
     const showFaceHighlight = (node: PlacedShape, faceIndex: number) => {
       const spec = POLYHEDRA[(node.object.userData as ShapeObjectUserData).specId];
       const positions: number[] = [];
-      for (const [a, b, c] of triangulateFace(spec.faces[faceIndex])) {
+      for (const [a, b, c] of triangulateFace(spec.faces[faceIndex], spec.vertices)) {
         positions.push(...spec.vertices[a], ...spec.vertices[b], ...spec.vertices[c]);
       }
       faceHighlightMesh.geometry.dispose();

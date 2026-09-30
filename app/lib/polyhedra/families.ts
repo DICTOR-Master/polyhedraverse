@@ -28,6 +28,7 @@ import {
 import { FOURD_CAPABLE_IDS } from './fourD';
 import { APERIODIC_ADDITION_IDS, APERIODIC_PAIRS } from './aperiodic';
 import { BRIDGES_3D_IDS } from './bridges';
+import { STELLATION_IDS } from './stellations';
 
 export type FamilyKey =
   | 'DELTAHEDRA'
@@ -39,6 +40,7 @@ export type FamilyKey =
   | 'ANTIPRISMS'
   | 'BRIDGES_3D'
   | 'FOURD'
+  | 'STELLATIONS'
   | 'PARALLELOHEDRA'
   | 'SPACE_FILLING_PAIRS'
   | 'APERIODIC'
@@ -56,6 +58,7 @@ export const FAMILY_ORDER: FamilyKey[] = [
   'ARCHIMEDEAN',
   'JOHNSON',
   'CATALAN',
+  'STELLATIONS',
   'PARALLELOHEDRA',
   'SPACE_FILLING_PAIRS',
   'APERIODIC',
@@ -95,6 +98,10 @@ export const FAMILY_META: Record<FamilyKey, { label: string; symbol: string }> =
   ARCHIMEDEAN: { label: 'Archimedean', symbol: '⬡' },
   JOHNSON: { label: 'Johnson', symbol: '◇' },
   CATALAN: { label: 'Catalan', symbol: '⬢' },
+  // Stellations (stellations/): face pieces that stellate the Platonic
+  // and Catalan solids, from flat to their third stellation. A four-
+  // pointed star, distinct from the star-polyhedra ★ and Aperiodic ✺.
+  STELLATIONS: { label: 'Stellations', symbol: '✦' },
   PRISMS: { label: 'Prisms', symbol: '▭' },
   ANTIPRISMS: { label: 'Antiprisms', symbol: '▬' },
   // 4D extension (fourD.ts): shapes that can be a "cell" of some convex
@@ -165,6 +172,7 @@ const BASE_IDS: Record<FamilyKey, string[]> = {
   ARCHIMEDEAN: ARCHIMEDEAN_ADDITION_IDS,
   JOHNSON: JOHNSON_ADDITION_IDS,
   CATALAN: CATALAN_ADDITION_IDS,
+  STELLATIONS: STELLATION_IDS,
   PRISMS: PRISM_ANTIPRISM_ADDITION_IDS.filter((id) => id.startsWith('PRISM_')),
   ANTIPRISMS: PRISM_ANTIPRISM_ADDITION_IDS.filter((id) => id.startsWith('ANTIPRISM_')),
   // Unlike every family above, FOURD's own membership genuinely IS just

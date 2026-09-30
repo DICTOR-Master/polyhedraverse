@@ -22,6 +22,7 @@
 import type { PolyhedronSpec } from './core';
 import { buildFaceConnectors } from './core';
 import { POLYHEDRA, POLYHEDRON_IDS } from './index';
+import { STELLATION_IDS } from './stellations';
 
 const TOL_DEG = 0.05;
 
@@ -109,6 +110,8 @@ export function is4DCapable(spec: PolyhedronSpec): boolean {
  * Computed, not hand-curated — matches every other family's own id-list
  * pattern in families.ts. Verified against the known, real classification
  * of the six regular convex 4-polytopes in scripts/verify-4d-closure.ts,
- * not just checked for internal consistency.
+ * not just checked for internal consistency. Stellation pieces are left
+ * out: the octahedron's is a regular tetrahedron, but a piece attaches by
+ * its base alone, so no 4D build can grow on its other faces.
  */
-export const FOURD_CAPABLE_IDS: string[] = POLYHEDRON_IDS.filter((id) => is4DCapable(POLYHEDRA[id]));
+export const FOURD_CAPABLE_IDS: string[] = POLYHEDRON_IDS.filter((id) => !STELLATION_IDS.includes(id) && is4DCapable(POLYHEDRA[id]));

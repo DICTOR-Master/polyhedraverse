@@ -70,6 +70,7 @@ Les formes de **3D+ Bridges** indiquent aussi, dans leurs détails, vers quel po
 | Archimedean | Les 13 solides semi-réguliers |
 | Johnson | Les 92 solides convexes à faces régulières |
 | Catalan | Les duaux des solides d'Archimède |
+| Stellations | Des pièces pour les solides de Platon et de Catalan, chacune s'adaptant à une face : plate (les pyramides se rejoignent en un nouveau solide convexe, comme le cube à partir d'un tétraèdre), puis chaque stellation que le solide possède vraiment, jusqu'à la troisième. Une pièce sur chaque face construit exactement cette stellation, par ex. les petit dodécaèdre étoilé, grand dodécaèdre et grand dodécaèdre étoilé |
 | Prisms, Antiprisms | Deux polygones reliés par une bande de carrés ou de triangles |
 | 4D-Capable | Des formes qui se referment en un polytope 4D régulier |
 | Parallelohedra | Des formes qui remplissent l'espace par simple translation |

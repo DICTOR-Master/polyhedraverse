@@ -70,6 +70,7 @@ Las formas de **3D+ Bridges** también dicen, en sus detalles, a qué politopo s
 | Archimedean | Los 13 sólidos semirregulares |
 | Johnson | Los 92 sólidos convexos de caras regulares |
 | Catalan | Los duales de los sólidos arquimedianos |
+| Stellations | Piezas para los sólidos platónicos y de Catalan, cada una encaja en una cara: plana (las pirámides se unen en un nuevo sólido convexo, como el cubo a partir de un tetraedro) y luego cada estelación que el sólido tiene de verdad, hasta la tercera. Una pieza en cada cara construye esa estelación exactamente, p. ej. los dodecaedros estrellado pequeño, grande y estrellado grande |
 | Prisms, Antiprisms | Dos polígonos unidos por una banda de cuadrados o triángulos |
 | 4D-Capable | Formas que se cierran en un politopo 4D regular |
 | Parallelohedra | Formas que llenan el espacio solo por traslación |

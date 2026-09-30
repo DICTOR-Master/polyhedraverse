@@ -16,10 +16,10 @@ your browser, nothing to install.
 > transforming, and interconnecting polyhedral forms in three dimensions
 > — and, uniquely, in four.
 
-A browser-based construction kit with 170 shapes, browsable in 13
+A browser-based construction kit with 242 shapes, browsable in 14
 families — the classical convex polyhedra (Platonic, Archimedean, Johnson,
 Catalan, prisms, antiprisms, and the original Deltahedra set this
-project started from), Parallelohedra, Space-Filling Pairs, Aperiodic Sets,
+project started from), Stellations, Parallelohedra, Space-Filling Pairs, Aperiodic Sets,
 3D+ Bridges, the 4D-capable seeds, and a "Miscellaneous" family (graded pyramids, RVCMG connector
 pieces, and quad-prism extenders — see "What's here now" below) — plus a genuine interactive path into the fourth
 dimension: **RCP-C2B
@@ -82,8 +82,11 @@ direction, not yet delivered.
 
 ## What you can do
 
-- **170 shapes in 13 families** — Deltahedra, Platonic, Archimedean,
-  Johnson, Catalan, prisms, antiprisms, the 4D-capable seeds,
+- **242 shapes in 14 families** — Deltahedra, Platonic, Archimedean,
+  Johnson, Catalan, Stellations (face pieces for the Platonic and Catalan
+  solids: flat, then each stellation the solid really has, up to its
+  third, exact from the face planes; one on every face builds it, e.g.
+  the great stellated dodecahedron or Escher's solid), prisms, antiprisms, the 4D-capable seeds,
   3D+ Bridges (shapes that are a shadow, slice, cell or vertex figure of a
   higher polytope, each with its bridge described),
   Parallelohedra (the five shapes that fill space alone), Space-Filling
