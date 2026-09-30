@@ -2,6 +2,7 @@
 
 import { useEffect, useRef } from 'react';
 import * as THREE from 'three';
+import { attachHeadLight } from '../lib/headLight';
 import { OrbitControls } from 'three/examples/jsm/controls/OrbitControls.js';
 import {
   POLYHEDRA,
@@ -900,8 +901,7 @@ export default function ShapeViewer({
 
     scene.add(new THREE.AmbientLight(0xffffff, 0.7));
     const dirLight = new THREE.DirectionalLight(0xffffff, 1.1);
-    dirLight.position.set(3, 4, 5);
-    scene.add(dirLight);
+    attachHeadLight(scene, camera, dirLight, { x: 3, y: 4, z: 5 });
 
     const findPlaced = (nodeId: string) =>
       placedRef.current.find((p) => (p.object.userData as ShapeObjectUserData).nodeId === nodeId);

@@ -17,6 +17,7 @@ export const CHANGELOG: ChangelogDay[] = [
   {
     date: '2026-09-30',
     entries: [
+      'Shapes are lit from where you are looking: the main light now follows the view, so when you turn a shape over its underside is shaded as clearly as its top, instead of one flat colour. The opening view looks the same as before.',
       'New family, 3D+ Bridges: 3D shapes that cross into higher dimensions, in four sections. Cells: the building blocks of the 4D polytopes (tetrahedron, cube, octahedron, dodecahedron and more). Shadows: the rhombic dodecahedron (the tesseract\'s and 24-cell\'s shadow), the rhombic icosahedron and triacontahedron (the 5-cube\'s and 6-cube\'s), and the tiles of the 5D and 6D quasicrystals. Slices: the cuboctahedron. Corners: the icosahedron, the 600-cell\'s vertex figure. Open any of them to read its bridge.',
       'New shapes: the rhombic icosahedron (20 golden rhombi; it attaches to the golden rhombohedra and the rhombic triacontahedron), and the thick and thin Penrose rhombus prisms, now a second pair in Aperiodic Sets. Their square sides attach to the cube; together they tile each layer the Penrose way, never repeating across it.',
       'Pair partners at a glance: every shape that pairs with others (Space-Filling Pairs, Aperiodic Sets) now shows its partners as small gold wireframes down the right edge of its card, under the 4D badge when there is one. The octahedron shows all three of its partners.',

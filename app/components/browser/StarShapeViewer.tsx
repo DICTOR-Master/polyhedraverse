@@ -24,6 +24,7 @@
 
 import { useEffect, useRef, useState } from 'react';
 import * as THREE from 'three';
+import { attachHeadLight } from '../../lib/headLight';
 import { OrbitControls } from 'three/examples/jsm/controls/OrbitControls.js';
 import { STAR_POLYHEDRA } from '../../lib/polyhedra/starPolyhedra';
 import { triangulateStarFace } from '../../lib/polyhedra/starTriangulation';
@@ -79,8 +80,7 @@ export default function StarShapeViewer({ specId, height = 260 }: StarShapeViewe
 
     scene.add(new THREE.AmbientLight(0xffffff, 0.7));
     const dirLight = new THREE.DirectionalLight(0xffffff, 1.1);
-    dirLight.position.set(3, 4, 5);
-    scene.add(dirLight);
+    attachHeadLight(scene, camera, dirLight, { x: 3, y: 4, z: 5 });
 
     // Real user request: these should look like "exactly the same
     // environment Scene creates" -- ShapeViewer's own main 3D view gets a

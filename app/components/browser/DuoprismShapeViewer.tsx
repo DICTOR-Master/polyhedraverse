@@ -22,6 +22,7 @@
 
 import { useEffect, useRef, useState } from 'react';
 import * as THREE from 'three';
+import { attachHeadLight } from '../../lib/headLight';
 import { OrbitControls } from 'three/examples/jsm/controls/OrbitControls.js';
 import { POLYHEDRA, triangulateFace, type PolyhedronSpec } from '../../lib/polyhedra';
 import { buildDuoprismShadow, wallLateralFaces, type WallPrismRaw } from '../../lib/polyhedra/duoprism';
@@ -104,8 +105,7 @@ export default function DuoprismShapeViewer({ specId, height = 260 }: DuoprismSh
 
     scene.add(new THREE.AmbientLight(0xffffff, 0.7));
     const dirLight = new THREE.DirectionalLight(0xffffff, 1.1);
-    dirLight.position.set(3, 4, 5);
-    scene.add(dirLight);
+    attachHeadLight(scene, camera, dirLight, { x: 3, y: 4, z: 5 });
 
     const controls = new OrbitControls(camera, renderer.domElement);
     controls.enableDamping = true;
