@@ -33,7 +33,7 @@ jobs:
     # the assembly graph's subtree/cycle logic -- all run outside the
     # browser via tsx.
     runs-on: ubuntu-latest
-    timeout-minutes: 5
+    timeout-minutes: 12
     steps:
       - uses: actions/checkout@v7
       - uses: actions/setup-node@v7
@@ -54,6 +54,14 @@ jobs:
       - run: npm run verify:aperiodic-sets
       - run: npm run verify:golden-helper
       - run: npm run verify:face-twist
+      # Every other geometry/logic check (leftovers audit 2026-09-30: all
+      # passed but CI never ran them), one step so the list stays readable.
+      - name: Remaining geometry and logic checks
+        run: |
+          set -e
+          for s in validate:catalan validate:prisms validate:graded-pyramids validate:rd-relatives verify:space-filling-pairs validate:star validate:star-triangulation verify:misc-face-eligibility verify:rvcmg-solids verify:rvcmg-v2-solids verify:quad-prisms verify:icosahedron-hex-alignment verify:i18n verify:4d-closure verify:duoprism verify:radial-projection verify:rcp-build verify:composite-seed-lattice verify:composite-seed-positional-residual verify:composite-seed-angular verify:composite-seed-reflection-group verify:rvcmg-hemi-rd verify:rvcmg-types verify:rvcmg-coalesce verify:rvcmg-separate verify:rvcmg-state-graph verify:rvcmg-morph verify:rvcmg-verify verify:rvcmg-split-vertex verify:rvcmg-heptagon-split verify:rvcmg-octagon-split verify:rvcmg-triangle-to-rd-h verify:rvcmg-square-to-rd-h verify:rvcmg-pentagon-to-rd-h verify:rvcmg-golden-rhombus-to-rd-h verify:rvcmg-kite-to-rd-h verify:rvcmg-regular-hex-to-rd-h verify:rvcmg-triangle-to-uhex verify:rvcmg-square-to-uhex verify:rvcmg-pentagon-to-uhex verify:rvcmg-rhombus-to-uhex verify:rvcmg-kite-to-uhex verify:rvcmg-regular-hex-to-uhex test:rvcmg; do
+            echo "== $s"; npm run -s "$s"
+          done
 
   e2e:
     # Real-browser check (Playwright) -- the actual app, driven the same
