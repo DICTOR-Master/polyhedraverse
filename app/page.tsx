@@ -123,14 +123,18 @@ export default function Home() {
   const [changelogOpen, setChangelogOpen] = useState(false);
   // Real user request: "a little x in the corner so you can clear the
   // space". Remembered on the device (direct decision 2026-09-30: on a
-  // phone it covered the shape on every visit). Read after mount, so the
-  // server render and the first client render agree.
-  const [instructionsDismissed, setInstructionsDismissed] = useState(false);
-  useEffect(() => {
-    try { if (localStorage.getItem(INSTRUCTIONS_DISMISSED_KEY) === '1') setInstructionsDismissed(true); } catch { /* storage blocked: show it */ }
-  }, []);
+  // phone it covered the shape on every visit). The saved flag is read via
+  // useSyncExternalStore, same as the welcome's e2e flag below, so the
+  // server render (never dismissed) hydrates cleanly.
+  const instructionsDismissedEarlier = useSyncExternalStore(
+    noopSubscribe,
+    () => { try { return localStorage.getItem(INSTRUCTIONS_DISMISSED_KEY) === '1'; } catch { return false; } },
+    () => false,
+  );
+  const [instructionsDismissedNow, setInstructionsDismissedNow] = useState(false);
+  const instructionsDismissed = instructionsDismissedEarlier || instructionsDismissedNow;
   const dismissInstructions = () => {
-    setInstructionsDismissed(true);
+    setInstructionsDismissedNow(true);
     try { localStorage.setItem(INSTRUCTIONS_DISMISSED_KEY, '1'); } catch { /* storage blocked: session only */ }
   };
 
