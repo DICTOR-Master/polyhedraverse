@@ -59,6 +59,8 @@ Touchez une forme pour voir ses détails : sommets, arêtes, faces et connecteur
 - **Ajouter à Comparer :** mettre jusqu'à quatre formes côte à côte.
 - **Voir en 4D :** pour les formes compatibles 4D, afficher le polytope 4D dans lequel elle se prolonge.
 
+Les formes de **3D+ Bridges** indiquent aussi, dans leurs détails, vers quel polytope supérieur elles font le pont (par exemple, le dodécaèdre rhombique est l'ombre du tesseract et du 24-cell).
+
 ### Les familles
 
 | Famille | Contenu |
@@ -72,7 +74,8 @@ Touchez une forme pour voir ses détails : sommets, arêtes, faces et connecteur
 | 4D-Capable | Des formes qui se referment en un polytope 4D régulier |
 | Parallelohedra | Des formes qui remplissent l'espace par simple translation |
 | Space-Filling Pairs | Deux formes qui remplissent l'espace ensemble |
-| Aperiodic Sets | Les rhomboèdres dorés allongé et aplati, les deux pièces du pavage de Penrose en 3D |
+| Aperiodic Sets | Deux paires apériodiques : les rhomboèdres dorés allongé et aplati (le pavage de Penrose en 3D) et les prismes de losange de Penrose épais et fin (le pavage 5D en couches) |
+| 3D+ Bridges | Des formes qui sont l'ombre, la section, la cellule ou le coin d'un polytope de dimension supérieure ; leurs détails disent lequel |
 | Miscellaneous | Pyramides graduées, pièces de connexion et rallonges de prisme |
 
 Les polyèdres étoilés sont aussi listés. Ils sont là pour référence seulement et ne servent pas à construire, car leurs faces se traversent.

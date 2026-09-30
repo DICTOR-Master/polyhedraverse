@@ -372,6 +372,7 @@ function resolveSlots(
       SPACE_FILLING_PAIRS: [],
       // Aperiodic Sets: no face (direct decision); Full Catalog and search.
       APERIODIC: [],
+      BRIDGES_3D: [],
       // Miscellaneous (families.ts): graded pyramids and, eventually,
       // the RVCMG adapter pieces. Not yet wired into the wheel's own
       // navigation (no UI integration has happened for this family

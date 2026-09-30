@@ -16,11 +16,11 @@ your browser, nothing to install.
 > transforming, and interconnecting polyhedral forms in three dimensions
 > — and, uniquely, in four.
 
-A browser-based construction kit with over 160 shapes, browsable in 12
+A browser-based construction kit with 170 shapes, browsable in 13
 families — the classical convex polyhedra (Platonic, Archimedean, Johnson,
 Catalan, prisms, antiprisms, and the original Deltahedra set this
-project started from), Parallelohedra, Space-Filling Pairs, the 4D-capable
-seeds, and a "Miscellaneous" family (graded pyramids, RVCMG connector
+project started from), Parallelohedra, Space-Filling Pairs, Aperiodic Sets,
+3D+ Bridges, the 4D-capable seeds, and a "Miscellaneous" family (graded pyramids, RVCMG connector
 pieces, and quad-prism extenders — see "What's here now" below) — plus a genuine interactive path into the fourth
 dimension: **RCP-C2B
 (Radial Cell Projection, Click-to-Build)** lets you construct a real
@@ -82,14 +82,17 @@ direction, not yet delivered.
 
 ## What you can do
 
-- **167 shapes in 12 families** — Deltahedra, Platonic, Archimedean,
+- **170 shapes in 13 families** — Deltahedra, Platonic, Archimedean,
   Johnson, Catalan, prisms, antiprisms, the 4D-capable seeds,
+  3D+ Bridges (shapes that are a shadow, slice, cell or vertex figure of a
+  higher polytope, each with its bridge described),
   Parallelohedra (the five shapes that fill space alone), Space-Filling
   Pairs (seven pairs that fill space together, such as the octet truss),
   Aperiodic Sets (the prolate and oblate golden rhombohedra of the 3D
   Penrose tiling: 2 + 2 build the Bilinski dodecahedron, 5 + 5 the rhombic
   icosahedron, 10 + 10 the rhombic triacontahedron, each recognised by
-  name) and Miscellaneous (graded pyramids, RVCMG connector pieces, prism
+  name; and the thick and thin Penrose rhombus prisms of the layered 5D
+  tiling) and Miscellaneous (graded pyramids, RVCMG connector pieces, prism
   extenders, the rhombohedron and the elongated dodecahedron). Browse them
   on the 3D shape wheel or in the Full Catalog, which also shows the **4
   Kepler–Poinsot star polyhedra** to look at.

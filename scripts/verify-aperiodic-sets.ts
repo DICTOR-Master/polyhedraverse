@@ -16,6 +16,7 @@ import { goldenZonohedron } from '../app/lib/goldenBuilds';
 import { isValidAssembly } from '../app/lib/assembly';
 import { POLYHEDRA, facesCongruent } from '../app/lib/polyhedra';
 import { describeAssembly } from '../app/lib/assemblyNaming';
+import { pairPartners } from '../app/lib/polyhedra/families';
 
 let failures = 0;
 function check(label: string, ok: boolean, extra = '') {
@@ -46,6 +47,46 @@ for (const spec of [P, O]) {
 check('volumes in the golden ratio (prolate / oblate = phi)', Math.abs(volumeOf(P) / volumeOf(O) - PHI) < 1e-9, (volumeOf(P) / volumeOf(O)).toFixed(9));
 
 // ---- the golden zonohedra as assemblies (the File menu's golden builds) ----
+// The Penrose rhombus prisms (2026-09-30): edge 1, one edge tall, so the
+// sides are unit squares (they attach to the cube); the rhombi are the
+// thick 72° and thin 36° Penrose tiles, the two pairs of partners.
+for (const [id, angle] of [['PENROSE_PRISM_THICK', 72], ['PENROSE_PRISM_THIN', 36]] as const) {
+  const spec = POLYHEDRA[id];
+  check(`${id}: 8 corners, 12 edges, 6 faces`, spec.vertices.length === 8 && spec.edges.length === 12 && spec.faces.length === 6);
+  check(`${id}: every edge 1`, spec.edges.every(([a, b]) => Math.abs(V(spec.vertices[a]).distanceTo(V(spec.vertices[b])) - 1) < 1e-9));
+  const c = spec.vertices.reduce((acc, v) => acc.add(V(v)), new Vector3()).divideScalar(8);
+  check(`${id}: faces flat and wound outward`, spec.faces.every((f) => {
+    const q = f.map((i) => V(spec.vertices[i]));
+    const n = q[1].clone().sub(q[0]).cross(q[2].clone().sub(q[1]));
+    const flat = Math.abs(n.clone().normalize().dot(q[3].clone().sub(q[0]))) < 1e-9;
+    return flat && n.dot(q.reduce((acc, p) => acc.add(p), new Vector3()).divideScalar(4).sub(c)) > 0;
+  }));
+  const angles = spec.faces.map((f) => { const q = f.map((i) => V(spec.vertices[i])); return Math.round(q[1].clone().sub(q[0]).angleTo(q[3].clone().sub(q[0])) * 180 / Math.PI); });
+  check(`${id}: two ${angle}° rhombi and four squares`, angles.filter((a) => a === angle || a === 180 - angle).length === 2 && angles.filter((a) => a === 90).length === 4, angles.join(','));
+  check(`${id}: square sides congruent to the cube's face (attachable)`, spec.faces.filter((f) => facesCongruent(spec.vertices, f, POLYHEDRA.CUBE.vertices, POLYHEDRA.CUBE.faces[0])).length === 4);
+}
+check('the thick and thin prisms are each other\'s partners', pairPartners('PENROSE_PRISM_THICK').join() === 'PENROSE_PRISM_THIN' && pairPartners('PENROSE_PRISM_THIN').join() === 'PENROSE_PRISM_THICK');
+check('the golden pair stays a pair (no prisms)', pairPartners('GOLDEN_RHOMBOHEDRON_PROLATE').join() === 'GOLDEN_RHOMBOHEDRON_OBLATE');
+
+// The rhombic icosahedron (3D Bridges, the 5-cube's shadow): the golden
+// zonohedron on five axes -- 22 corners, 40 edges, 20 golden rhombi
+// congruent to the triacontahedron's, so it attaches to the golden family.
+{
+  const RI = POLYHEDRA.RHOMBIC_ICOSAHEDRON;
+  check('rhombic icosahedron: 22 corners, 40 edges, 20 faces (Euler)', RI.vertices.length === 22 && RI.edges.length === 40 && RI.faces.length === 20);
+  check('rhombic icosahedron: every edge 1/phi', RI.edges.every(([a, b]) => Math.abs(V(RI.vertices[a]).distanceTo(V(RI.vertices[b])) - 1 / PHI) < 1e-9));
+  check('rhombic icosahedron: every face congruent to the triacontahedron\'s', RI.faces.every((f) => facesCongruent(RI.vertices, f, RT.vertices, RT.faces[0])));
+  check('rhombic icosahedron: every face starts at an acute corner, like the golden rhombohedra', RI.faces.every((f) => {
+    const q = f.map((i) => V(RI.vertices[i]));
+    return Math.abs(q[1].clone().sub(q[0]).angleTo(q[3].clone().sub(q[0])) * 180 / Math.PI - 63.4349) < 1e-3;
+  }));
+  check('rhombic icosahedron: faces wound outward', RI.faces.every((f) => {
+    const q = f.map((i) => V(RI.vertices[i]));
+    return q[1].clone().sub(q[0]).cross(q[2].clone().sub(q[1])).dot(q.reduce((acc, p) => acc.add(p), new Vector3())) > 0;
+  }));
+  check('rhombic icosahedron: volume = 5 prolate + 5 oblate', Math.abs(volumeOf(RI) - 5 * (volumeOf(P) + volumeOf(O))) < 1e-9, `${volumeOf(RI).toFixed(9)} vs ${(5 * (volumeOf(P) + volumeOf(O))).toFixed(9)}`);
+}
+
 for (const [k, name, each] of [[4, 'Bilinski Dodecahedron', 2], [5, 'Rhombic Icosahedron', 5], [6, 'Rhombic Triacontahedron (golden rhombohedra)', 10]] as const) {
   const build = goldenZonohedron(k);
   const nodes = build.nodes;

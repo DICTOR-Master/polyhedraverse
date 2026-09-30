@@ -14,11 +14,10 @@
  */
 import { Matrix3, Matrix4, Quaternion, Vector3 } from 'three';
 import { POLYHEDRA, type PolyhedronSpec } from './polyhedra';
+import { GOLDEN_AXES } from './polyhedra/goldenAxes';
 import type { Assembly, AssemblyConnection, AssemblyNode } from './assembly';
 
-const PHI = (1 + Math.sqrt(5)) / 2;
-const axis = (x: number, y: number, z: number) => new Vector3(x, y, z).normalize().multiplyScalar(1 / PHI);
-const AXES = [axis(0, 1, PHI), axis(0, -1, PHI), axis(1, PHI, 0), axis(-1, PHI, 0), axis(PHI, 0, 1), axis(-PHI, 0, 1)];
+const AXES = GOLDEN_AXES.map(([x, y, z]) => new Vector3(x, y, z));
 const HEIGHTS = [0.31, 0.77, 0.12, 0.58, 0.93, 0.44];
 const V = (a: number[]) => new Vector3(a[0], a[1], a[2]);
 const det3 = (a: Vector3, b: Vector3, c: Vector3) => a.dot(b.clone().cross(c));

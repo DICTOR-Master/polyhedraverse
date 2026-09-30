@@ -59,6 +59,8 @@ Toca cualquier forma para ver sus detalles: vértices, aristas, caras y conector
 - **Añadir a Comparar:** poner hasta cuatro formas una junto a otra.
 - **Ver en 4D:** en las formas con capacidad 4D, mostrar el politopo 4D en el que se extiende.
 
+Las formas de **3D+ Bridges** también dicen, en sus detalles, a qué politopo superior hacen de puente (por ejemplo, el dodecaedro rómbico es la sombra del tesseract y del 24-cell).
+
 ### Las familias
 
 | Familia | Qué contiene |
@@ -72,7 +74,8 @@ Toca cualquier forma para ver sus detalles: vértices, aristas, caras y conector
 | 4D-Capable | Formas que se cierran en un politopo 4D regular |
 | Parallelohedra | Formas que llenan el espacio solo por traslación |
 | Space-Filling Pairs | Dos formas que llenan el espacio juntas |
-| Aperiodic Sets | Los romboedros áureos alargado y achatado, las dos piezas de la teselación de Penrose en 3D |
+| Aperiodic Sets | Dos pares aperiódicos: los romboedros áureos alargado y achatado (la teselación de Penrose en 3D) y los prismas de rombo de Penrose grueso y fino (la teselación 5D en capas) |
+| 3D+ Bridges | Formas que son sombra, sección, celda o esquina de un politopo de más dimensiones; sus detalles dicen cuál |
 | Miscellaneous | Pirámides graduadas, piezas conectoras y extensores de prisma |
 
 También aparecen los poliedros estrellados. Son solo de referencia y no sirven para construir, porque sus caras se atraviesan entre sí.

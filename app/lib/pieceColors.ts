@@ -65,6 +65,8 @@ export const FAMILY_COLORS: Record<FamilyKey, number> = {
   PARALLELOHEDRA: PIECE_COLORS.green,
   SPACE_FILLING_PAIRS: 0xc8e04a,
   APERIODIC: PIECE_COLORS.amber,
+  // Magenta: clear of pink (pale), red and purple, and of every other key.
+  BRIDGES_3D: 0xd946a8,
   MISCELLANEOUS: PIECE_COLORS.gray,
 };
 

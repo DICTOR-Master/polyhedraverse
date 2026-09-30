@@ -59,6 +59,8 @@ Polyhedraverse とその双子の [Rhombiverse](https://rhombiverse.vercel.app) 
 - **比較に追加：** 最大 4 つの形を並べて比べる。
 - **4Dを見る：** 4D に対応した形で、その形が広がっていく 4D 多胞体を表示する。
 
+詳細には、**3D+ Bridges** の形がどの高次元の多胞体につながるかも書かれています（たとえば菱形十二面体は tesseract と 24-cell の影です）。
+
 ### ファミリー
 
 | ファミリー | 内容 |
@@ -72,7 +74,8 @@ Polyhedraverse とその双子の [Rhombiverse](https://rhombiverse.vercel.app) 
 | 4D-Capable | 閉じると正則な 4D 多胞体になる形 |
 | Parallelohedra | 平行移動だけで空間を埋める形 |
 | Space-Filling Pairs | 2 つ一緒に空間を埋める形 |
-| Aperiodic Sets | 細長い黄金菱面体と平たい黄金菱面体。3D ペンローズ・タイリングの 2 ピース |
+| Aperiodic Sets | 2 組の非周期ペア：細長い・平たい黄金菱面体（3D ペンローズ・タイリング）と、太い・細いペンローズ菱形の角柱（層状の 5D タイリング） |
+| 3D+ Bridges | 高次元の多胞体の影、断面、セル、頂点のいずれかである形。どれにあたるかは詳細に書かれています |
 | Miscellaneous | 段階的なピラミッド、コネクタ用のピース、角柱の延長パーツ |
 
 星形多面体も載っています。面どうしが互いを突き抜けているので、見るだけで、組み立てには使えません。

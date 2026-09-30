@@ -3,6 +3,7 @@
 import { useState } from 'react';
 import { getAnySpec, isStarPolyhedron } from '../../lib/polyhedra/lookup';
 import { FOURD_CAPABLE_IDS } from '../../lib/polyhedra/fourD';
+import { BRIDGES_3D_IDS } from '../../lib/polyhedra/bridges';
 import { t, type LangCode } from '../../lib/i18n';
 import ShapePreview from './ShapePreview';
 import ShapeStatsBlock from './ShapeStatsBlock';
@@ -173,6 +174,17 @@ export default function ShapeDetailDrawer({
           <ShapePreview specId={specId} size={220} spin />
         )}
         <h2 style={{ color: '#a9f795', fontSize: 18, textAlign: 'center', margin: 0 }}>{displayName}</h2>
+
+        {/* 3D+ Bridges (bridges.ts): which higher polytope this shape is a
+            shadow, slice, cell or corner of -- standard terms, polytope
+            names and Schläfli symbols as written. */}
+        {BRIDGES_3D_IDS.includes(specId) && (
+          <div data-testid="bridge-note" style={{ maxWidth: 380, fontSize: 12, color: '#a9f795', lineHeight: 1.45, textAlign: 'center' }}>
+            <span style={{ color: '#d946a8', fontWeight: 700 }}>⤢ {t('detail.bridges', lang)}</span>
+            <br />
+            {t(`bridge.${specId}`, lang)}
+          </div>
+        )}
 
         {showFourD && (
           <div

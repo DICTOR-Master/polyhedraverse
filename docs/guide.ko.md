@@ -59,6 +59,8 @@ Polyhedraverse와 그 쌍둥이인 [Rhombiverse](https://rhombiverse.vercel.app)
 - **비교에 추가:** 최대 네 도형을 나란히 놓고 비교하기.
 - **4D 보기:** 4D를 지원하는 도형에서, 그 도형이 이어지는 4D 폴리토프 보기.
 
+**3D+ Bridges**의 도형은 세부 정보에서 어떤 고차원 폴리토프로 이어지는지도 알려 줍니다(예: 마름모 십이면체는 tesseract와 24-cell의 그림자).
+
 ### 계열
 
 | 계열 | 내용 |
@@ -72,7 +74,8 @@ Polyhedraverse와 그 쌍둥이인 [Rhombiverse](https://rhombiverse.vercel.app)
 | 4D-Capable | 닫으면 정규 4D 폴리토프가 되는 도형 |
 | Parallelohedra | 평행 이동만으로 공간을 채우는 도형 |
 | Space-Filling Pairs | 둘이 함께 공간을 채우는 도형 |
-| Aperiodic Sets | 길쭉한 황금 능면체와 납작한 황금 능면체, 3D 펜로즈 타일링의 두 조각 |
+| Aperiodic Sets | 두 쌍의 비주기 조각: 길쭉한·납작한 황금 능면체(3D 펜로즈 타일링)와 두꺼운·얇은 펜로즈 마름모 각기둥(층을 이루는 5D 타일링) |
+| 3D+ Bridges | 고차원 폴리토프의 그림자, 단면, 셀, 꼭짓점 중 하나인 도형. 어느 것인지는 세부 정보에 나옵니다 |
 | Miscellaneous | 단계별 피라미드, 연결용 조각, 각기둥 연장 조각 |
 
 별 다면체도 목록에 있습니다. 면이 서로를 뚫고 지나가기 때문에 참고용일 뿐, 만들기에는 쓸 수 없습니다.

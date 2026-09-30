@@ -59,6 +59,8 @@ Polyhedraverse 和它的孪生网站 [Rhombiverse](https://rhombiverse.vercel.ap
 - **添加到比较：** 最多把四个形状并排比较。
 - **查看4D：** 对支持 4D 的形状，显示它延伸成的 4D 多胞体。
 
+**3D+ Bridges** 中的形状还会在详情里说明它连接到哪个更高维的多胞体（例如菱形十二面体是 tesseract 和 24-cell 的影子）。
+
 ### 家族
 
 | 家族 | 内容 |
@@ -72,7 +74,8 @@ Polyhedraverse 和它的孪生网站 [Rhombiverse](https://rhombiverse.vercel.ap
 | 4D-Capable | 能闭合成正 4D 多胞体的形状 |
 | Parallelohedra | 只靠平移就能填满空间的形状 |
 | Space-Filling Pairs | 两个一起填满空间的形状 |
-| Aperiodic Sets | 长形和扁形黄金菱面体，3D 彭罗斯镶嵌的两种块 |
+| Aperiodic Sets | 两对非周期块：长形和扁形黄金菱面体（3D 彭罗斯镶嵌），以及粗、细彭罗斯菱形棱柱（分层的 5D 镶嵌） |
+| 3D+ Bridges | 是更高维多胞体的影子、截面、胞或角的形状；详情里写明是哪一种 |
 | Miscellaneous | 分级棱锥、连接件和棱柱延长件 |
 
 星形多面体也列在其中。它们仅供参考，不能用来搭建，因为它们的面会互相穿过。

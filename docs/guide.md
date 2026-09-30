@@ -57,6 +57,8 @@ Tap any shape to see its details: vertices, edges, faces and connectors. From th
 - **Add to Compare:** put up to four shapes side by side.
 - **View 4D:** on 4D-capable shapes, show the 4D polytope it extends into.
 
+Shapes in **3D+ Bridges** also say, in their details, which higher polytope they bridge to (for example, the rhombic dodecahedron is the shadow of the tesseract and the 24-cell).
+
 ### The families
 
 | Family | What's in it |
@@ -70,7 +72,8 @@ Tap any shape to see its details: vertices, edges, faces and connectors. From th
 | 4D-Capable | Shapes that close up into a regular 4D polytope |
 | Parallelohedra | Shapes that fill space by translation alone |
 | Space-Filling Pairs | Two shapes that fill space together |
-| Aperiodic Sets | The prolate and oblate golden rhombohedra, the two pieces of the 3D Penrose tiling |
+| Aperiodic Sets | Two aperiodic pairs: the prolate and oblate golden rhombohedra (the 3D Penrose tiling) and the thick and thin Penrose rhombus prisms (the layered 5D tiling) |
+| 3D+ Bridges | Shapes that are a shadow, slice, cell or corner of a higher-dimensional polytope; each one's details say which |
 | Miscellaneous | Graded pyramids, connector pieces and prism extenders |
 
 Star polyhedra are also listed. They are for reference only and can't be built with, because their faces pass through each other.

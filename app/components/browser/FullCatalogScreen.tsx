@@ -20,6 +20,7 @@
 import { useEffect } from 'react';
 import { FAMILY_ORDER, FAMILY_META, familyIds, SPACE_FILLING_PAIR_LIST, type FamilyKey } from '../../lib/polyhedra/families';
 import { STAR_POLYHEDRON_IDS } from '../../lib/polyhedra/starPolyhedra';
+import { BRIDGE_SECTIONS } from '../../lib/polyhedra/bridges';
 import { t, type LangCode } from '../../lib/i18n';
 import ShapePreviewCard from './ShapePreviewCard';
 
@@ -151,6 +152,43 @@ export default function FullCatalogScreen({
                   </div>
                 ))}
               </div>
+            </div>
+          );
+        }
+        if (fam === 'BRIDGES_3D') {
+          // In sections by bridge type (direct decision 2026-09-30): Cells,
+          // Shadows, Slices, Corners -- see bridges.ts.
+          return (
+            <div key={fam} id={sectionDomId(fam)}>
+              <div style={{ display: 'flex', alignItems: 'baseline', gap: 8, marginBottom: 10 }}>
+                <span style={{ fontSize: 18, color: '#47cc24' }}>{meta.symbol}</span>
+                <span style={{ fontSize: 13, fontWeight: 700, color: '#a9f795', letterSpacing: '.02em' }}>{meta.label}</span>
+                <span style={{ fontFamily: 'monospace', fontSize: 11, color: '#3a9e1f' }}>{ids.length}</span>
+              </div>
+              {BRIDGE_SECTIONS.map((sec) => {
+                const shown = sec.ids.filter((id) => ids.includes(id));
+                if (shown.length === 0) return null;
+                return (
+                  <div key={sec.id} data-testid={`bridge-section-${sec.id}`} style={{ marginBottom: 14 }}>
+                    <div style={{ fontSize: 12, color: '#5ee233', marginBottom: 6 }}>{t(`bridges.section.${sec.id}`, lang)}</div>
+                    <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fill, minmax(120px, 1fr))', gap: 10 }}>
+                      {shown.map((id) => (
+                        <ShapePreviewCard
+                          key={id}
+                          specId={id}
+                          lang={lang}
+                          activeFamilies={[fam]}
+                          isFavorite={isFavorite(id)}
+                          inCompare={isInCompare(id)}
+                          onOpen={onOpenShape}
+                          onToggleFavorite={onToggleFavorite}
+                          onToggleCompare={onToggleCompare}
+                        />
+                      ))}
+                    </div>
+                  </div>
+                );
+              })}
             </div>
           );
         }

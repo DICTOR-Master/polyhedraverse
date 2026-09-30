@@ -26,7 +26,8 @@ import {
   type PolyhedronSpec,
 } from './index';
 import { FOURD_CAPABLE_IDS } from './fourD';
-import { APERIODIC_ADDITION_IDS } from './aperiodic';
+import { APERIODIC_ADDITION_IDS, APERIODIC_PAIRS } from './aperiodic';
+import { BRIDGES_3D_IDS } from './bridges';
 
 export type FamilyKey =
   | 'DELTAHEDRA'
@@ -36,6 +37,7 @@ export type FamilyKey =
   | 'CATALAN'
   | 'PRISMS'
   | 'ANTIPRISMS'
+  | 'BRIDGES_3D'
   | 'FOURD'
   | 'PARALLELOHEDRA'
   | 'SPACE_FILLING_PAIRS'
@@ -59,6 +61,7 @@ export const FAMILY_ORDER: FamilyKey[] = [
   'APERIODIC',
   'PRISMS',
   'ANTIPRISMS',
+  'BRIDGES_3D',
   'FOURD',
   'MISCELLANEOUS',
 ];
@@ -101,6 +104,10 @@ export const FAMILY_META: Record<FamilyKey, { label: string; symbol: string }> =
   // squares" evokes a tesseract's own classic projection, distinct from
   // every other symbol here.
   FOURD: { label: '4D-Capable', symbol: '⧉' },
+  // 3D+ Bridges (bridges.ts): 3D shapes that cross a dimensional boundary; the
+  // "+" matches Rhombiverse's 1D+/2D+/3D+ naming. A diagonal
+  // two-way arrow: passing between dimensions, distinct from ⇄ (pairs).
+  BRIDGES_3D: { label: '3D+ Bridges', symbol: '⤢' },
   // Fedorov's 5 real parallelohedra (Cube, Hexagonal Prism, Rhombic
   // Dodecahedron, Elongated Dodecahedron, Truncated Octahedron) -- the
   // only convex solids that tile 3D space by translation alone. Like
@@ -186,9 +193,11 @@ const BASE_IDS: Record<FamilyKey, string[]> = {
   // family above (Miscellaneous was always just a catch-all for shapes
   // without a proper family, and Parallelohedra is one). Every other
   // Miscellaneous shape's membership is untouched.
-  // The 3D Penrose pair (aperiodic.ts): fill space alone, but together
-  // can also fill it with no repeat.
+  // Two aperiodic pairs (aperiodic.ts): the golden rhombohedra (the 3D
+  // Penrose tiling) and the Penrose rhombus prisms. Each piece fills
+  // space alone; each pair can also fill it with no repeat.
   APERIODIC: APERIODIC_ADDITION_IDS,
+  BRIDGES_3D: BRIDGES_3D_IDS,
   MISCELLANEOUS: MISCELLANEOUS_ADDITION_IDS.filter((id) => id !== 'ELONGATED_DODECAHEDRON'),
 };
 
@@ -293,7 +302,7 @@ export function catalogByFamily(family: FamilyKey): Record<string, number> {
 
 /**
  * A shape's complementary pieces: its Space-Filling Pairs partners (in
- * list order) and the other members of its Aperiodic Set. The face-attach
+ * list order) and its Aperiodic Sets partner. The face-attach
  * picker lists these first (direct request 2026-09-30: "the complementary
  * pair piece should be at top of choices").
  */
@@ -303,8 +312,9 @@ export function pairPartners(id: string): string[] {
     if (a === id && !out.includes(b)) out.push(b);
     if (b === id && !out.includes(a)) out.push(a);
   }
-  if (APERIODIC_ADDITION_IDS.includes(id)) {
-    for (const other of APERIODIC_ADDITION_IDS) if (other !== id && !out.includes(other)) out.push(other);
+  for (const [a, b] of APERIODIC_PAIRS) {
+    if (a === id && !out.includes(b)) out.push(b);
+    if (b === id && !out.includes(a)) out.push(a);
   }
   return out;
 }

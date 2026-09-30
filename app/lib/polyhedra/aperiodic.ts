@@ -27,6 +27,7 @@
  */
 
 import { type Vec3, type PolyhedronSpec, buildConnectors } from './core';
+import { centred, edgesOf, outward } from './convexBuild';
 
 const VERTS_GOLDEN_PROLATE: Vec3[] = [
   [-0.2628655560595668, 0.0, -0.6881909602355867],
@@ -62,6 +63,33 @@ const FACES_GOLDEN_OBLATE: number[][] = [
   [1, 3, 2, 0], [6, 7, 5, 4], [4, 5, 1, 0], [3, 7, 6, 2], [2, 6, 4, 0], [5, 7, 3, 1],
 ];
 
+// The Penrose rhombus prisms (direct decisions 2026-09-30): the thick
+// (72°) and thin (36°) Penrose rhombi, edge 1, raised into prisms one edge
+// tall (as in Rhombiverse's 5D world, PRISM_HEIGHT = 1), so their sides
+// are unit squares that attach to the cube. Each fills space alone; the
+// pair tiles every layer the Penrose way, never repeating across the
+// layer, though the layers repeat straight up (the 5D decagonal
+// quasicrystal). The golden rhombohedra never repeat in any direction.
+function penrosePrism(angleDeg: number): { vertices: Vec3[]; edges: [number, number][]; faces: number[][] } {
+  const t = (angleDeg * Math.PI) / 180;
+  const base: [number, number][] = [[0, 0], [1, 0], [1 + Math.cos(t), Math.sin(t)], [Math.cos(t), Math.sin(t)]];
+  const vertices = centred([...base.map(([x, z]): Vec3 => [x, -0.5, z]), ...base.map(([x, z]): Vec3 => [x, 0.5, z])]);
+  const faces = outward(vertices, [[0, 1, 2, 3], [4, 5, 6, 7], [0, 1, 5, 4], [1, 2, 6, 5], [2, 3, 7, 6], [3, 0, 4, 7]]);
+  return { vertices, edges: edgesOf(faces), faces };
+}
+const THICK = penrosePrism(72);
+const THIN = penrosePrism(36);
+const prismSpec = (id: string, name: string, g: typeof THICK): PolyhedronSpec => ({
+  id,
+  name,
+  faceCount: g.faces.length,
+  vertices: g.vertices,
+  edges: g.edges,
+  faces: g.faces,
+  connectors: buildConnectors(g.vertices, g.edges),
+  attachableFaceIndices: g.faces.map((_, i) => i),
+});
+
 export const APERIODIC_ADDITIONS: Record<string, PolyhedronSpec> = {
   GOLDEN_RHOMBOHEDRON_PROLATE: {
     id: 'GOLDEN_RHOMBOHEDRON_PROLATE',
@@ -84,4 +112,11 @@ export const APERIODIC_ADDITIONS: Record<string, PolyhedronSpec> = {
     attachableFaceIndices: FACES_GOLDEN_OBLATE.map((_, i) => i),
   },
 };
+APERIODIC_ADDITIONS.PENROSE_PRISM_THICK = prismSpec('PENROSE_PRISM_THICK', 'thick Penrose rhombus prism', THICK);
+APERIODIC_ADDITIONS.PENROSE_PRISM_THIN = prismSpec('PENROSE_PRISM_THIN', 'thin Penrose rhombus prism', THIN);
 export const APERIODIC_ADDITION_IDS = Object.keys(APERIODIC_ADDITIONS);
+/** The family holds two separate pairs, each a set of partners. */
+export const APERIODIC_PAIRS: [string, string][] = [
+  ['GOLDEN_RHOMBOHEDRON_PROLATE', 'GOLDEN_RHOMBOHEDRON_OBLATE'],
+  ['PENROSE_PRISM_THICK', 'PENROSE_PRISM_THIN'],
+];
