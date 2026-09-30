@@ -170,7 +170,7 @@ export default function FullCatalogScreen({
                 if (shown.length === 0) return null;
                 return (
                   <div key={sec.id} data-testid={`bridge-section-${sec.id}`} style={{ marginBottom: 14 }}>
-                    <div style={{ fontSize: 12, color: '#5ee233', marginBottom: 6 }}>{t(`bridges.section.${sec.id}`, lang)}</div>
+                    <div style={{ fontSize: 13, fontWeight: 700, color: '#d946a8', letterSpacing: '.03em', borderBottom: '1px solid rgba(217,70,168,.35)', paddingBottom: 4, marginBottom: 8 }}>{t(`bridges.section.${sec.id}`, lang)}</div>
                     <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fill, minmax(120px, 1fr))', gap: 10 }}>
                       {shown.map((id) => (
                         <ShapePreviewCard
