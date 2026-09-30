@@ -361,9 +361,9 @@ function resolveSlots(
       // (Full Catalog section, search, the existing cross-family "+N"
       // badge), just not one the wheel itself navigates to -- the empty
       // array means the loop below simply assigns it no face.
-      FOURD: [],
+      POLYTOPES_4D: [],
       // Parallelohedra (families.ts): Fedorov's 5 real space-filling
-      // solids. Same "claims no face" placeholder as FOURD -- every
+      // solids. Same "claims no face" placeholder as POLYTOPES_4D -- every
       // member already has a face via its own native family, and this
       // cross-cutting family isn't wired into wheel navigation yet.
       PARALLELOHEDRA: [],
@@ -378,7 +378,7 @@ function resolveSlots(
       // the RVCMG adapter pieces. Not yet wired into the wheel's own
       // navigation (no UI integration has happened for this family
       // yet, see docs/rvcmg-adapter-pieces-spec.md) -- same "claims no
-      // face" placeholder as FOURD until that design work happens.
+      // face" placeholder as POLYTOPES_4D until that design work happens.
       MISCELLANEOUS: [],
     };
     FAMILIES.forEach((f, i) => {

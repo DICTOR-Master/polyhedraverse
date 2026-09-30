@@ -1,132 +1,59 @@
 import * as THREE from 'three';
-import { POLYHEDRA, POLYHEDRON_IDS, type PolyhedronSpec, isFaceEligibleForAttach } from '../app/lib/polyhedra';
+import { POLYHEDRA, POLYHEDRON_IDS, isFaceEligibleForAttach } from '../app/lib/polyhedra';
 import { buildFaceConnectors, facesCongruent } from '../app/lib/polyhedra/core';
+import { faceAttachOptions } from '../app/lib/faceAttach';
 
-// Mirrors ShapeViewer.tsx's face-attach math (root parent, identity
-// transform) so the exact placement formula gets checked outside the
-// browser. Face-attach has no free rotational DOF the way vertex-attach
-// does: two congruent regular n-gon faces coincide fully once (a) the
-// normals are opposed and (b) one reference vertex pair is aligned -- the
-// rest follow from congruence. Getting there took an actual wrong turn
-// worth recording: a first attempt assumed the right alignment was always
-// among the n multiples of 360/n starting from "no extra twist" and swept
-// only those -- for many shape pairs, none of the n candidates matched
-// (confirmed empirically, not assumed). The fix was computing the required
-// angle analytically (aligning incoming's own reference vertex direction to
-// target's, via atan2 in the shared plane) instead of guessing candidates.
-function computeFaceAttach(
-  rootSpec: PolyhedronSpec,
-  targetFaceIdx: number,
-  incomingSpec: PolyhedronSpec,
-  incomingFaceIdx: number,
-) {
-  const targetFace = buildFaceConnectors(rootSpec)[targetFaceIdx];
-  const incomingFace = buildFaceConnectors(incomingSpec)[incomingFaceIdx];
+// Every face pair the app can offer, placed by the app's own face-attach
+// code (app/lib/faceAttach.ts, shared with ShapeViewer), root parent at the
+// identity: each pair must have at least one placement, and every
+// placement must sit flush (the incoming face's corners exactly on the
+// target face's) with the incoming piece beyond the shared face.
+//
+// History worth keeping: a first attempt assumed the right twist was among
+// n multiples of 360/n from "no extra twist" (for many pairs none matched),
+// so the twist became analytic, lining up corner 0 with corner 0 and then
+// stepping by the face's symmetry. That could never seat a rectangle,
+// whose mirror lines pass through edge midpoints, so kite-prism rectangles
+// were kept unattachable. Now each corner is tried against corner 0 and
+// only flush placements kept (2026-09-30), which seats any congruent face.
 
-  const Cf = new THREE.Vector3(...targetFace.pos);
-  const Nf = new THREE.Vector3(...targetFace.normal);
-  const Cg = new THREE.Vector3(...incomingFace.pos);
-  const Ng = new THREE.Vector3(...incomingFace.normal);
-
-  // Rotate the incoming face's outward normal to point opposite the
-  // target's, same principle as vertex-attach: the incoming shape ends up
-  // facing back toward what it's joining, not overlapping it.
-  const desiredWorldDir = Nf.clone().negate();
-  const baseQuat = new THREE.Quaternion().setFromUnitVectors(Ng, desiredWorldDir);
-
-  const targetFaceIndices = rootSpec.faces[targetFaceIdx];
-  const incomingFaceIndices = incomingSpec.faces[incomingFaceIdx];
-
-  // The remaining freedom after baseQuat is a rotation around the shared
-  // normal axis. Compute it analytically: align incoming's own vertex-0
-  // direction (from its face centroid) to point where target's vertex-0
-  // needs it to, using a 2D basis in the shared plane.
-  const targetV0 = new THREE.Vector3(...rootSpec.vertices[targetFaceIndices[0]]);
-  const dTargetWorld = targetV0.clone().sub(Cf).normalize();
-  const dTargetLocal = dTargetWorld.clone().applyQuaternion(baseQuat.clone().invert());
-
-  const incomingV0 = new THREE.Vector3(...incomingSpec.vertices[incomingFaceIndices[0]]);
-  const dIncomingLocal = incomingV0.clone().sub(Cg).normalize();
-
-  const u = dIncomingLocal.clone();
-  const w = new THREE.Vector3().crossVectors(Ng, u).normalize();
-  const theta = Math.atan2(dTargetLocal.dot(w), dTargetLocal.dot(u));
-
-  const twistQuat = new THREE.Quaternion().setFromAxisAngle(Ng, theta);
-  const finalQuat = baseQuat.clone().multiply(twistQuat);
-
-  const rotatedCg = Cg.clone().applyQuaternion(finalQuat);
-  const position = Cf.clone().sub(rotatedCg);
-
-  return { finalQuat, position, targetFaceIndices, incomingFaceIndices, Cf, Nf };
-}
-
+const identity = new THREE.Matrix4();
 let checks = 0;
 let failures = 0;
 
 for (const rootId of POLYHEDRON_IDS) {
   const rootSpec = POLYHEDRA[rootId];
+  const rootConnectors = buildFaceConnectors(rootSpec);
   for (const incomingId of POLYHEDRON_IDS) {
     const incomingSpec = POLYHEDRA[incomingId];
     for (let tf = 0; tf < rootSpec.faces.length; tf++) {
+      if (!isFaceEligibleForAttach(rootSpec, tf)) continue;
+      const targetVerts = rootSpec.faces[tf].map((i) => new THREE.Vector3(...rootSpec.vertices[i]));
+      const Cf = new THREE.Vector3(...rootConnectors[tf].pos);
+      const Nf = new THREE.Vector3(...rootConnectors[tf].normal);
       for (let gf = 0; gf < incomingSpec.faces.length; gf++) {
-        // Real congruence (edge lengths + angles), not just matching vertex
-        // count -- matching the app's own compatibility check (ShapeViewer.tsx),
-        // now that irregular-faced (Catalan) shapes exist where two
-        // same-vertex-count faces (e.g. two different rhombi) aren't
-        // necessarily the same shape. Testing pairs the app would never
-        // offer isn't useful: their vertices genuinely don't coincide, but
-        // that's not an attach-math bug, it's the app correctly declining
-        // an incompatible pair before this code ever runs.
-        // Only pairs the app can actually offer: RVCMG wall triangles and
-        // kite-prism rectangles are deliberately not attachable (their
-        // reflection correspondence has no vertex on a mirror axis -- see
-        // polygonPrismSolid.ts), so checking them tested placements no
-        // user can make.
-        if (!isFaceEligibleForAttach(rootSpec, tf) || !isFaceEligibleForAttach(incomingSpec, gf)) continue;
+        // Only pairs the app can offer: eligible faces (RVCMG wall
+        // triangles aren't), really congruent (not just the same corner
+        // count: two different rhombi aren't the same shape).
+        if (!isFaceEligibleForAttach(incomingSpec, gf)) continue;
         if (!facesCongruent(rootSpec.vertices, rootSpec.faces[tf], incomingSpec.vertices, incomingSpec.faces[gf])) continue;
         checks++;
-
-        const { finalQuat, position, targetFaceIndices, incomingFaceIndices, Cf, Nf } = computeFaceAttach(
-          rootSpec,
-          tf,
-          incomingSpec,
-          gf,
-        );
-
-        const n = targetFaceIndices.length;
-        const targetVerts = targetFaceIndices.map((i) => new THREE.Vector3(...rootSpec.vertices[i]));
-        const incomingVertsWorld = incomingFaceIndices.map((i) =>
-          new THREE.Vector3(...incomingSpec.vertices[i]).applyQuaternion(finalQuat).add(position),
-        );
-
-        // 1. Every incoming face vertex must land exactly on the
-        //    corresponding target vertex. Two solids facing opposite
-        //    directions trace their shared boundary in opposite rotational
-        //    sense, so the correspondence is reversed: incoming[i] <-> target[(n-i)%n].
-        let coincidence = 0;
-        for (let i = 0; i < n; i++) {
-          coincidence += incomingVertsWorld[i].distanceTo(targetVerts[(n - i) % n]);
-        }
-        if (coincidence > 1e-9) {
+        const options = faceAttachOptions(rootSpec, tf, identity, incomingSpec, [gf]);
+        if (options.length === 0) {
           failures++;
-          console.log(
-            `${rootId}[f${tf}] + ${incomingId}[f${gf}]: coincidence error ${coincidence.toExponential(3)}`,
-          );
+          console.log(`${rootId}[f${tf}] + ${incomingId}[f${gf}]: no flush placement`);
+          continue;
         }
-
-        // 2. The incoming shape's centroid (world origin of its local
-        //    frame) must end up on the far side of the shared face from the
-        //    root's own centroid -- growing outward, not overlapping.
-        const incomingCentroidWorld = position; // local origin transforms to `position` exactly
-        const rootDepth = Cf.dot(Nf);
-        const incomingDepth = incomingCentroidWorld.dot(Nf);
-        if (incomingDepth <= rootDepth - 1e-9) {
-          failures++;
-          console.log(
-            `${rootId}[f${tf}] + ${incomingId}[f${gf}]: incoming centroid (${incomingDepth.toFixed(4)}) ` +
-              `not beyond shared face (${rootDepth.toFixed(4)}) along its outward normal`,
-          );
+        for (const o of options) {
+          const face = incomingSpec.faces[gf].map((i) => new THREE.Vector3(...incomingSpec.vertices[i]).applyQuaternion(o.quaternion).add(o.position));
+          if (!face.every((p) => targetVerts.some((q) => p.distanceTo(q) < 1e-6))) {
+            failures++;
+            console.log(`${rootId}[f${tf}] + ${incomingId}[f${gf}]: a placement isn't flush`);
+          }
+          if (o.position.dot(Nf) <= Cf.dot(Nf) - 1e-9) {
+            failures++;
+            console.log(`${rootId}[f${tf}] + ${incomingId}[f${gf}]: incoming piece not beyond the shared face`);
+          }
         }
       }
     }

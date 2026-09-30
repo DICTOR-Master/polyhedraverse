@@ -32,6 +32,8 @@ Les noms des boutons sont écrits tels qu'ils apparaissent dans l'application (c
 
 Deux formes reliées face à face partagent exactement cette face, un cube sur un cube par exemple.
 
+Faire glisser passe en revue toutes les façons dont la nouvelle forme peut se poser sur cette face, en les comptant (« registration 3/8 ») : chaque rotation de la face et, quand la nouvelle forme a des faces de cette taille qui ne se ressemblent pas, chacune de ces faces aussi, si bien qu'une pièce aux faces inégales peut toujours être posée comme vous le voulez. Par exemple, pour construire le prisme incliné de DICTO, commencez par le bloc à faces carrées, attachez le bloc tout en losanges à l'un de ses losanges de 72° et faites glisser jusqu'à ce que les faces hexagonales soient à plat, puis attachez un second bloc à faces carrées de la même façon.
+
 ### Attacher une forme à un sommet
 
 1. Touchez un **sommet en surbrillance**. Seuls les sommets libres s'allument. Les formes qui ont encore de la place pour construire brillent.
@@ -72,14 +74,14 @@ Les formes de **3D+ Bridges** indiquent aussi, dans leurs détails, vers quel po
 | Catalan | Les duaux des solides d'Archimède |
 | Stellations | Des pièces pour les solides de Platon et de Catalan, chacune s'adaptant à une face : plate (les pyramides se rejoignent en un nouveau solide convexe, comme le cube à partir d'un tétraèdre), puis chaque stellation que le solide possède vraiment, jusqu'à la troisième. Une pièce sur chaque face construit exactement cette stellation, par ex. les petit dodécaèdre étoilé, grand dodécaèdre et grand dodécaèdre étoilé |
 | Prisms, Antiprisms | Deux polygones reliés par une bande de carrés ou de triangles |
-| 4D-Capable | Des formes qui se referment en un polytope 4D régulier |
+| 4D Polytopes | Les six polytopes 4D réguliers (5, 8, 16, 24, 120 et 600 cellules) par symétrie ; ouvrez-en un et Le construire place sa cellule germe et le construit cellule par cellule |
 | Parallelohedra | Des formes qui remplissent l'espace par simple translation : les cinq de Fedorov, puis des variantes (le rhomboèdre, et le prisme hexagonal incliné de DICTO avec ses deux blocs, trouvés avec Zometool) |
 | Space-Filling Pairs | Deux formes qui remplissent l'espace ensemble |
 | Aperiodic Sets | Deux paires apériodiques : les rhomboèdres dorés allongé et aplati (le pavage de Penrose en 3D) et les prismes de losange de Penrose épais et fin (le pavage 5D en couches) |
 | 3D+ Bridges | Des formes qui sont l'ombre, la section, la cellule ou le coin d'un polytope de dimension supérieure ; leurs détails disent lequel |
 | Miscellaneous | Pyramides graduées, pièces de connexion et rallonges de prisme |
 
-Les polyèdres étoilés sont aussi listés. Ils sont là pour référence seulement et ne servent pas à construire, car leurs faces se traversent.
+Les polyèdres étoilés sont aussi listés. On ne peut pas les attacher, car leurs faces se traversent, mais on peut en construire trois : un dodécaèdre avec une pièce **Stellations** sur chaque face donne le petit dodécaèdre étoilé (pièce 2), le grand dodécaèdre (3) ou le grand dodécaèdre étoilé (4).
 
 ## Regarder votre construction
 

@@ -29,7 +29,7 @@ const jsonLd = {
   offers: { "@type": "Offer", price: "0", priceCurrency: "USD" },
   inLanguage: ["en", "ja", "es", "fr", "ko", "zh", "ru"],
   featureList: [
-    "245 polyhedra in 14 families: Deltahedra, Platonic, Archimedean, Johnson, Catalan, stellations, prisms, antiprisms, 4D-capable seeds, 3D+ bridges, parallelohedra, space-filling pairs, aperiodic sets and more",
+    "245 polyhedra in 14 families: Deltahedra, Platonic, Archimedean, Johnson, Catalan, stellations, prisms, antiprisms, the six regular 4D polytopes, 3D+ bridges, parallelohedra, space-filling pairs, aperiodic sets and more",
     "Aperiodic sets: the prolate and oblate golden rhombohedra of the 3D Penrose tiling, which build the Bilinski dodecahedron, rhombic icosahedron and rhombic triacontahedron, and the thick and thin Penrose rhombus prisms of the layered 5D tiling",
     "3D+ bridges: shapes that are a shadow, slice, cell or vertex figure of a higher polytope (the rhombic dodecahedron as the tesseract's and 24-cell's shadow, the rhombic icosahedron and triacontahedron as the 5-cube's and 6-cube's), each with its bridge described",
     "Attach shapes face to face or vertex to vertex, with twist, undo and a live name for the assembly",

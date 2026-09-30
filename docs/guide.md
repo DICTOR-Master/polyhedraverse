@@ -30,6 +30,8 @@ The first part of this guide walks through common tasks. The second part lists e
 
 Two shapes joined face to face share that face exactly, a cube on a cube for example.
 
+Dragging steps through every way the new shape can sit on that face, counting them as it goes ("registration 3/8"): each turn of the face and, when the new shape has faces of that size that aren't alike, each of those faces too, so a piece with uneven faces can always be set the way you want. For example, to build DICTO's leaning prism, start with the square-faced block, attach the all-rhombus block to one of its 72° rhombi and drag until the hexagon faces line up flat, then attach a second square-faced block the same way.
+
 ### Attach a shape at a vertex
 
 1. Tap a **highlighted vertex**. Only free vertices light up. Shapes that still have room to build from glow.
@@ -70,14 +72,14 @@ Shapes in **3D+ Bridges** also say, in their details, which higher polytope they
 | Catalan | The duals of the Archimedean solids |
 | Stellations | Pieces for the Platonic and Catalan solids, each fitting one face: flat (the pyramids join into a new convex solid, such as the cube from a tetrahedron), then each stellation the solid really has, up to its third. A piece on every face builds that stellation exactly, e.g. the dodecahedron's small stellated, great and great stellated dodecahedra |
 | Prisms, Antiprisms | Two polygons joined by a band of squares or triangles |
-| 4D-Capable | Shapes that close up into a regular 4D polytope |
+| 4D Polytopes | The six regular 4D polytopes (5-, 8-, 16-, 24-, 120- and 600-cell) by symmetry; open one and Build places its seed cell and starts building it cell by cell |
 | Parallelohedra | Shapes that fill space by translation alone: Fedorov's five, then variants (the rhombohedron, and DICTO's leaning hexagonal prism and its two blocks, found in Zometool) |
 | Space-Filling Pairs | Two shapes that fill space together |
 | Aperiodic Sets | Two aperiodic pairs: the prolate and oblate golden rhombohedra (the 3D Penrose tiling) and the thick and thin Penrose rhombus prisms (the layered 5D tiling) |
 | 3D+ Bridges | Shapes that are a shadow, slice, cell or corner of a higher-dimensional polytope; each one's details say which |
 | Miscellaneous | Graded pyramids, connector pieces and prism extenders |
 
-Star polyhedra are also listed. They are for reference only and can't be built with, because their faces pass through each other.
+Star polyhedra are also listed. You can't attach them, because their faces pass through each other, but three of them you can build: a dodecahedron with a **Stellations** piece on every face makes the small stellated dodecahedron (piece 2), the great dodecahedron (3) or the great stellated dodecahedron (4).
 
 ## Looking at your build
 

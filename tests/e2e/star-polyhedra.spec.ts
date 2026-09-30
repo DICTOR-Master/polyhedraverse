@@ -18,7 +18,7 @@ test('Full Catalog has a Star Polyhedra section with all 4 Kepler-Poinsot solids
   await openBrowserWheel(page);
   await clickWheelLabel(page, exactLabel('Full Catalog'));
 
-  const header = page.locator('text=/Star Polyhedra — reference only/');
+  const header = page.locator('span', { hasText: /^Star Polyhedra$/ }).first();
   await header.scrollIntoViewIfNeeded();
   await expect(header).toBeVisible();
 
@@ -36,6 +36,16 @@ test('Full Catalog has a Star Polyhedra section with all 4 Kepler-Poinsot solids
  * either do nothing or crash a ShapeViewer never built to face-fill a
  * self-intersecting polygon.
  */
+test('the great icosahedron stays reference only: it is not among the icosahedron\'s first three stellations', async ({ page }) => {
+  await page.getByRole('button', { name: /^Start over with/ }).click();
+  await openBrowserWheel(page);
+  await clickWheelLabel(page, exactLabel('Full Catalog'));
+  const card = page.locator('text=/^great icosahedron$/i').first();
+  await card.scrollIntoViewIfNeeded();
+  await card.click();
+  await expect(page.locator('text=/Reference only — not buildable/i')).toBeVisible();
+});
+
 test('a star polyhedron detail drawer shows Schläfli/density and has no Add to Scene button', async ({ page }) => {
   await page.getByRole('button', { name: /^Start over with/ }).click();
   await openBrowserWheel(page);
@@ -46,7 +56,8 @@ test('a star polyhedron detail drawer shows Schläfli/density and has no Add to 
   await card.click();
 
   await expect(page.getByRole('button', { name: 'Add to Scene' })).toHaveCount(0);
-  await expect(page.locator('text=/Reference only — not buildable/i')).toBeVisible();
+  // Not attachable itself, but buildable from Stellations pieces on a dodecahedron.
+  await expect(page.locator('text=/a dodecahedron with Stellations piece 4 on every face/i')).toBeVisible();
   await expect(page.locator('text=/Schläfli.*\\{5\\/2, 3\\}.*density 7/')).toBeVisible();
 
   // Favorite/Compare are real generic id-keyed features (not family- or

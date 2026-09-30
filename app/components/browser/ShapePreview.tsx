@@ -67,13 +67,15 @@ function rotateX([x, y, z]: [number, number, number], a: number): [number, numbe
 
 export interface ShapePreviewProps {
   specId: string;
+  /** Draw this wireframe instead of the shape's own (the 4D polytope cards). */
+  wire?: { vertices: [number, number, number][]; edges: [number, number][] };
   size: number;
   spin?: boolean;
   /** Line colours, near and far (default: the app's green). */
   colors?: [string, string];
 }
 
-export default function ShapePreview({ specId, size, spin = false, colors = [LINE_COLOR, LINE_COLOR_DIM] }: ShapePreviewProps) {
+export default function ShapePreview({ specId, wire, size, spin = false, colors = [LINE_COLOR, LINE_COLOR_DIM] }: ShapePreviewProps) {
   const [nearColor, farColor] = colors;
   const canvasRef = useRef<HTMLCanvasElement | null>(null);
   // A per-instance phase offset so multiple static cards don't all freeze
@@ -84,7 +86,7 @@ export default function ShapePreview({ specId, size, spin = false, colors = [LIN
 
   useEffect(() => {
     const canvas = canvasRef.current;
-    const spec = getAnySpec(specId);
+    const spec = wire ?? getAnySpec(specId);
     if (!canvas || !spec) return;
 
     const dpr = typeof window !== 'undefined' ? window.devicePixelRatio || 1 : 1;
@@ -146,7 +148,7 @@ export default function ShapePreview({ specId, size, spin = false, colors = [LIN
     }
     draw();
     return undefined;
-  }, [specId, size, spin, phase, nearColor, farColor]);
+  }, [specId, wire, size, spin, phase, nearColor, farColor]);
 
   return (
     <canvas

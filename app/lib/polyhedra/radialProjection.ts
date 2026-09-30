@@ -364,8 +364,8 @@ export interface RadialProjectionScene {
 // than a legible nested structure. A larger margin is a gentler
 // perspective (still the same formula, just farther from the object),
 // keeping outer/inner cells within a readable size range.
-export function buildRadialProjectionScene(spec: PolyhedronSpec, viewMargin = 5): RadialProjectionScene {
-  const complex = buildCellComplex(spec);
+export function buildRadialProjectionScene(spec: PolyhedronSpec, viewMargin = 5, closure?: string): RadialProjectionScene {
+  const complex = buildCellComplex(spec, closure);
   const allVertices = complex.cells.flatMap((cell) => cellVertices(complex, cell));
   const maxAbsW = Math.max(...allVertices.map((v) => Math.abs(v[3])), 1e-6);
   const viewDistance = maxAbsW * viewMargin;

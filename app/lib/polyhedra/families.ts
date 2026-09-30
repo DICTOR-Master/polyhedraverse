@@ -25,7 +25,7 @@ import {
   MISCELLANEOUS_ADDITION_IDS,
   type PolyhedronSpec,
 } from './index';
-import { FOURD_CAPABLE_IDS } from './fourD';
+import { POLYTOPE_4D_IDS } from './polytopes4d';
 import { APERIODIC_ADDITION_IDS, APERIODIC_PAIRS } from './aperiodic';
 import { BRIDGES_3D_IDS } from './bridges';
 import { STELLATION_IDS } from './stellations';
@@ -39,7 +39,7 @@ export type FamilyKey =
   | 'PRISMS'
   | 'ANTIPRISMS'
   | 'BRIDGES_3D'
-  | 'FOURD'
+  | 'POLYTOPES_4D'
   | 'STELLATIONS'
   | 'PARALLELOHEDRA'
   | 'SPACE_FILLING_PAIRS'
@@ -65,7 +65,7 @@ export const FAMILY_ORDER: FamilyKey[] = [
   'PRISMS',
   'ANTIPRISMS',
   'BRIDGES_3D',
-  'FOURD',
+  'POLYTOPES_4D',
   'MISCELLANEOUS',
 ];
 
@@ -104,26 +104,26 @@ export const FAMILY_META: Record<FamilyKey, { label: string; symbol: string }> =
   STELLATIONS: { label: 'Stellations', symbol: '✦' },
   PRISMS: { label: 'Prisms', symbol: '▭' },
   ANTIPRISMS: { label: 'Antiprisms', symbol: '▬' },
-  // 4D extension (fourD.ts): shapes that can be a "cell" of some convex
-  // 4-polytope, per closureClass's own dihedral-angle-defect math -- a
-  // real, computed cross-cutting family (every member also keeps its
-  // original family membership), not a hand-curated list. "Two joined
-  // squares" evokes a tesseract's own classic projection, distinct from
-  // every other symbol here.
-  FOURD: { label: '4D-Capable', symbol: '⧉' },
+  // 4D Polytopes (polytopes4d.ts, direct decisions 2026-09-30): the six
+  // convex regular 4-polytopes themselves, each built by RCP-C2B from its
+  // seed cell. Not 3D shapes, so its members are polytope ids, not
+  // registry ids. It replaces the old 4D-Capable family of seed cells,
+  // which live on in 3D+ Bridges' Cells section; the gold 4D badge still
+  // marks them (FOURD_CAPABLE_IDS). "Two joined squares" evokes the
+  // tesseract's classic projection.
+  POLYTOPES_4D: { label: '4D Polytopes', symbol: '⧉' },
   // 3D+ Bridges (bridges.ts): 3D shapes that cross a dimensional boundary; the
   // "+" matches Rhombiverse's 1D+/2D+/3D+ naming. A diagonal
   // two-way arrow: passing between dimensions, distinct from ⇄ (pairs).
   BRIDGES_3D: { label: '3D+ Bridges', symbol: '⤢' },
   // Fedorov's 5 real parallelohedra (Cube, Hexagonal Prism, Rhombic
   // Dodecahedron, Elongated Dodecahedron, Truncated Octahedron) -- the
-  // only convex solids that tile 3D space by translation alone. Like
-  // FOURD, a computed cross-cutting family layered on top of each
-  // shape's own native family (all 5 keep their original membership;
-  // see BASE_IDS.PARALLELOHEDRA below), not a new geometry source. The
-  // orthogonal-crosshatch "mosaic" glyph literally reads as tiled
-  // squares -- the defining property of this family -- and is
-  // deliberately distinct from FOURD's diagonal-crosshatch ⧉ (a
+  // only convex solids that tile 3D space by translation alone. A
+  // cross-cutting family layered on top of each shape's own native family
+  // (all keep their original membership; see BASE_IDS.PARALLELOHEDRA
+  // below), not a new geometry source. The orthogonal-crosshatch "mosaic"
+  // glyph reads as tiled squares -- the defining property of this family
+  // -- distinct from 4D Polytopes' diagonal-crosshatch ⧉ (a
   // tesseract-projection cue, not a tiling one).
   PARALLELOHEDRA: { label: 'Parallelohedra', symbol: '▦' },
   // Space-Filling Pairs (2026-09-24, direct request: "complementary space
@@ -185,23 +185,13 @@ const BASE_IDS: Record<FamilyKey, string[]> = {
   STELLATIONS: STELLATION_IDS,
   PRISMS: PRISM_ANTIPRISM_ADDITION_IDS.filter((id) => id.startsWith('PRISM_')),
   ANTIPRISMS: PRISM_ANTIPRISM_ADDITION_IDS.filter((id) => id.startsWith('ANTIPRISM_')),
-  // Unlike every family above, FOURD's own membership genuinely IS just
-  // this computed list from the start -- there's no separate "FOURD
-  // registry file" the way DELTAHEDRON_IDS/PLATONIC_ADDITION_IDS/etc.
-  // are each their own family's real data file; every 4D-capable shape
-  // is already a full member of one of those. EXTRA_MEMBERSHIP below is
-  // reserved for documented, one-off overlaps between the natural
-  // per-family data files -- this is the base membership itself, so it
-  // belongs here, not there.
-  FOURD: FOURD_CAPABLE_IDS,
+  POLYTOPES_4D: POLYTOPE_4D_IDS,
   // The 5 real Fedorov parallelohedra, by their existing POLYHEDRA ids
   // (CUBE: platonic.ts: PRISM_6: prisms.ts; RHOMBIC_DODECAHEDRON:
   // catalan.ts; ELONGATED_DODECAHEDRON: miscellaneous/rd-relatives;
-  // TRUNCATED_OCTAHEDRON: archimedean.ts) -- same cross-cutting pattern
-  // as FOURD above, not a new geometry source. Curated by hand (there's
-  // no "isParallelohedron" computable property here the way FOURD has
-  // closureClass's dihedral-angle math), since there are exactly 5 and
-  // they're a fixed, named mathematical result (Fedorov 1885).
+  // TRUNCATED_OCTAHEDRON: archimedean.ts) -- a cross-cutting list, not a
+  // new geometry source. Curated by hand, since there are exactly 5 types
+  // and they're a fixed, named mathematical result (Fedorov 1885).
   PARALLELOHEDRA: [...FEDOROV_FIVE, ...PARALLELOHEDRON_VARIANTS],
   // Every shape appearing in SPACE_FILLING_PAIRS below (deduped) -- the
   // pair structure itself is what the browser shows (pair rows), this is
@@ -303,6 +293,11 @@ const familyIdsCache = new Map<FamilyKey, string[]>();
 export function familyIds(family: FamilyKey): string[] {
   const cached = familyIdsCache.get(family);
   if (cached) return cached;
+  // The 4D polytopes aren't 3D shapes: they keep their own order (A4, B4, F4, H4).
+  if (family === 'POLYTOPES_4D') {
+    familyIdsCache.set(family, BASE_IDS.POLYTOPES_4D);
+    return BASE_IDS.POLYTOPES_4D;
+  }
   const ids = sortByFaceType(
     FAMILY_ORDER.includes(family)
       ? Array.from(new Set([...BASE_IDS[family], ...EXTRA_MEMBERSHIP.filter((e) => e.family === family).map((e) => e.id)]))

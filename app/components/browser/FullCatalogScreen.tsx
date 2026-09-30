@@ -24,6 +24,8 @@ import { BRIDGE_SECTIONS } from '../../lib/polyhedra/bridges';
 import { STELLATION_IDS, stellationInfo, stellatedSolidName } from '../../lib/polyhedra/stellations';
 import { t, type LangCode } from '../../lib/i18n';
 import ShapePreviewCard from './ShapePreviewCard';
+import PolytopeCard from './PolytopeCard';
+import { POLYTOPES_4D, SYMMETRIES_4D } from '../../lib/polyhedra/polytopes4d';
 
 /** DOM id for a given section's own heading, used by focusSection's
  *  scroll-into-view -- 'STAR' for the trailing star-polyhedra section,
@@ -153,6 +155,31 @@ export default function FullCatalogScreen({
                   </div>
                 ))}
               </div>
+            </div>
+          );
+        }
+        if (fam === 'POLYTOPES_4D') {
+          // The six regular 4-polytopes by symmetry group: A4, B4 (dual
+          // pair), F4, H4 (dual pair). Their cards are polytopes, not shapes.
+          return (
+            <div key={fam} id={sectionDomId(fam)}>
+              <div style={{ display: 'flex', alignItems: 'baseline', gap: 8, marginBottom: 10 }}>
+                <span style={{ fontSize: 18, color: '#47cc24' }}>{meta.symbol}</span>
+                <span style={{ fontSize: 13, fontWeight: 700, color: '#a9f795', letterSpacing: '.02em' }}>{meta.label}</span>
+                <span style={{ fontFamily: 'monospace', fontSize: 11, color: '#3a9e1f' }}>{ids.length}</span>
+              </div>
+              {SYMMETRIES_4D.map((group) => {
+                const shown = POLYTOPES_4D.filter((p) => p.symmetry === group && ids.includes(p.id));
+                if (shown.length === 0) return null;
+                return (
+                  <div key={group} data-testid={`polytope-section-${group}`} style={{ marginBottom: 14 }}>
+                    <div style={{ fontSize: 13, fontWeight: 700, color: '#bfe3f0', letterSpacing: '.03em', borderBottom: '1px solid rgba(191,227,240,.35)', paddingBottom: 4, marginBottom: 8 }}>{t('polytope.symmetry', lang, { group })}</div>
+                    <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fill, minmax(120px, 1fr))', gap: 10 }}>
+                      {shown.map((p) => <PolytopeCard key={p.id} id={p.id} lang={lang} onOpen={onOpenShape} />)}
+                    </div>
+                  </div>
+                );
+              })}
             </div>
           );
         }
@@ -296,16 +323,16 @@ export default function FullCatalogScreen({
           </div>
         );
       })}
-      {/* Star polyhedra (Kepler-Poinsot solids) -- reference only, never
-          buildable (see starPolyhedra.ts's own header), so this section is
-          skipped entirely whenever Full Catalog is opened as an attach-flow
-          picker (filterIds set): none of these 4 could ever be a valid
-          attach target, and there's no "Add to Scene" for them anyway. */}
+      {/* Star polyhedra (Kepler-Poinsot solids): never attachable (their
+          faces cross; see starPolyhedra.ts), so this section is skipped
+          whenever Full Catalog is an attach-flow picker (filterIds set).
+          Three of them can be built from Stellations pieces on a
+          dodecahedron; their details say how. */}
       {!filterIds && STAR_POLYHEDRON_IDS.length > 0 && (
         <div id={sectionDomId('STAR')}>
           <div style={{ display: 'flex', alignItems: 'baseline', gap: 8, marginBottom: 10 }}>
             <span style={{ fontSize: 18, color: '#47cc24' }}>★</span>
-            <span style={{ fontSize: 13, fontWeight: 700, color: '#a9f795', letterSpacing: '.02em' }}>Star Polyhedra — reference only</span>
+            <span style={{ fontSize: 13, fontWeight: 700, color: '#a9f795', letterSpacing: '.02em' }}>Star Polyhedra</span>
             <span style={{ fontFamily: 'monospace', fontSize: 11, color: '#3a9e1f' }}>{STAR_POLYHEDRON_IDS.length}</span>
           </div>
           <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fill, minmax(120px, 1fr))', gap: 10 }}>

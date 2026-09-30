@@ -27,6 +27,8 @@ import SearchScreen from './SearchScreen';
 import FavoritesScreen from './FavoritesScreen';
 import SceneScreen from './SceneScreen';
 import ShapeDetailDrawer from './ShapeDetailDrawer';
+import PolytopeDetailDrawer from './PolytopeDetailDrawer';
+import { polytope4D } from '../../lib/polyhedra/polytopes4d';
 import CompareScreen from './CompareScreen';
 import FullCatalogScreen from './FullCatalogScreen';
 import type { AssemblySummary } from './types';
@@ -45,6 +47,8 @@ export interface ShapeBrowserProps {
   /** Fired once a shape is chosen for the current intent -- same single
    *  callback contract as PolyhedralWheel's onSelect. */
   onSelect: (shapeId: string) => void;
+  /** A 4D polytope's Build: start RCP-C2B from this seed cell towards this target. */
+  onBuildPolytope?: (seed: string, target: string) => void;
   /** Phase 2: live scene summary. Undefined in Phase 1 (Scene tab shows
    *  an empty-state placeholder). */
   assemblySummary?: AssemblySummary;
@@ -90,6 +94,7 @@ export default function ShapeBrowser({
   filterIds,
   partnerIds,
   onSelect,
+  onBuildPolytope,
   assemblySummary,
   fullCatalogRequestId,
   fullCatalogFocusSection,
@@ -165,7 +170,8 @@ export default function ShapeBrowser({
 
   const openShape = (id: string) => {
     setSelectedShapeId(id);
-    recordViewed(id);
+    // Recents hold shapes; a 4D polytope isn't one.
+    if (!polytope4D(id)) recordViewed(id);
   };
 
   const toggleCompare = (id: string) => {
@@ -182,9 +188,10 @@ export default function ShapeBrowser({
     // renders it as one row per pair, instead of a flat filtered search.
     // 3D+ Bridges likewise, for its Cells/Shadows/Slices/Corners sections
     // (direct report 2026-09-30: "cant make out four sections"), and
-    // Stellations for its one section per solid, and Parallelohedra for
-    // Fedorov's five and their variants.
-    if (family === 'SPACE_FILLING_PAIRS' || family === 'BRIDGES_3D' || family === 'STELLATIONS' || family === 'PARALLELOHEDRA') {
+    // Stellations for its one section per solid, Parallelohedra for
+    // Fedorov's five and their variants, and 4D Polytopes for its
+    // symmetry sections.
+    if (family === 'SPACE_FILLING_PAIRS' || family === 'BRIDGES_3D' || family === 'STELLATIONS' || family === 'PARALLELOHEDRA' || family === 'POLYTOPES_4D') {
       setFocusSection(family);
       setShowFullCatalog(true);
       return;
@@ -328,7 +335,18 @@ export default function ShapeBrowser({
           </>
         )}
 
-        {selectedShapeId && (
+        {selectedShapeId && polytope4D(selectedShapeId) && (
+          <PolytopeDetailDrawer
+            id={selectedShapeId}
+            lang={lang}
+            onClose={() => setSelectedShapeId(null)}
+            onBuild={(seed, target) => {
+              setSelectedShapeId(null);
+              onBuildPolytope?.(seed, target);
+            }}
+          />
+        )}
+        {selectedShapeId && !polytope4D(selectedShapeId) && (
           <ShapeDetailDrawer
             specId={selectedShapeId}
             lang={lang}

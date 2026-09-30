@@ -4,6 +4,7 @@ import { getAnySpec } from '../../lib/polyhedra/lookup';
 import { FAMILY_META, familiesFor, catalogByFamily, pairPartners, type FamilyKey } from '../../lib/polyhedra/families';
 import { t, type LangCode } from '../../lib/i18n';
 import ShapePreview from './ShapePreview';
+import { FOURD_CAPABLE_IDS } from '../../lib/polyhedra/fourD';
 
 const CARD_PREVIEW_SIZE = 88;
 const PAIR_MINI_SIZE = 22;
@@ -52,11 +53,12 @@ export default function ShapePreviewCard({
   const fam = primaryFamilyFor(specId, activeFamilies);
   const catalogNumber = fam ? catalogByFamily(fam)[specId] : undefined;
   const displayName = spec.name.replaceAll('_', ' ');
-  // 4D extension: a real, distinct badge for the 4 shapes in FOURD, not
+  // 4D extension: a real, distinct badge for the 4D seed cells, not
   // just the generic "+N also in..." cross-family indicator below --
   // direct user request for a "clear 4D additional highlighted label for
   // clarity," separate from and more prominent than the plain count.
-  const isFourD = families.includes('FOURD');
+  // The gold 4D badge: this shape is the cell of a regular 4-polytope.
+  const isFourD = FOURD_CAPABLE_IDS.includes(specId);
   // Pair partners as small, still, gold wireframes down the right edge,
   // under the 4D badge when there is one (direct decisions 2026-09-30:
   // they name the partner outright, so no colour can imply a wrong match;

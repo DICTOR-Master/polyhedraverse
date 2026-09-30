@@ -11,7 +11,6 @@ import {
   triangulateFace,
   buildFaceConnectors,
   facesCongruent,
-  faceRotationalSymmetry,
   isFaceEligibleForAttach,
 } from '../lib/polyhedra';
 import { DELTAHEDRA } from '../lib/polyhedra/deltahedra';
@@ -20,6 +19,7 @@ import { emptyAssembly, isValidAssembly, migrateLegacyAssembly, ASSEMBLY_STORAGE
 import { matchRewriteVertices, REWRITE_TARGET } from '../lib/polyhedra/rewrite';
 import { collectSubtree, findParentConnection, hasCycle } from '../lib/graph';
 import { describeAssembly } from '../lib/assemblyNaming';
+import { faceAttachOptions } from '../lib/faceAttach';
 import { FOURD_CAPABLE_IDS } from '../lib/polyhedra/fourD';
 import { buildWallPrism, duoprismBuildDepth } from '../lib/polyhedra/duoprism';
 import { buildRcpComplex, buildSyntheticCellSpec, cellsAtShell, maxShell, parseRcpTarget, rcpTargetOptions, rootSpecForView, type RcpComplex } from '../lib/polyhedra/rcpBuild';
@@ -177,15 +177,18 @@ interface PendingFaceAttach {
   targetPlaced: PlacedShape;
   targetFaceIndex: number;
   incomingFaceIndex: number;
-  baseQuaternion: THREE.Quaternion; // the fully-aligned (registration 0) orientation
-  axis: THREE.Vector3; // local face-normal axis to register/twist around
-  // The face's OWN rotational symmetry order (faceRotationalSymmetry), not
-  // its vertex count — only the same for a regular n-gon. A rhombus has 4
-  // vertices but only 2 valid registrations (2-fold symmetry: its interior
-  // angles alternate); most Catalan-solid faces have just 1 (no rotational
-  // symmetry beyond identity). See docs/catalan-solids-spec.md.
-  registrationCount: number;
-  registration: number; // current discrete rotational registration, 0..registrationCount-1
+  // Every distinct way the piece can sit on the target face, each a full
+  // placement (orientation AND position: turning about the face normal
+  // moves a piece whose face centre is off its own centre line, such as
+  // a sheared block). First the registrations of the first matching face
+  // (the face's own rotational symmetry order, faceRotationalSymmetry:
+  // a rhombus has 2, most Catalan faces 1), then any placement another
+  // matching face gives that isn't already there -- needed when the
+  // piece's matching faces aren't all alike (direct report 2026-09-30:
+  // DICTO's blocks couldn't be turned to build their prism, which needs
+  // a particular one of the all-rhombus block's four 72 degree rhombi).
+  options: { incomingFaceIndex: number; quaternion: THREE.Quaternion; position: THREE.Vector3 }[];
+  registration: number; // index into options
   dragAccumPx: number;
 }
 
@@ -228,6 +231,11 @@ export interface DeleteResult {
 export interface ShapeViewerHandle {
   /** Clears the scene and places a single instance of `specId` at the origin. */
   reset(specId: string): void;
+  /**
+   * A 4D Polytopes card's Build: clears the scene, places the seed cell,
+   * selects it and starts RCP-C2B towards `target`, with no picker.
+   */
+  startPolytopeBuild(seedSpecId: string, target: string): void;
   /** Places `specId` at the currently selected target vertex as a pending (draggable) attach. */
   beginAttach(specId: string): void;
   /**
@@ -2143,53 +2151,18 @@ export default function ShapeViewer({
       // direct user instruction, scoped deliberately to this one family
       // so Catalan solids' own irregular rhombi/kite faces keep working
       // exactly as already shipped.
-      const incomingFaceIndex = spec.faces.findIndex(
-        (f, fi) => isFaceEligibleForAttach(spec, fi) && facesCongruent(targetSpec.vertices, targetFaceVerts, spec.vertices, f),
-      );
-      if (incomingFaceIndex === -1) return; // UI should only ever offer compatible shapes
+      const incomingFaces = spec.faces
+        .map((f, fi) => fi)
+        .filter((fi) => isFaceEligibleForAttach(spec, fi) && facesCongruent(targetSpec.vertices, targetFaceVerts, spec.vertices, spec.faces[fi]));
+      if (incomingFaces.length === 0) return; // UI should only ever offer compatible shapes
+      const incomingFaceIndex = incomingFaces[0];
 
       scene.updateMatrixWorld(true);
 
-      const targetFaceConnector = buildFaceConnectors(targetSpec)[targetFaceIndex];
-      const incomingFaceConnector = buildFaceConnectors(spec)[incomingFaceIndex];
-
-      // Read the target face's position/normal through its foldGroup
-      // (always identity since the fold slider was retired 2026-09-25, so
-      // this equals `object`'s own transform).
-      const targetWorldPos = new THREE.Vector3(...targetFaceConnector.pos).applyMatrix4(targetPlaced.foldGroup.matrixWorld);
-      const targetWorldQuat = new THREE.Quaternion();
-      targetPlaced.foldGroup.getWorldQuaternion(targetWorldQuat);
-      const targetWorldNormal = new THREE.Vector3(...targetFaceConnector.normal).applyQuaternion(targetWorldQuat).normalize();
-
-      const Cg = new THREE.Vector3(...incomingFaceConnector.pos);
-      const Ng = new THREE.Vector3(...incomingFaceConnector.normal);
-
-      // Point the incoming face's outward normal opposite the target's, same
-      // principle as vertex-attach: incoming grows away from target, faces
-      // meeting back-to-back rather than overlapping.
-      const desiredWorldDir = targetWorldNormal.clone().negate();
-      const baseQuat = new THREE.Quaternion().setFromUnitVectors(Ng, desiredWorldDir);
-
-      // Analytic twist: align incoming's own face-vertex-0 direction to
-      // where target's face-vertex-0 needs it, in the shared plane.
-      const targetFaceVertexIndices = targetSpec.faces[targetFaceIndex];
-      const targetV0World = new THREE.Vector3(...targetSpec.vertices[targetFaceVertexIndices[0]]).applyMatrix4(
-        targetPlaced.foldGroup.matrixWorld,
-      );
-      const dTargetWorld = targetV0World.clone().sub(targetWorldPos).normalize();
-      const dTargetLocal = dTargetWorld.clone().applyQuaternion(baseQuat.clone().invert());
-
-      const incomingFaceVertexIndices = spec.faces[incomingFaceIndex];
-      const incomingV0 = new THREE.Vector3(...spec.vertices[incomingFaceVertexIndices[0]]);
-      const dIncomingLocal = incomingV0.clone().sub(Cg).normalize();
-
-      const u = dIncomingLocal.clone();
-      const w = new THREE.Vector3().crossVectors(Ng, u).normalize();
-      const theta = Math.atan2(dTargetLocal.dot(w), dTargetLocal.dot(u));
-
-      const registrationBaseQuat = baseQuat.clone().multiply(new THREE.Quaternion().setFromAxisAngle(Ng, theta));
-      const rotatedCg = Cg.clone().applyQuaternion(registrationBaseQuat);
-      const position = targetWorldPos.clone().sub(rotatedCg);
+      const options = faceAttachOptions(targetSpec, targetFaceIndex, targetPlaced.foldGroup.matrixWorld, spec, incomingFaces);
+      if (options.length === 0) return; // congruent faces always seat flush; defensive only
+      const registrationBaseQuat = options[0].quaternion;
+      const position = options[0].position;
 
       const nodeId = crypto.randomUUID();
       const placed = buildPlacedShape(spec, nodeId);
@@ -2204,7 +2177,6 @@ export default function ShapeViewer({
       applyNodeAppearance(targetPlaced, targetPlaced === selectedNodeRef.current);
       placed.faceOccupied[incomingFaceIndex] = true;
 
-      const registrationCount = faceRotationalSymmetry(targetSpec.vertices, targetFaceVerts);
       pendingRef.current = {
         kind: 'face',
         placed,
@@ -2212,9 +2184,7 @@ export default function ShapeViewer({
         targetPlaced,
         targetFaceIndex,
         incomingFaceIndex,
-        baseQuaternion: registrationBaseQuat,
-        axis: Ng,
-        registrationCount,
+        options,
         registration: 0,
         dragAccumPx: 0,
       };
@@ -2230,7 +2200,7 @@ export default function ShapeViewer({
       // exact same counter every other face-attach already shows mid-drag
       // (no dedicated new UI affordance) — see docs/catalan-solids-spec.md.
       const initialRect = container.getBoundingClientRect();
-      label.textContent = `registration 1/${registrationCount}`;
+      label.textContent = `registration 1/${options.length}`;
       label.style.left = `${initialRect.width / 2}px`;
       label.style.top = `${initialRect.height / 2}px`;
       label.style.display = 'block';
@@ -2778,6 +2748,15 @@ export default function ShapeViewer({
 
     // Every handle call is followed by checkpoint(), so any change made
     // through the handle -- whatever it is -- becomes one undo step.
+    const startPolytopeBuild = (seedSpecId: string, target: string) => {
+      placeRoot(seedSpecId);
+      const root = placedRef.current[0];
+      if (!root) return;
+      selectedNodeRef.current = root;
+      applyNodeAppearance(root, true);
+      publishNodeSelection(root);
+      beginRcpBuild(seedSpecId, target);
+    };
     const withCheckpoint = <A extends unknown[], R>(fn: (...args: A) => R) => (...args: A): R => {
       const result = fn(...args);
       checkpoint();
@@ -2802,6 +2781,7 @@ export default function ShapeViewer({
       setColorPrefs,
       paintSelectedNode: withCheckpoint(paintSelectedNode),
       reset: withCheckpoint(placeRoot),
+      startPolytopeBuild: withCheckpoint(startPolytopeBuild),
       beginAttach: withCheckpoint(beginAttach),
       beginFaceAttach: withCheckpoint(beginFaceAttach),
       beginDuoprismAttach: withCheckpoint(beginDuoprismAttach),
@@ -3019,19 +2999,25 @@ export default function ShapeViewer({
             label.style.display = 'block';
           } else if (pending.kind === 'face') {
             pending.dragAccumPx += dragDeltaX;
+            const count = pending.options.length;
             while (pending.dragAccumPx >= FACE_REGISTRATION_DRAG_PX) {
               pending.dragAccumPx -= FACE_REGISTRATION_DRAG_PX;
-              pending.registration = (pending.registration + 1) % pending.registrationCount;
+              pending.registration = (pending.registration + 1) % count;
             }
             while (pending.dragAccumPx <= -FACE_REGISTRATION_DRAG_PX) {
               pending.dragAccumPx += FACE_REGISTRATION_DRAG_PX;
-              pending.registration = (pending.registration - 1 + pending.registrationCount) % pending.registrationCount;
+              pending.registration = (pending.registration - 1 + count) % count;
             }
-            const angle = (pending.registration * 2 * Math.PI) / pending.registrationCount;
-            const twistQuat = new THREE.Quaternion().setFromAxisAngle(pending.axis, angle);
-            pending.placed.object.quaternion.copy(pending.baseQuaternion).multiply(twistQuat);
+            const option = pending.options[pending.registration];
+            pending.placed.object.quaternion.copy(option.quaternion);
+            pending.placed.object.position.copy(option.position);
+            if (option.incomingFaceIndex !== pending.incomingFaceIndex) {
+              pending.placed.faceOccupied[pending.incomingFaceIndex] = false;
+              pending.placed.faceOccupied[option.incomingFaceIndex] = true;
+              pending.incomingFaceIndex = option.incomingFaceIndex;
+            }
 
-            label.textContent = `registration ${pending.registration + 1}/${pending.registrationCount}`;
+            label.textContent = `registration ${pending.registration + 1}/${count}`;
             positionLabel(event, rect);
             label.style.display = 'block';
           }

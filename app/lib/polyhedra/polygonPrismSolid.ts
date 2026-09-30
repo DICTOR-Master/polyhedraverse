@@ -27,33 +27,14 @@
  * chosen (direct user confirmation: pick the short edge, extending
  * this project's own precedent in `kiteToRdH.ts`/`kiteToUHex.ts`).
  *
- * **A real, structural limitation, found 2026-09-17 while wiring up
- * branching attachment for these lateral faces**: the app's own
- * face-attach placement (`computeFaceAttach`, mirrored in
- * `scripts/verify-face-attach.ts`) aligns two congruent faces by
- * matching vertex 0's own direction and assuming the rest follow via
- * `incoming[i] <-> target[(n-i)%n]` — a REFLECTION, which is only a
- * valid correspondence when vertex 0 sits on a real mirror axis that
- * passes THROUGH a vertex (`rotateFaceToMirrorAxis`'s own precondition).
- * A genuine (non-square) RECTANGLE's only mirror axes pass through
- * EDGE MIDPOINTS, never a vertex — confirmed directly, not assumed: for
- * edges `[p,q,p,q]` (p != q), `rotateFaceToMirrorAxis`'s own palindrome
- * check fails at every starting index, the same way it already does for
- * a genuinely asymmetric scalene triangle. This means NO vertex-0
- * choice makes two congruent rectangles place correctly under the
- * current formula, for ANY pair, not just a mismatched one — a deeper
- * gap than the rhombus/kite tie-break bug this same file's construction
- * exposed and `core.ts`'s `rotateFaceToMirrorAxis` was fixed for.
- * Caught computationally (`verify:face-attach` on a real kite prism's
- * own two rectangle lateral faces, even against ITSELF), not by
- * inspection. A real fix needs `computeFaceAttach` itself to detect an
- * edge-midpoint axis and use a different correspondence formula — out
- * of scope for this session; the kite pieces instead keep their 2
- * rectangle lateral faces OUT of `attachableFaceIndices` (their 2
- * square lateral faces and both caps stay in), so nothing currently
- * placeable in the app is placed incorrectly. See
- * `miscellaneous/quad-prisms/index.ts`'s own `kitePrism()` for where
- * this is applied.
+ * **Rectangles, found 2026-09-17 and fixed 2026-09-30.** Face attach used
+ * to line up corner 0 with corner 0 and then turn by the face's symmetry,
+ * which assumes a mirror line through a corner. A genuine (non-square)
+ * rectangle's mirror lines pass through edge midpoints, so no turn ever
+ * seated one, and the kite prisms kept their rectangle sides unattachable.
+ * Face attach now tries each corner against corner 0 and keeps only the
+ * placements where the faces sit flush (app/lib/faceAttach.ts), which
+ * seats any pair of congruent faces; every side of these prisms attaches.
  */
 
 import { type Vec3, type PolyhedronSpec, buildConnectors, centerVertices, rotateFaceToMirrorAxis } from './core';

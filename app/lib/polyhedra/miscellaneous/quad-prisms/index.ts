@@ -64,20 +64,20 @@ function kitePrism(id: string, name: string, catalanId: string): PolyhedronSpec 
   const normal = buildFaceConnectors(source)[0].normal;
   const { edgeShort } = measureKiteFace(catalanId);
 
-  // Which of the 4 lateral faces will be genuine squares (short base
-  // edge == height) vs. non-square rectangles -- computed from the base
-  // face's own real edges, not assumed from a fixed index pattern, since
-  // the whole point is to hand `buildPolygonPrismSolid` an explicit,
-  // checked attachable list. Only the squares (+ both caps) go in:
-  // rectangle lateral faces have a REAL placement-algorithm limitation
-  // (see polygonPrismSolid.ts's own header) and must stay excluded even
-  // though the quad-prism family is otherwise open for branching.
+  // Which of the 4 lateral faces are genuine squares (short base edge ==
+  // height) vs. non-square rectangles -- computed from the base face's own
+  // real edges, not assumed from a fixed index pattern. Every face
+  // attaches: the rectangles used to be left out, since the old face-attach
+  // rule (corner 0 to corner 0, then turn) could never seat a face whose
+  // mirror lines pass through edge midpoints; face attach now tries each
+  // corner and keeps only flush placements (app/lib/faceAttach.ts,
+  // 2026-09-30).
   const squareLateralFaces = [0, 1, 2, 3]
     .filter((i) => Math.abs(dist(faceVertices[i], faceVertices[(i + 1) % 4]) - edgeShort) < 1e-9)
     .map((i) => i + 2);
   if (squareLateralFaces.length !== 2) throw new Error(`${id}: expected exactly 2 short (square) base edges, found ${squareLateralFaces.length}`);
 
-  const { spec, problems } = buildPolygonPrismSolid({ id, name, faceVertices, normal, height: edgeShort, attachableFaces: [0, 1, ...squareLateralFaces] });
+  const { spec, problems } = buildPolygonPrismSolid({ id, name, faceVertices, normal, height: edgeShort, attachableFaces: [0, 1, 2, 3, 4, 5] });
   if (problems.length > 0) throw new Error(`${id}: unresolved problems: ${JSON.stringify(problems)}`);
   if (!facesCongruent(spec.vertices, spec.faces[0], source.vertices, face)) {
     throw new Error(`${id}: built cap is not congruent to the real ${catalanId} face it was extruded from`);

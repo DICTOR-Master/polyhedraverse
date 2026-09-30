@@ -32,6 +32,8 @@ Los nombres de los botones aparecen tal como se ven en la aplicación (los que l
 
 Dos formas unidas cara con cara comparten esa cara exactamente; por ejemplo, un cubo sobre otro cubo.
 
+Al arrastrar recorres todas las formas en que la nueva figura puede apoyarse en esa cara, y se van contando («registration 3/8»): cada giro de la cara y, cuando la nueva figura tiene caras de ese tamaño que no son iguales, también cada una de ellas, así que una pieza con caras desiguales siempre se puede colocar como quieras. Por ejemplo, para construir el prisma inclinado de DICTO, empieza con el bloque de caras cuadradas, une el bloque de rombos a uno de sus rombos de 72° y arrastra hasta que las caras hexagonales queden planas, y luego une un segundo bloque de caras cuadradas del mismo modo.
+
 ### Une una forma a un vértice
 
 1. Toca un **vértice resaltado**. Solo se iluminan los vértices libres. Las formas que aún tienen sitio para crecer brillan.
@@ -72,14 +74,14 @@ Las formas de **3D+ Bridges** también dicen, en sus detalles, a qué politopo s
 | Catalan | Los duales de los sólidos arquimedianos |
 | Stellations | Piezas para los sólidos platónicos y de Catalan, cada una encaja en una cara: plana (las pirámides se unen en un nuevo sólido convexo, como el cubo a partir de un tetraedro) y luego cada estelación que el sólido tiene de verdad, hasta la tercera. Una pieza en cada cara construye esa estelación exactamente, p. ej. los dodecaedros estrellado pequeño, grande y estrellado grande |
 | Prisms, Antiprisms | Dos polígonos unidos por una banda de cuadrados o triángulos |
-| 4D-Capable | Formas que se cierran en un politopo 4D regular |
+| 4D Polytopes | Los seis politopos 4D regulares (5, 8, 16, 24, 120 y 600 celdas) por simetría; abre uno y Constrúyelo coloca su celda semilla y empieza a construirlo celda a celda |
 | Parallelohedra | Formas que llenan el espacio solo por traslación: los cinco de Fedorov y sus variantes (el romboedro, y el prisma hexagonal inclinado de DICTO con sus dos bloques, hallados con Zometool) |
 | Space-Filling Pairs | Dos formas que llenan el espacio juntas |
 | Aperiodic Sets | Dos pares aperiódicos: los romboedros áureos alargado y achatado (la teselación de Penrose en 3D) y los prismas de rombo de Penrose grueso y fino (la teselación 5D en capas) |
 | 3D+ Bridges | Formas que son sombra, sección, celda o esquina de un politopo de más dimensiones; sus detalles dicen cuál |
 | Miscellaneous | Pirámides graduadas, piezas conectoras y extensores de prisma |
 
-También aparecen los poliedros estrellados. Son solo de referencia y no sirven para construir, porque sus caras se atraviesan entre sí.
+También aparecen los poliedros estrellados. No se pueden acoplar, porque sus caras se atraviesan entre sí, pero tres sí se pueden construir: un dodecaedro con una pieza de **Stellations** en cada cara da el pequeño dodecaedro estrellado (pieza 2), el gran dodecaedro (3) o el gran dodecaedro estrellado (4).
 
 ## Observa tu construcción
 

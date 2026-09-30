@@ -111,10 +111,9 @@ for (const { id, catalanId } of KITE_PIECES) {
   }
   check(`${id}: exactly 2 square + 2 rectangle lateral faces (got ${squareCount} + ${rectangleCount})`, squareCount === 2 && rectangleCount === 2);
 
-  // Only the caps + the 2 genuine squares are expected attachable -- the
-  // 2 non-square rectangles stay out (real placement-algorithm
-  // limitation, see polygonPrismSolid.ts's own header).
-  checkStructure(id, [0, 1, ...squareFaceIndices].sort((a, b) => a - b));
+  // Every face attaches, the rectangles included, since face attach seats
+  // any congruent pair (see polygonPrismSolid.ts's header).
+  checkStructure(id, [0, 1, 2, 3, 4, 5]);
   const spec = QUAD_PRISM_ADDITIONS[id];
   if (!spec) continue;
   const source = CATALAN_ADDITIONS[catalanId];

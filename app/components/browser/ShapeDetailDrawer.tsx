@@ -13,6 +13,11 @@ import StarShapeViewer from './StarShapeViewer';
 import DuoprismShapeViewer from './DuoprismShapeViewer';
 import RadialProjectionViewer from './RadialProjectionViewer';
 
+// The dodecahedron's three stellations are Kepler-Poinsot solids: the star
+// can't be attached itself, but a dodecahedron with Stellations piece n on
+// every face builds it (verify-stellations.ts proves the pieces).
+const STAR_BUILD_SIZE: Record<string, number> = { SMALL_STELLATED_DODECAHEDRON: 2, GREAT_DODECAHEDRON: 3, GREAT_STELLATED_DODECAHEDRON: 4 };
+
 export interface ShapeDetailDrawerProps {
   specId: string;
   lang: LangCode;
@@ -132,7 +137,9 @@ export default function ShapeDetailDrawer({
               padding: '8px 18px',
             }}
           >
-            {t('star.referenceOnly', lang)}
+            {STAR_BUILD_SIZE[specId]
+              ? t('star.buildWithStellations', lang, { n: STAR_BUILD_SIZE[specId] })
+              : t('star.referenceOnly', lang)}
           </div>
 
         </div>

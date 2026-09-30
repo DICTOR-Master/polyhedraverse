@@ -20,7 +20,7 @@ A browser-based construction kit with 245 shapes, browsable in 14
 families — the classical convex polyhedra (Platonic, Archimedean, Johnson,
 Catalan, prisms, antiprisms, and the original Deltahedra set this
 project started from), Stellations, Parallelohedra, Space-Filling Pairs, Aperiodic Sets,
-3D+ Bridges, the 4D-capable seeds, and a "Miscellaneous" family (graded pyramids, RVCMG connector
+3D+ Bridges, 4D Polytopes (the six regular 4-polytopes, each built from its seed cell), and a "Miscellaneous" family (graded pyramids, RVCMG connector
 pieces, and quad-prism extenders — see "What's here now" below) — plus a genuine interactive path into the fourth
 dimension: **RCP-C2B
 (Radial Cell Projection, Click-to-Build)** lets you construct a real
@@ -86,7 +86,8 @@ direction, not yet delivered.
   Johnson, Catalan, Stellations (face pieces for the Platonic and Catalan
   solids: flat, then each stellation the solid really has, up to its
   third, exact from the face planes; one on every face builds it, e.g.
-  the great stellated dodecahedron or Escher's solid), prisms, antiprisms, the 4D-capable seeds,
+  the great stellated dodecahedron or Escher's solid), prisms, antiprisms, 4D Polytopes (5- to 600-cell, by symmetry, each
+  built from its seed cell),
   3D+ Bridges (shapes that are a shadow, slice, cell or vertex figure of a
   higher polytope, each with its bridge described),
   Parallelohedra (Fedorov's five that fill space alone, plus variants:

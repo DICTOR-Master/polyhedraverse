@@ -19,6 +19,8 @@ import { POLYHEDRA } from '../app/lib/polyhedra';
 import { type Vec3, facesCongruent, isRegularFace, validateShape } from '../app/lib/polyhedra/core';
 import { ZOME_DIRECTIONS } from '../app/lib/polyhedra/miscellaneous';
 import { familiesFor, familyIds } from '../app/lib/polyhedra/families';
+import { faceAttachOptions } from '../app/lib/faceAttach';
+import * as THREE from 'three';
 
 let failures = 0;
 let checks = 0;
@@ -186,7 +188,41 @@ for (const spec of [PRISM, SQUARE_BLOCK, RHOMBUS_BLOCK]) {
   check(fits(SQUARE_BLOCK, 'rhombus72', PRISM), "the square-faced block's 72 degree rhombi attach to the prism's");
 }
 
-// 7. Families.
+// 7. Face attach can build the prism from its blocks (direct report
+// 2026-09-30: the blocks wouldn't turn to make it). With the square-faced
+// block placed as it sits in the prism, face attach (the app's own
+// faceAttachOptions) must offer the all-rhombus block and the second
+// square-faced block exactly where they sit in it, flat top and bottom.
+{
+  const { u, v, w, d } = ZOME_DIRECTIONS;
+  const B: Vec3 = [-0.5, -Math.sqrt(3) / 2, 0];
+  const corners = (o: Vec3, a: Vec3, b: Vec3): Vec3[] => {
+    const out: Vec3[] = [];
+    for (const i of [0, 1]) for (const j of [0, 1]) for (const k of [0, 1]) out.push(add(add(add(o, scale(a, i)), scale(b, j)), scale(d, k)));
+    return out;
+  };
+  const centreOf = (pts: Vec3[]) => scale(pts.reduce(add, [0, 0, 0] as Vec3), 1 / pts.length);
+  const first = corners(B, u, v);
+  const c0 = centreOf(first);
+  const inFrame = (pts: Vec3[]) => pts.map((p) => sub(p, c0));
+  // The square-faced block's registry corners are the first block's, centred.
+  const matches = (a: Vec3[], b: Vec3[]) => a.every((p) => b.some((q) => norm(sub(p, q)) < 1e-6));
+  check(matches(SQUARE_BLOCK.vertices, inFrame(first)), 'the square-faced block is the (u,v,d) block, centred');
+  const identity = new THREE.Matrix4();
+  const reachable = (incoming: typeof PRISM, target: Vec3[]) =>
+    SQUARE_BLOCK.faces.some((_, tf) => {
+      const faces = incoming.faces.map((_, gi) => gi).filter((gi) => facesCongruent(SQUARE_BLOCK.vertices, SQUARE_BLOCK.faces[tf], incoming.vertices, incoming.faces[gi]));
+      if (faces.length === 0) return false;
+      return faceAttachOptions(SQUARE_BLOCK, tf, identity, incoming, faces).some((o) => {
+        const placed = incoming.vertices.map((p) => new THREE.Vector3(...p).applyQuaternion(o.quaternion).add(o.position).toArray() as Vec3);
+        return matches(placed, target);
+      });
+    });
+  check(reachable(RHOMBUS_BLOCK, inFrame(corners(B, v, w))), 'face attach offers the all-rhombus block exactly where it sits in the prism');
+  check(reachable(SQUARE_BLOCK, inFrame(corners(add(B, v), u, w))), 'face attach offers the second square-faced block exactly where it sits in the prism');
+}
+
+// 8. Families.
 for (const id of ['RHOMBOHEDRON', 'DICTO_LEANING_HEX_PRISM', 'DICTO_SQUARE_FACED_BLOCK', 'DICTO_ALL_RHOMBUS_BLOCK']) {
   check(familyIds('PARALLELOHEDRA').includes(id), `${id} is listed in Parallelohedra`);
 }

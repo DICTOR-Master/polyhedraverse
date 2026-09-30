@@ -1130,6 +1130,11 @@ export default function Home() {
           else if (wheelMode === 'vertexAttach') handleRef.current?.beginAttach(id);
           else handleRef.current?.reset(id);
         }}
+        onBuildPolytope={(seed, target) => {
+          setBrowserOpen(false);
+          handleRef.current?.startPolytopeBuild(seed, target);
+          setRcpMainMode4D(true);
+        }}
       />
       <WelcomeOverlay open={welcomeOpen} onClose={closeWelcome} onOpenGuide={() => setGuideOpen(true)} />
       <GuideOverlay open={guideOpen} onClose={() => setGuideOpen(false)} />

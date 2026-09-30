@@ -33,22 +33,15 @@ test('renders the canvas and every shape in every family that has a wheel face',
 
   await page.getByRole('button', { name: /^Start over with/ }).click();
   await openBrowserWheel(page);
-  // FOURD (4D-Capable) and MISCELLANEOUS both deliberately claim no wheel
-  // face yet (direct user decision, PolyhedralWheel.tsx's own
-  // FAMILY_FACE_SLOTS comment: "same 'claims no face' placeholder as
-  // FOURD until that design work happens") -- both are real and
-  // reachable via Full Catalog/search, just not wheel-navigable the way
-  // the other families are, so both are excluded from this specific
-  // "every family is a wheel face" check. FOURD's own 4 members are
-  // still exercised here under whichever family they ALSO belong to
-  // (Deltahedra/Platonic), so no coverage is lost by skipping it.
-  // Miscellaneous's shapes have no such overlap and genuinely aren't
-  // wheel-reachable yet -- skipping the family here doesn't lose
-  // coverage this test could otherwise provide, since there's no wheel
-  // path to them to check.
+  // 4D Polytopes and Miscellaneous deliberately claim no wheel face
+  // (PolyhedralWheel.tsx's FAMILY_FACE_SLOTS): both are reachable via the
+  // Full Catalog and search, just not wheel-navigable, so both are left
+  // out of this "every family is a wheel face" check. 4D Polytopes holds
+  // polytopes, not shapes (4d-polytopes.spec
+  // covers them); Miscellaneous's shapes have no wheel path to check.
   // Parallelohedra, Space-Filling Pairs and Stellations claim no wheel
   // face either (FAMILY_FACE_SLOTS), for the same reason.
-  const NO_WHEEL_FACE = ['4D-Capable', '3D+ Bridges', 'Miscellaneous', 'Parallelohedra', 'Space-Filling Pairs', 'Aperiodic Sets', 'Stellations'];
+  const NO_WHEEL_FACE = ['4D Polytopes', '3D+ Bridges', 'Miscellaneous', 'Parallelohedra', 'Space-Filling Pairs', 'Aperiodic Sets', 'Stellations'];
   for (const family of WHEEL_FAMILIES.filter((f) => !NO_WHEEL_FACE.includes(f.label))) {
     // Exact match, not substring -- "Prisms" is a substring of "Antiprisms"
     // now that both are separate families, so a plain hasText: family.label

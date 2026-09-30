@@ -1,5 +1,7 @@
 import { FAMILY_ORDER, FAMILY_META, familyIds, familiesFor } from '../app/lib/polyhedra/families';
 import { POLYHEDRON_IDS } from '../app/lib/polyhedra';
+import { FOURD_CAPABLE_IDS } from '../app/lib/polyhedra/fourD';
+import { POLYTOPES_4D } from '../app/lib/polyhedra/polytopes4d';
 
 let failures = 0;
 function assert(cond: boolean, msg: string) {
@@ -47,32 +49,32 @@ assert(
   'Deltahedra ∩ Johnson = exactly {D6, D10, D12, D14, D16} (J12/J13/J84/J51/J17 respectively): ' + JSON.stringify(deltaJohnson),
 );
 
-// 4D extension, Stage B: FOURD's own membership is computed (fourD.ts),
-// not hand-curated -- assert it matches the real, known classification
-// (verify-4d-closure.ts owns the deeper math check; this just confirms
-// the family layer wires it through correctly) and that each member
-// keeps its original family too, not replaced by FOURD.
-const fourD = familyIds('FOURD');
+// 4D Polytopes (polytopes4d.ts): the six regular 4-polytopes, which are
+// polytope ids rather than 3D shapes, and the seed cells behind the gold
+// 4D badge (FOURD_CAPABLE_IDS, computed in fourD.ts; verify-4d-closure.ts
+// owns the math).
+const polytopes = familyIds('POLYTOPES_4D');
 assert(
-  fourD.length === 5 && ['D4', 'PYRAMID_TRI_G2', 'D8', 'CUBE', 'DODECAHEDRON'].every((id) => fourD.includes(id)),
-  'FOURD = exactly {D4, PYRAMID_TRI_G2 (the regular tetrahedron as a grade-2 pyramid), D8, CUBE, DODECAHEDRON}: ' + JSON.stringify(fourD),
+  polytopes.length === 6 && POLYTOPES_4D.every((p) => polytopes.includes(p.id)),
+  '4D Polytopes = exactly the six regular 4-polytopes: ' + JSON.stringify(polytopes),
 );
 assert(
-  familiesFor('D4').includes('DELTAHEDRA') && familiesFor('D4').includes('PLATONIC') && familiesFor('D4').includes('FOURD'),
-  'D4 keeps Deltahedra AND Platonic AND gains FOURD: ' + JSON.stringify(familiesFor('D4')),
+  FOURD_CAPABLE_IDS.length === 5 && ['D4', 'PYRAMID_TRI_G2', 'D8', 'CUBE', 'DODECAHEDRON'].every((id) => FOURD_CAPABLE_IDS.includes(id)),
+  'the 4D seed cells = exactly {D4, PYRAMID_TRI_G2 (the regular tetrahedron as a grade-2 pyramid), D8, CUBE, DODECAHEDRON}: ' + JSON.stringify(FOURD_CAPABLE_IDS),
 );
 assert(
-  familiesFor('CUBE').includes('PLATONIC') && familiesFor('CUBE').includes('PRISMS') && familiesFor('CUBE').includes('FOURD'),
-  'CUBE keeps Platonic AND Prisms AND gains FOURD: ' + JSON.stringify(familiesFor('CUBE')),
+  POLYTOPES_4D.every((p) => FOURD_CAPABLE_IDS.includes(p.seed)),
+  'every 4D polytope grows from a 4D seed cell',
 );
 
 // Cross-cutting families re-list shapes whose home is elsewhere, by design:
-// 4D-Capable, Parallelohedra, Space-Filling Pairs and 3D+ Bridges (whose
+// Parallelohedra, Space-Filling Pairs and 3D+ Bridges (whose
 // one new shape, the rhombic icosahedron, lives only there). Every id has
 // exactly one HOME family, EXCEPT the documented overlaps between the
 // classical families (D4/D8/D20 Deltahedra + Platonic, D8 also
 // Antiprisms, CUBE Platonic + Prisms, D6..D16 Deltahedra + Johnson).
-const CROSS_CUTTING = new Set(['FOURD', 'PARALLELOHEDRA', 'SPACE_FILLING_PAIRS', 'BRIDGES_3D']);
+// 4D Polytopes holds polytope ids, not shapes, so it's left out too.
+const CROSS_CUTTING = new Set(['POLYTOPES_4D', 'PARALLELOHEDRA', 'SPACE_FILLING_PAIRS', 'BRIDGES_3D']);
 const OVERLAP_IDS = new Set(['D4', 'D8', 'D20', 'CUBE', 'D6', 'D10', 'D12', 'D14', 'D16']);
 const counts = new Map<string, number>();
 FAMILY_ORDER.filter((f) => !CROSS_CUTTING.has(f)).forEach((f) => familyIds(f).forEach((id) => counts.set(id, (counts.get(id) ?? 0) + 1)));
@@ -89,8 +91,8 @@ assert(unexpectedMultiMembership === 0, 'no undocumented multi-family membership
 const inAnyFamily = new Set(FAMILY_ORDER.flatMap((f) => familyIds(f)));
 const homeless = POLYHEDRON_IDS.filter((id) => !inAnyFamily.has(id));
 assert(homeless.length === 0, 'every shape belongs to at least one family: ' + JSON.stringify(homeless));
-const unknown = FAMILY_ORDER.flatMap((f) => familyIds(f).filter((id) => !POLYHEDRON_IDS.includes(id)).map((id) => `${f}:${id}`));
-assert(unknown.length === 0, 'every family member is a real registry shape: ' + JSON.stringify(unknown));
+const unknown = FAMILY_ORDER.filter((f) => f !== 'POLYTOPES_4D').flatMap((f) => familyIds(f).filter((id) => !POLYHEDRON_IDS.includes(id)).map((id) => `${f}:${id}`));
+assert(unknown.length === 0, 'every family member (bar the 4D polytopes) is a real registry shape: ' + JSON.stringify(unknown));
 
 console.log(failures === 0 ? `\nAll checks passed.` : `\n${failures} check(s) FAILED.`);
 process.exit(failures === 0 ? 0 : 1);

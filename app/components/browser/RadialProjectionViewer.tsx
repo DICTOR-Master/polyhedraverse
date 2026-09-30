@@ -35,6 +35,8 @@ const MODE_LABELS: Record<ViewMode, string> = { solid: 'Solid', translucent: 'Tr
 
 export interface RadialProjectionViewerProps {
   specId: string;
+  /** Which of the seed's polytopes to show (the tetrahedron has three); default its first. */
+  closure?: string;
   height?: number | string;
 }
 
@@ -54,7 +56,7 @@ function cellGeometry(spec: PolyhedronSpec, verts3D: Vec3[], scale: number, offs
   return geometry;
 }
 
-export default function RadialProjectionViewer({ specId, height = 260 }: RadialProjectionViewerProps) {
+export default function RadialProjectionViewer({ specId, closure, height = 260 }: RadialProjectionViewerProps) {
   const containerRef = useRef<HTMLDivElement | null>(null);
   const cellMaterialRef = useRef<THREE.MeshStandardMaterial | null>(null);
   const nearestMaterialRef = useRef<THREE.MeshStandardMaterial | null>(null);
@@ -98,7 +100,7 @@ export default function RadialProjectionViewer({ specId, height = 260 }: RadialP
     };
     controls.addEventListener('start', stopAutoRotate);
 
-    const radialScene = buildRadialProjectionScene(spec);
+    const radialScene = buildRadialProjectionScene(spec, 5, closure);
     setCellCount(radialScene.cellsVertices3D.length);
 
     // Fit-to-view: centroid + max radius across EVERY projected point of
@@ -167,7 +169,7 @@ export default function RadialProjectionViewer({ specId, height = 260 }: RadialP
       container.removeChild(renderer.domElement);
       renderer.dispose();
     };
-  }, [specId]);
+  }, [specId, closure]);
 
   useEffect(() => {
     for (const material of [cellMaterialRef.current, nearestMaterialRef.current]) {
