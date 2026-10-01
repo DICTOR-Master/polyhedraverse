@@ -112,6 +112,14 @@ export const ZOME_X: Vec3 = (() => {
 export const DICTO_SKEWED_ED_16_DIRECTION: Vec3 = [0.30901699435345675, -0.7557613140236112, -0.5773502691494736];
 export const DICTO_SKEWED_ED_18_DIRECTION: Vec3 = [0.5000000002805582, 0.6454972241403993, -0.5773502687416553];
 
+/**
+ * Not Zometool pieces (unlike the rest of this file): these two were found
+ * by a pure Kaleidoverse Gram-matrix search, never built with struts. Used
+ * to keep them out of ZOME_PARALLELOHEDRA_ADDITION_IDS' "Zometool credit"
+ * and give them their own, accurate one instead.
+ */
+export const DICTO_SKEWED_ED_IDS = ['DICTO_SKEWED_ED_16', 'DICTO_SKEWED_ED_18'];
+
 export const ZOME_PARALLELOHEDRA_ADDITIONS: Record<string, PolyhedronSpec> = {
   DICTO_LEANING_HEX_PRISM: spec('DICTO_LEANING_HEX_PRISM', 'DICTO leaning hexagonal prism', leaningPrism()),
   DICTO_SQUARE_FACED_BLOCK: spec('DICTO_SQUARE_FACED_BLOCK', 'DICTO square-faced block', zonohedron([u, v, d])),

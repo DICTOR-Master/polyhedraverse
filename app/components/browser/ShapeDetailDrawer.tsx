@@ -5,7 +5,7 @@ import { getAnySpec, isStarPolyhedron } from '../../lib/polyhedra/lookup';
 import { FOURD_CAPABLE_IDS } from '../../lib/polyhedra/fourD';
 import { BRIDGES_3D_IDS } from '../../lib/polyhedra/bridges';
 import { STELLATION_IDS } from '../../lib/polyhedra/stellations';
-import { ZOME_PARALLELOHEDRA_ADDITION_IDS, BAIN_PARALLELOHEDRA_ADDITION_IDS, REGULAR_NINE_ADDITION_IDS } from '../../lib/polyhedra/miscellaneous';
+import { ZOME_PARALLELOHEDRA_ADDITION_IDS, BAIN_PARALLELOHEDRA_ADDITION_IDS, REGULAR_NINE_ADDITION_IDS, DICTO_SKEWED_ED_IDS } from '../../lib/polyhedra/miscellaneous';
 import { t, type LangCode } from '../../lib/i18n';
 import ShapePreview from './ShapePreview';
 import ShapeStatsBlock from './ShapeStatsBlock';
@@ -196,10 +196,20 @@ export default function ShapeDetailDrawer({
           </div>
         )}
 
-        {/* DICTO's Zometool parallelohedra: credit where the shape came from. */}
-        {ZOME_PARALLELOHEDRA_ADDITION_IDS.includes(specId) && (
+        {/* DICTO's Zometool parallelohedra: credit where the shape came from.
+            Excludes DICTO_SKEWED_ED_16/18, which share this addition object
+            but were never built in Zometool -- they get their own credit below. */}
+        {ZOME_PARALLELOHEDRA_ADDITION_IDS.includes(specId) && !DICTO_SKEWED_ED_IDS.includes(specId) && (
           <div data-testid="zome-credit" style={{ maxWidth: 380, fontSize: 12, color: '#a9f795', lineHeight: 1.45, textAlign: 'center' }}>
             {t('detail.zomeCredit', lang)}
+          </div>
+        )}
+
+        {/* DICTO's skewed ED: found by a pure Kaleidoverse Gram-matrix
+            search (DISCOVERIES.md #7), not a Zometool build. */}
+        {DICTO_SKEWED_ED_IDS.includes(specId) && (
+          <div data-testid="dicto-skewed-ed-credit" style={{ maxWidth: 380, fontSize: 12, color: '#a9f795', lineHeight: 1.45, textAlign: 'center' }}>
+            {t('detail.dictoSkewedEdCredit', lang)}
           </div>
         )}
 
