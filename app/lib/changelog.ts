@@ -17,6 +17,7 @@ export const CHANGELOG: ChangelogDay[] = [
   {
     date: '2026-10-01',
     entries: [
+      'New in Parallelohedra, a "Kaleidoverse verified" section: three space-fillers with every edge equal, from the Bain stretch (body-centred cubic stretched by √2 along one axis becomes face-centred cubic). The Bain rhombic dodecahedron has 4 squares and 8 rhombi of 60°. The regular-hexagon elongated dodecahedron, found by DICTO, has 4 regular hexagons, 4 squares and 4 rhombi of 60°, every face made of regular polygons. The Bain elongated dodecahedron, also DICTO\'s, has 8 rhombi of 60° and 4 hexagons with corners of 135° and 90°. Each shows its faces in colour by kind, on its card and when placed: squares blue, rhombi pink, regular hexagons gold, other hexagons purple. All three fill space by sliding alone, and every face attaches; the squares and regular hexagons also fit the cube, the truncated octahedron and the hexagonal prism.',
       'New in Parallelohedra: DICTO\'s skewed rhombic dodecahedron, found in Zometool from medium blue struts: twelve rhombi, six of 60° and six of 72°, the closest all-blue shape to a true rhombic dodecahedron, with volume exactly φ². It fills space as a sheared version of the rhombic dodecahedron packing. Its new block, the flattened rhombohedron, is here too: two of those and two all-rhombus blocks build it with Attach via face.',
     ],
   },

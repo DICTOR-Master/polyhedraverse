@@ -9,7 +9,7 @@
  * names), with brand green standing in for its grey-blue "Default".
  */
 
-import { familiesFor, type FamilyKey } from './polyhedra/families';
+import { familiesFor, KALEIDOVERSE_VERIFIED, type FamilyKey } from './polyhedra/families';
 
 export const NODE_BASE_COLOR = 0x47cc24;
 
@@ -84,6 +84,8 @@ export const DEFAULT_COLOR_PREFS: ColorPrefs = { mode: 'green', pick: 'red' };
 
 /** The colour a piece shows, given the mode and (pick mode) its own saved colour. */
 export function pieceColorHex(prefs: ColorPrefs, specId: string, saved: string | undefined): number {
+  // Face-kind-coloured shapes (faceKinds.ts) carry their colours per face; white leaves them true.
+  if (KALEIDOVERSE_VERIFIED.includes(specId)) return 0xffffff;
   if (prefs.mode === 'family') {
     const family = familiesFor(specId)[0];
     return family ? FAMILY_COLORS[family] : NODE_BASE_COLOR;

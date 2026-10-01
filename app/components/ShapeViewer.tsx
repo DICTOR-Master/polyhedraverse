@@ -14,6 +14,7 @@ import {
   isFaceEligibleForAttach,
 } from '../lib/polyhedra';
 import { DELTAHEDRA } from '../lib/polyhedra/deltahedra';
+import { faceKindColorsOf, usesFaceKindColors } from '../lib/faceKinds';
 import { DEFAULT_COLOR_PREFS, NODE_BASE_COLOR, newPieceColor, pieceColorHex, type ColorPrefs, type PieceColorKey } from '../lib/pieceColors';
 import { emptyAssembly, isValidAssembly, migrateLegacyAssembly, ASSEMBLY_STORAGE_KEY, type Assembly } from '../lib/assembly';
 import { matchRewriteVertices, REWRITE_TARGET } from '../lib/polyhedra/rewrite';
@@ -429,6 +430,13 @@ function buildFaceGeometry(spec: PolyhedronSpec): { geometry: THREE.BufferGeomet
   const geometry = new THREE.BufferGeometry();
   geometry.setAttribute('position', new THREE.Float32BufferAttribute(positions, 3));
   geometry.computeVertexNormals(); // non-indexed: each vertex is unique per face, so this yields flat shading
+  if (usesFaceKindColors(spec.id)) {
+    // Each face in its kind's colour (faceKinds.ts); the material uses vertexColors.
+    const perFace = faceKindColorsOf(spec).map((hex) => new THREE.Color(hex));
+    const colors: number[] = [];
+    for (const f of triangleToFaceIndex) for (let k = 0; k < 3; k++) colors.push(perFace[f].r, perFace[f].g, perFace[f].b);
+    geometry.setAttribute('color', new THREE.Float32BufferAttribute(colors, 3));
+  }
   return { geometry, triangleToFaceIndex };
 }
 
@@ -487,7 +495,9 @@ function buildPlacedShape(spec: PolyhedronSpec, nodeId: string): PlacedShape {
     // a leftover generic blue -- applies uniformly across every view
     // mode (Solid/Translucent/Inside) since applyViewMode only ever
     // touches opacity/side/depthWrite, never the base color itself.
-    new THREE.MeshStandardMaterial({ color: NODE_BASE_COLOR, flatShading: true, side: THREE.FrontSide }),
+    usesFaceKindColors(spec.id)
+      ? new THREE.MeshStandardMaterial({ color: 0xffffff, vertexColors: true, flatShading: true, side: THREE.FrontSide })
+      : new THREE.MeshStandardMaterial({ color: NODE_BASE_COLOR, flatShading: true, side: THREE.FrontSide }),
   );
 
   // See PlacedShape's own doc comment for why mesh + lines live inside

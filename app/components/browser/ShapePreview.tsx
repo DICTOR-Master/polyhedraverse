@@ -20,6 +20,7 @@
  */
 
 import { useEffect, useRef, useState } from 'react';
+import { faceKind, faceKindCss, usesFaceKindColors } from '../../lib/faceKinds';
 import { getAnySpec } from '../../lib/polyhedra/lookup';
 
 // Matches PolyhedralWheel's existing green identity (HUD_METAL_HEX /
@@ -106,6 +107,10 @@ export default function ShapePreview({ specId, wire, size, spin = false, colors 
     const maxR = Math.max(...centered.map(([x, y, z]) => Math.sqrt(x * x + y * y + z * z)), 1e-6);
     const scale = (size * dpr * 0.36) / maxR;
 
+    const full = !wire && usesFaceKindColors(specId) ? getAnySpec(specId) : undefined;
+    const fillFaces: number[][] | null = full ? full.faces : null;
+    const faceFills = full ? full.faces.map((f) => faceKindCss(faceKind(full.vertices, f))) : null;
+
     let angle = phase;
     const tilt = 0.5; // fixed gentle tilt, same for every preview
 
@@ -120,6 +125,23 @@ export default function ShapePreview({ specId, wire, size, spin = false, colors 
       const minZ = Math.min(...zs);
       const maxZ = Math.max(...zs);
       const zRange = Math.max(maxZ - minZ, 1e-6);
+
+      // Face-kind-coloured shapes (faceKinds.ts): fill the faces that face
+      // the viewer (all these shapes are convex), each in its kind's colour.
+      if (fillFaces && faceFills) {
+        fillFaces.forEach((f, i) => {
+          const p = f.map((k) => rotated[k]);
+          const nz = (p[1][0] - p[0][0]) * (p[2][1] - p[1][1]) - (p[1][1] - p[0][1]) * (p[2][0] - p[1][0]);
+          if (nz <= 0) return;
+          ctx.fillStyle = faceFills[i];
+          ctx.globalAlpha = 0.8;
+          ctx.beginPath();
+          p.forEach(([x, y], k) => (k ? ctx.lineTo(half + x * scale, half - y * scale) : ctx.moveTo(half + x * scale, half - y * scale)));
+          ctx.closePath();
+          ctx.fill();
+          ctx.globalAlpha = 1;
+        });
+      }
 
       const edgesByDepth = [...spec.edges]
         .map(([a, b]) => ({ a, b, avgZ: (zs[a] + zs[b]) / 2 }))

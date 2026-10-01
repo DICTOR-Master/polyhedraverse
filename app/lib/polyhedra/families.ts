@@ -175,6 +175,9 @@ export const FEDOROV_FIVE = ['CUBE', 'PRISM_6', 'RHOMBIC_DODECAHEDRON', 'ELONGAT
  * Zometool leaning hexagonal prism and its two blocks (parallelepipeds).
  */
 export const PARALLELOHEDRON_VARIANTS = ['RHOMBOHEDRON', 'DICTO_LEANING_HEX_PRISM', 'DICTO_SQUARE_FACED_BLOCK', 'DICTO_ALL_RHOMBUS_BLOCK', 'DICTO_SKEWED_RD', 'DICTO_FLATTENED_RHOMBOHEDRON'];
+// Cells found and checked in Kaleidoverse (direct request 2026-10-01: the
+// Bain stretch's equal-edge cells, grouped as "Kaleidoverse verified").
+export const KALEIDOVERSE_VERIFIED = ['BAIN_RD', 'REGULAR_HEX_ED', 'BAIN_ED'];
 
 const BASE_IDS: Record<FamilyKey, string[]> = {
   DELTAHEDRA: DELTAHEDRON_IDS,
@@ -192,7 +195,7 @@ const BASE_IDS: Record<FamilyKey, string[]> = {
   // TRUNCATED_OCTAHEDRON: archimedean.ts) -- a cross-cutting list, not a
   // new geometry source. Curated by hand, since there are exactly 5 types
   // and they're a fixed, named mathematical result (Fedorov 1885).
-  PARALLELOHEDRA: [...FEDOROV_FIVE, ...PARALLELOHEDRON_VARIANTS],
+  PARALLELOHEDRA: [...FEDOROV_FIVE, ...PARALLELOHEDRON_VARIANTS, ...KALEIDOVERSE_VERIFIED],
   // Every shape appearing in SPACE_FILLING_PAIRS below (deduped) -- the
   // pair structure itself is what the browser shows (pair rows), this is
   // just membership for counts/search/cross-family badges.
