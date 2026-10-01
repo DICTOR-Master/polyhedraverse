@@ -4,7 +4,7 @@
  * skewed rhombic dodecahedron (DICTO_SKEWED_RD) by a fifth edge direction,
  * found in Kaleidoverse (DISCOVERIES.md #7) by matching its Gram matrix
  * against every already-catalogued equal-edge elongated-dodecahedron cell
- * in geometry-targets.json, not by any Zometool construction:
+ * in geometry-targets.json:
  *
  *   - both keep DICTO_SKEWED_RD's own four directions exactly (v, w, d, ZOME_X);
  *   - every edge has length 1 and the shape passes generic validation

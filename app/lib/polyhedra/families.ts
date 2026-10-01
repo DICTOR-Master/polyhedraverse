@@ -179,7 +179,7 @@ export const PARALLELOHEDRON_VARIANTS = ['RHOMBOHEDRON', 'DICTO_LEANING_HEX_PRIS
 // Bain stretch's equal-edge cells, grouped as "Kaleidoverse verified").
 // DICTO_SKEWED_ED_16 and _18 (2026-10-01) extend DICTO_SKEWED_RD by a fifth
 // direction found the same way, by matching against Kaleidoverse's own
-// equal-edge ED search (geometry-targets.json), not a Zometool build.
+// equal-edge ED search (geometry-targets.json).
 export const KALEIDOVERSE_VERIFIED = ['BAIN_RD', 'REGULAR_HEX_ED', 'BAIN_ED', 'DICTO_SKEWED_ED_16', 'DICTO_SKEWED_ED_18'];
 // The regular nine (direct request 2026-10-01): every equal-edge space-filler
 // whose faces are only squares, regular hexagons and 60 degree rhombi, found
