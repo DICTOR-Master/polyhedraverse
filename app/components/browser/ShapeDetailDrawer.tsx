@@ -5,7 +5,7 @@ import { getAnySpec, isStarPolyhedron } from '../../lib/polyhedra/lookup';
 import { FOURD_CAPABLE_IDS } from '../../lib/polyhedra/fourD';
 import { BRIDGES_3D_IDS } from '../../lib/polyhedra/bridges';
 import { STELLATION_IDS } from '../../lib/polyhedra/stellations';
-import { ZOME_PARALLELOHEDRA_ADDITION_IDS, BAIN_PARALLELOHEDRA_ADDITION_IDS } from '../../lib/polyhedra/miscellaneous';
+import { ZOME_PARALLELOHEDRA_ADDITION_IDS, BAIN_PARALLELOHEDRA_ADDITION_IDS, REGULAR_NINE_ADDITION_IDS } from '../../lib/polyhedra/miscellaneous';
 import { t, type LangCode } from '../../lib/i18n';
 import ShapePreview from './ShapePreview';
 import ShapeStatsBlock from './ShapeStatsBlock';
@@ -200,6 +200,13 @@ export default function ShapeDetailDrawer({
         {ZOME_PARALLELOHEDRA_ADDITION_IDS.includes(specId) && (
           <div data-testid="zome-credit" style={{ maxWidth: 380, fontSize: 12, color: '#a9f795', lineHeight: 1.45, textAlign: 'center' }}>
             {t('detail.zomeCredit', lang)}
+          </div>
+        )}
+
+        {/* The regular nine's new members: what makes them one of the nine. */}
+        {REGULAR_NINE_ADDITION_IDS.includes(specId) && (
+          <div data-testid="regular-nine-credit" style={{ maxWidth: 380, fontSize: 12, color: '#a9f795', lineHeight: 1.45, textAlign: 'center' }}>
+            {t('detail.regularNineCredit', lang)}
           </div>
         )}
 

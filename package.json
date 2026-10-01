@@ -21,6 +21,7 @@
     "verify:zome-parallelohedra": "tsx scripts/verify-zome-parallelohedra.ts",
     "verify:bain-parallelohedra": "tsx scripts/verify-bain-parallelohedra.ts",
     "verify:face-registration": "tsx scripts/verify-face-registration.ts",
+    "verify:regular-nine": "tsx scripts/verify-regular-nine.ts",
     "verify:4d-polytopes": "tsx scripts/verify-4d-polytopes.ts",
     "verify:families": "tsx scripts/verify-families.ts",
     "verify:search": "tsx scripts/verify-search.ts",

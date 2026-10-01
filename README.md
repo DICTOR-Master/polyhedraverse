@@ -16,7 +16,7 @@ your browser, nothing to install.
 > transforming, and interconnecting polyhedral forms in three dimensions
 > — and, uniquely, in four.
 
-A browser-based construction kit with 250 shapes, browsable in 14
+A browser-based construction kit with 254 shapes, browsable in 14
 families — the classical convex polyhedra (Platonic, Archimedean, Johnson,
 Catalan, prisms, antiprisms, and the original Deltahedra set this
 project started from), Stellations, Parallelohedra, Space-Filling Pairs, Aperiodic Sets,
@@ -82,7 +82,7 @@ direction, not yet delivered.
 
 ## What you can do
 
-- **250 shapes in 14 families** — Deltahedra, Platonic, Archimedean,
+- **254 shapes in 14 families** — Deltahedra, Platonic, Archimedean,
   Johnson, Catalan, Stellations (face pieces for the Platonic and Catalan
   solids: flat, then each stellation the solid really has, up to its
   third, exact from the face planes; one on every face builds it, e.g.

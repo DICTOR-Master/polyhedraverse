@@ -178,6 +178,12 @@ export const PARALLELOHEDRON_VARIANTS = ['RHOMBOHEDRON', 'DICTO_LEANING_HEX_PRIS
 // Cells found and checked in Kaleidoverse (direct request 2026-10-01: the
 // Bain stretch's equal-edge cells, grouped as "Kaleidoverse verified").
 export const KALEIDOVERSE_VERIFIED = ['BAIN_RD', 'REGULAR_HEX_ED', 'BAIN_ED'];
+// The regular nine (direct request 2026-10-01): every equal-edge space-filler
+// whose faces are only squares, regular hexagons and 60 degree rhombi, found
+// complete by Kaleidoverse's two-way search. Five were already here; the
+// four new ones (miscellaneous/regular-nine) are REGULAR_NINE_NEW.
+export const REGULAR_NINE_NEW = ['RHOMBOHEDRON_60', 'RHOMBIC_PRISM_60', 'LEANING_SQUARE_PRISM', 'LEANING_HEX_PRISM_60'];
+export const REGULAR_NINE = ['CUBE', 'RHOMBOHEDRON_60', 'LEANING_SQUARE_PRISM', 'RHOMBIC_PRISM_60', 'PRISM_6', 'LEANING_HEX_PRISM_60', 'BAIN_RD', 'REGULAR_HEX_ED', 'TRUNCATED_OCTAHEDRON'];
 
 const BASE_IDS: Record<FamilyKey, string[]> = {
   DELTAHEDRA: DELTAHEDRON_IDS,
@@ -195,7 +201,7 @@ const BASE_IDS: Record<FamilyKey, string[]> = {
   // TRUNCATED_OCTAHEDRON: archimedean.ts) -- a cross-cutting list, not a
   // new geometry source. Curated by hand, since there are exactly 5 types
   // and they're a fixed, named mathematical result (Fedorov 1885).
-  PARALLELOHEDRA: [...FEDOROV_FIVE, ...PARALLELOHEDRON_VARIANTS, ...KALEIDOVERSE_VERIFIED],
+  PARALLELOHEDRA: [...FEDOROV_FIVE, ...PARALLELOHEDRON_VARIANTS, ...KALEIDOVERSE_VERIFIED, ...REGULAR_NINE_NEW],
   // Every shape appearing in SPACE_FILLING_PAIRS below (deduped) -- the
   // pair structure itself is what the browser shows (pair rows), this is
   // just membership for counts/search/cross-family badges.

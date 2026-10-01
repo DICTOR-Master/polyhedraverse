@@ -13,9 +13,9 @@ const geistMono = Geist_Mono({
 });
 
 const SITE = "https://polyhedraverse.vercel.app";
-const title = "Polyhedraverse — Build 250 Polyhedra in 3D and Real 4D Polytopes";
+const title = "Polyhedraverse — Build 254 Polyhedra in 3D and Real 4D Polytopes";
 const description =
-  "Snap together 250 polyhedra face to face in your browser — Platonic, Archimedean, Johnson, Catalan, stellations (the Kepler–Poinsot solids among them), prisms, parallelohedra, space-filling pairs, the golden rhombohedra and Penrose rhombus prisms of the aperiodic tilings, and 3D+ bridges (shadows, slices and cells of higher polytopes) — and build real 4D polytopes (tesseract, 24-cell, 120-cell, 600-cell) one cell at a time. Free, open source, 7 languages.";
+  "Snap together 254 polyhedra face to face in your browser — Platonic, Archimedean, Johnson, Catalan, stellations (the Kepler–Poinsot solids among them), prisms, parallelohedra, space-filling pairs, the golden rhombohedra and Penrose rhombus prisms of the aperiodic tilings, and 3D+ bridges (shadows, slices and cells of higher polytopes) — and build real 4D polytopes (tesseract, 24-cell, 120-cell, 600-cell) one cell at a time. Free, open source, 7 languages.";
 // Structured data for search engines: what the app is and does.
 const jsonLd = {
   "@context": "https://schema.org",
@@ -29,7 +29,7 @@ const jsonLd = {
   offers: { "@type": "Offer", price: "0", priceCurrency: "USD" },
   inLanguage: ["en", "ja", "es", "fr", "ko", "zh", "ru"],
   featureList: [
-    "250 polyhedra in 14 families: Deltahedra, Platonic, Archimedean, Johnson, Catalan, stellations, prisms, antiprisms, the six regular 4D polytopes, 3D+ bridges, parallelohedra, space-filling pairs, aperiodic sets and more",
+    "254 polyhedra in 14 families: Deltahedra, Platonic, Archimedean, Johnson, Catalan, stellations, prisms, antiprisms, the six regular 4D polytopes, 3D+ bridges, parallelohedra, space-filling pairs, aperiodic sets and more",
     "Aperiodic sets: the prolate and oblate golden rhombohedra of the 3D Penrose tiling, which build the Bilinski dodecahedron, rhombic icosahedron and rhombic triacontahedron, and the thick and thin Penrose rhombus prisms of the layered 5D tiling",
     "3D+ bridges: shapes that are a shadow, slice, cell or vertex figure of a higher polytope (the rhombic dodecahedron as the tesseract's and 24-cell's shadow, the rhombic icosahedron and triacontahedron as the 5-cube's and 6-cube's), each with its bridge described",
     "Attach shapes face to face or vertex to vertex, with twist, undo and a live name for the assembly",

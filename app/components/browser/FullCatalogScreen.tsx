@@ -18,7 +18,7 @@
  */
 
 import { useEffect } from 'react';
-import { FAMILY_ORDER, FAMILY_META, familyIds, SPACE_FILLING_PAIR_LIST, FEDOROV_FIVE, PARALLELOHEDRON_VARIANTS, KALEIDOVERSE_VERIFIED, type FamilyKey } from '../../lib/polyhedra/families';
+import { FAMILY_ORDER, FAMILY_META, familyIds, SPACE_FILLING_PAIR_LIST, FEDOROV_FIVE, PARALLELOHEDRON_VARIANTS, KALEIDOVERSE_VERIFIED, REGULAR_NINE, type FamilyKey } from '../../lib/polyhedra/families';
 import { STAR_POLYHEDRON_IDS } from '../../lib/polyhedra/starPolyhedra';
 import { BRIDGE_SECTIONS } from '../../lib/polyhedra/bridges';
 import { STELLATION_IDS, stellationInfo, stellatedSolidName } from '../../lib/polyhedra/stellations';
@@ -185,12 +185,13 @@ export default function FullCatalogScreen({
         }
         if (fam === 'PARALLELOHEDRA') {
           // Fedorov's five, then their notable variants (direct decision
-          // 2026-09-30), then the cells verified in Kaleidoverse (2026-10-01),
+          // 2026-09-30), then the cells verified in Kaleidoverse and the regular nine (2026-10-01),
           // the same section style as 3D+ Bridges.
           const sections = [
             { id: 'fedorov', ids: FEDOROV_FIVE },
             { id: 'variants', ids: PARALLELOHEDRON_VARIANTS },
             { id: 'kaleidoverse', ids: KALEIDOVERSE_VERIFIED },
+            { id: 'regularNine', ids: REGULAR_NINE },
           ];
           return (
             <div key={fam} id={sectionDomId(fam)}>
