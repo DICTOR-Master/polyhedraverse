@@ -54,6 +54,7 @@ jobs:
       - run: npm run verify:aperiodic-sets
       - run: npm run verify:stellations
       - run: npm run verify:zome-parallelohedra
+      - run: npm run verify:dicto-skewed-ed
       - run: npm run verify:bain-parallelohedra
       - run: npm run verify:face-registration
       - run: npm run verify:regular-nine

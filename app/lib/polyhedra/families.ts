@@ -177,7 +177,10 @@ export const FEDOROV_FIVE = ['CUBE', 'PRISM_6', 'RHOMBIC_DODECAHEDRON', 'ELONGAT
 export const PARALLELOHEDRON_VARIANTS = ['RHOMBOHEDRON', 'DICTO_LEANING_HEX_PRISM', 'DICTO_SQUARE_FACED_BLOCK', 'DICTO_ALL_RHOMBUS_BLOCK', 'DICTO_SKEWED_RD', 'DICTO_FLATTENED_RHOMBOHEDRON'];
 // Cells found and checked in Kaleidoverse (direct request 2026-10-01: the
 // Bain stretch's equal-edge cells, grouped as "Kaleidoverse verified").
-export const KALEIDOVERSE_VERIFIED = ['BAIN_RD', 'REGULAR_HEX_ED', 'BAIN_ED'];
+// DICTO_SKEWED_ED_16 and _18 (2026-10-01) extend DICTO_SKEWED_RD by a fifth
+// direction found the same way, by matching against Kaleidoverse's own
+// equal-edge ED search (geometry-targets.json), not a Zometool build.
+export const KALEIDOVERSE_VERIFIED = ['BAIN_RD', 'REGULAR_HEX_ED', 'BAIN_ED', 'DICTO_SKEWED_ED_16', 'DICTO_SKEWED_ED_18'];
 // The regular nine (direct request 2026-10-01): every equal-edge space-filler
 // whose faces are only squares, regular hexagons and 60 degree rhombi, found
 // complete by Kaleidoverse's two-way search. Five were already here; the
