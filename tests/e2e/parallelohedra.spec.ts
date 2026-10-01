@@ -37,16 +37,16 @@ test('Parallelohedra shows the Kaleidoverse verified section, with the Bain cred
   await expect(page.locator('[data-testid="bain-credit"]')).toContainText('Bain stretch');
 });
 
-// The regular nine (direct request 2026-10-01): all nine together, the new
-// four with their credit.
-test('Parallelohedra shows the regular nine, with the credit on a new member', async ({ page }) => {
+// The Kaleidoverse Regular 9 (direct request 2026-10-01, framing updated
+// 2026-10-01): all nine together, the new four with their credit.
+test('Parallelohedra shows the Kaleidoverse Regular 9, with the credit on a new member', async ({ page }) => {
   await page.evaluate(() => (document.querySelector('[data-testid="corner-hud-wheel"]') as unknown as { __hudTriggerAction: (i: number) => void }).__hudTriggerAction(1));
   await page.getByRole('button', { name: /Parallelohedra/ }).first().click();
   const nine = page.locator('[data-testid="parallelohedra-section-regularNine"]');
-  await expect(nine).toContainText('The regular nine');
+  await expect(nine).toContainText('The Kaleidoverse Regular 9');
   await expect(nine.locator('div[role="button"]')).toHaveCount(9);
   const r = nine.locator('div[role="button"]', { hasText: '60° rhombohedron' }).first();
   await r.scrollIntoViewIfNeeded();
   await r.click();
-  await expect(page.locator('[data-testid="regular-nine-credit"]')).toContainText('regular nine');
+  await expect(page.locator('[data-testid="regular-nine-credit"]')).toContainText('Kaleidoverse Regular 9');
 });
