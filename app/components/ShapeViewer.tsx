@@ -21,6 +21,8 @@ import { matchRewriteVertices, REWRITE_TARGET } from '../lib/polyhedra/rewrite';
 import { collectSubtree, findParentConnection, hasCycle } from '../lib/graph';
 import { describeAssembly } from '../lib/assemblyNaming';
 import { faceAttachOptions } from '../lib/faceAttach';
+import { FaceIndex, rankFaceAttachOptions } from '../lib/faceRegistration';
+import { familyIds } from '../lib/polyhedra/families';
 import { FOURD_CAPABLE_IDS } from '../lib/polyhedra/fourD';
 import { buildWallPrism, duoprismBuildDepth } from '../lib/polyhedra/duoprism';
 import { buildRcpComplex, buildSyntheticCellSpec, cellsAtShell, maxShell, parseRcpTarget, rcpTargetOptions, rootSpecForView, type RcpComplex } from '../lib/polyhedra/rcpBuild';
@@ -159,7 +161,21 @@ interface PlacedShape {
   vertexGroup: THREE.Group;
   triangleToFaceIndex: number[]; // maps a raycast hit's mesh triangle index back to the original polygon face index
   faceOccupied: boolean[]; // one per spec.faces entry — face-attach's counterpart to vertex "occupied"
+  // Faces lying flush on a face of another built piece (face registration,
+  // faceRegistration.ts) -- recomputed from the geometry after every change
+  // (refreshFlushOccupancy), kept apart from faceOccupied, which follows the
+  // attach connections.
+  flushOccupied: boolean[];
 }
+
+/** A face is taken when an attach uses it or it lies flush on another piece. */
+const faceTaken = (placed: PlacedShape, faceIndex: number) => placed.faceOccupied[faceIndex] || placed.flushOccupied[faceIndex];
+
+/** Space-fillers: attaching one to its own kind offers the slid copy (the tiling) first. */
+const PARALLELOHEDRA_IDS = new Set(familyIds('PARALLELOHEDRA'));
+
+/** The face-attach counter, with how many faces the option sits flush on. */
+const registrationLabel = (i: number, count: number, faces: number) => `registration ${i + 1}/${count} · ${faces} ${faces === 1 ? 'face' : 'faces'}`;
 
 interface PendingVertexAttach {
   kind: 'vertex';
@@ -189,6 +205,8 @@ interface PendingFaceAttach {
   // DICTO's blocks couldn't be turned to build their prism, which needs
   // a particular one of the all-rhombus block's four 72 degree rhombi).
   options: { incomingFaceIndex: number; quaternion: THREE.Quaternion; position: THREE.Vector3 }[];
+  // Faces each option sits flush on, the clicked face included (face registration).
+  flushCounts: number[];
   registration: number; // index into options
   dragAccumPx: number;
 }
@@ -522,6 +540,7 @@ function buildPlacedShape(spec: PolyhedronSpec, nodeId: string): PlacedShape {
     vertexGroup,
     triangleToFaceIndex,
     faceOccupied: new Array(spec.faces.length).fill(false),
+    flushOccupied: new Array(spec.faces.length).fill(false),
   };
 }
 
@@ -594,7 +613,7 @@ function applyNodeAppearance(placed: PlacedShape, selected: boolean) {
   const hasFreeVertex = placed.vertexGroup.children.some(
     (child) => !((child as THREE.Mesh).userData as VertexUserData).occupied,
   );
-  const hasFreeFace = placed.faceOccupied.some((occupied) => !occupied);
+  const hasFreeFace = placed.faceOccupied.some((_, i) => !faceTaken(placed, i));
   material.emissive.setHex(hasFreeVertex || hasFreeFace ? NODE_HAS_CAPACITY_EMISSIVE : 0x000000);
 }
 
@@ -1753,7 +1772,7 @@ export default function ShapeViewer({
       const specId = node?.shape ?? meshSpecId;
       const faceIndex = selectedFaceIndexRef.current;
       const faceSize = faceIndex !== null ? POLYHEDRA[specId].faces[faceIndex].length : null;
-      const faceOccupied = faceIndex !== null ? placed.faceOccupied[faceIndex] : true;
+      const faceOccupied = faceIndex !== null ? faceTaken(placed, faceIndex) : true;
       // Vertex count alone isn't enough once irregular-faced families exist
       // (Catalan solids): a rhombus and a kite can both have 4 vertices
       // without being the same shape at all, so gluing one onto the other
@@ -2061,6 +2080,7 @@ export default function ShapeViewer({
         }
       }
 
+      refreshFlushOccupancy(false);
       for (const placed of placedRef.current) applyNodeAppearance(placed, false);
 
       graphRef.current = assembly;
@@ -2130,6 +2150,41 @@ export default function ShapeViewer({
       onPendingChangeRef.current?.({ specId });
     };
 
+    /** The built pieces, in world space, for face registration (faceRegistration.ts). */
+    const builtPieces = () => {
+      scene.updateMatrixWorld(true);
+      // Pieces of a 4D build (rcp4d) are drawn warped, away from their
+      // spec's corners, so they're left out rather than misjudged.
+      const warped = new Set(graphRef.current.connections.filter((c) => c.kind === 'rcp4d').flatMap((c) => [c.nodeA, c.nodeB]));
+      const shown = placedRef.current.filter((p) => {
+        const { specId, nodeId } = p.object.userData as ShapeObjectUserData;
+        return POLYHEDRA[specId] && !warped.has(nodeId);
+      });
+      return {
+        pieces: shown.map((p) => ({ spec: POLYHEDRA[(p.object.userData as ShapeObjectUserData).specId], matrixWorld: p.foldGroup.matrixWorld })),
+        placed: shown,
+        indexOf: (p: PlacedShape) => shown.indexOf(p),
+      };
+    };
+
+    /**
+     * Marks every face that lies flush on a face of another built piece as
+     * taken (flushOccupied), so a face filled by registering a piece into a
+     * corner isn't offered again; recomputed from scratch after every
+     * confirm, delete and rebuild, so deleting a piece frees its neighbours.
+     */
+    const refreshFlushOccupancy = (repaint = true) => {
+      const built = builtPieces();
+      const index = new FaceIndex(built.pieces);
+      built.placed.forEach((p, pi) => {
+        const verts = index.pieces[pi].verts;
+        built.pieces[pi].spec.faces.forEach((f, fi) => {
+          p.flushOccupied[fi] = index.find(f.map((i) => verts[i]), 1e-5).some((h) => h.piece !== pi);
+        });
+        if (repaint) applyNodeAppearance(p, p === selectedNodeRef.current);
+      });
+    };
+
     /**
      * Face-to-face attach: unlike vertex-attach, two congruent regular n-gon
      * faces have no continuously-free rotation once aligned — only n
@@ -2148,7 +2203,7 @@ export default function ShapeViewer({
       const targetFaceIndex = selectedFaceIndexRef.current;
       const spec = POLYHEDRA[specId];
       if (!targetPlaced || targetFaceIndex === null || !spec || pendingRef.current) return;
-      if (targetPlaced.faceOccupied[targetFaceIndex]) return;
+      if (faceTaken(targetPlaced, targetFaceIndex)) return;
 
       const { specId: targetSpecId } = targetPlaced.object.userData as ShapeObjectUserData;
       const targetSpec = POLYHEDRA[targetSpecId];
@@ -2165,12 +2220,25 @@ export default function ShapeViewer({
         .map((f, fi) => fi)
         .filter((fi) => isFaceEligibleForAttach(spec, fi) && facesCongruent(targetSpec.vertices, targetFaceVerts, spec.vertices, spec.faces[fi]));
       if (incomingFaces.length === 0) return; // UI should only ever offer compatible shapes
-      const incomingFaceIndex = incomingFaces[0];
 
       scene.updateMatrixWorld(true);
 
-      const options = faceAttachOptions(targetSpec, targetFaceIndex, targetPlaced.foldGroup.matrixWorld, spec, incomingFaces);
-      if (options.length === 0) return; // congruent faces always seat flush; defensive only
+      const rawOptions = faceAttachOptions(targetSpec, targetFaceIndex, targetPlaced.foldGroup.matrixWorld, spec, incomingFaces);
+      if (rawOptions.length === 0) return; // congruent faces always seat flush; defensive only
+      // Face registration (faceRegistration.ts): best fit first, clashes
+      // hidden, and a space-filler's slid copy first on its own kind.
+      const built = builtPieces();
+      const ranked = rankFaceAttachOptions(
+        rawOptions,
+        spec,
+        built.pieces,
+        built.indexOf(targetPlaced),
+        targetFaceIndex,
+        specId === targetSpecId && PARALLELOHEDRA_IDS.has(specId),
+      );
+      const options = ranked.map((r) => r.option);
+      const flushCounts = ranked.map((r) => r.flushFaces);
+      const incomingFaceIndex = options[0].incomingFaceIndex;
       const registrationBaseQuat = options[0].quaternion;
       const position = options[0].position;
 
@@ -2195,6 +2263,7 @@ export default function ShapeViewer({
         targetFaceIndex,
         incomingFaceIndex,
         options,
+        flushCounts,
         registration: 0,
         dragAccumPx: 0,
       };
@@ -2210,7 +2279,7 @@ export default function ShapeViewer({
       // exact same counter every other face-attach already shows mid-drag
       // (no dedicated new UI affordance) — see docs/catalan-solids-spec.md.
       const initialRect = container.getBoundingClientRect();
-      label.textContent = `registration 1/${options.length}`;
+      label.textContent = registrationLabel(0, options.length, flushCounts[0]);
       label.style.left = `${initialRect.width / 2}px`;
       label.style.top = `${initialRect.height / 2}px`;
       label.style.display = 'block';
@@ -2257,7 +2326,7 @@ export default function ShapeViewer({
       const targetPlaced = selectedNodeRef.current;
       const targetFaceIndex = selectedFaceIndexRef.current;
       if (!targetPlaced || targetFaceIndex === null || pendingRef.current) return;
-      if (targetPlaced.faceOccupied[targetFaceIndex]) return;
+      if (faceTaken(targetPlaced, targetFaceIndex)) return;
 
       const { specId: targetSpecId, nodeId: targetNodeId } = targetPlaced.object.userData as ShapeObjectUserData;
       if (!FOURD_CAPABLE_IDS.includes(targetSpecId)) return; // UI should only ever offer this for eligible shapes
@@ -2459,6 +2528,7 @@ export default function ShapeViewer({
       pendingRef.current = null;
       controls.enabled = true;
       label.style.display = 'none';
+      refreshFlushOccupancy();
       onPendingChangeRef.current?.(null);
       reportCageStatus();
     };
@@ -2667,6 +2737,7 @@ export default function ShapeViewer({
       }
 
 
+      refreshFlushOccupancy();
       clearNodeSelection();
       label.style.display = 'none';
       reportCageStatus();
@@ -2974,7 +3045,7 @@ export default function ShapeViewer({
         const rewriteTarget = REWRITE_TARGET[specId];
         const actions = ['delete'];
         if (rewriteTarget) actions.push(`transform → ${rewriteTarget}`);
-        if (faceIndex !== null && !node.faceOccupied[faceIndex]) {
+        if (faceIndex !== null && !faceTaken(node, faceIndex)) {
           const faceSize = POLYHEDRA[specId].faces[faceIndex].length;
           actions.push(`attach via this ${faceSize}-gon face`);
         }
@@ -3027,7 +3098,7 @@ export default function ShapeViewer({
               pending.incomingFaceIndex = option.incomingFaceIndex;
             }
 
-            label.textContent = `registration ${pending.registration + 1}/${count}`;
+            label.textContent = registrationLabel(pending.registration, count, pending.flushCounts[pending.registration]);
             positionLabel(event, rect);
             label.style.display = 'block';
           }

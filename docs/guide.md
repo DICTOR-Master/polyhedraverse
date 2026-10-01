@@ -32,6 +32,8 @@ Two shapes joined face to face share that face exactly, a cube on a cube for exa
 
 Dragging steps through every way the new shape can sit on that face, counting them as it goes ("registration 3/8"): each turn of the face and, when the new shape has faces of that size that aren't alike, each of those faces too, so a piece with uneven faces can always be set the way you want. For example, to build DICTO's leaning prism, start with the square-faced block, attach the all-rhombus block to one of its 72° rhombi and drag until the hexagon faces line up flat, then attach a second square-faced block the same way.
 
+The best fits come first: a placement that sits flush on two or three faces of the pieces already built (slotting into a corner) is offered before one that touches only the face you chose, and the counter shows it ("registration 1/4 · 3 faces"). Placements that would cut into a built piece aren't offered. For space-fillers, a copy attached to its own kind starts in the position that continues the tiling. Faces that end up flush against a neighbour count as used, so they aren't offered again.
+
 ### Attach a shape at a vertex
 
 1. Tap a **highlighted vertex**. Only free vertices light up. Shapes that still have room to build from glow.

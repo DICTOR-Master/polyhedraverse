@@ -34,6 +34,8 @@ Dos formas unidas cara con cara comparten esa cara exactamente; por ejemplo, un 
 
 Al arrastrar recorres todas las formas en que la nueva figura puede apoyarse en esa cara, y se van contando («registration 3/8»): cada giro de la cara y, cuando la nueva figura tiene caras de ese tamaño que no son iguales, también cada una de ellas, así que una pieza con caras desiguales siempre se puede colocar como quieras. Por ejemplo, para construir el prisma inclinado de DICTO, empieza con el bloque de caras cuadradas, une el bloque de rombos a uno de sus rombos de 72° y arrastra hasta que las caras hexagonales queden planas, y luego une un segundo bloque de caras cuadradas del mismo modo.
 
+Los mejores encajes van primero: una colocación que queda a ras de dos o tres caras de las piezas ya construidas (encajando en una esquina) se ofrece antes que una que solo toca la cara elegida, y el contador lo indica («registration 1/4 · 3 faces»). No se ofrecen colocaciones que atravesarían una pieza ya construida. En las formas que llenan el espacio, una copia unida a su misma forma empieza en la posición que continúa el teselado. Las caras que quedan a ras de una vecina cuentan como usadas, así que no se vuelven a ofrecer.
+
 ### Une una forma a un vértice
 
 1. Toca un **vértice resaltado**. Solo se iluminan los vértices libres. Las formas que aún tienen sitio para crecer brillan.

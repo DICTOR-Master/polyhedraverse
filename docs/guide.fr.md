@@ -34,6 +34,8 @@ Deux formes reliées face à face partagent exactement cette face, un cube sur u
 
 Faire glisser passe en revue toutes les façons dont la nouvelle forme peut se poser sur cette face, en les comptant (« registration 3/8 ») : chaque rotation de la face et, quand la nouvelle forme a des faces de cette taille qui ne se ressemblent pas, chacune de ces faces aussi, si bien qu'une pièce aux faces inégales peut toujours être posée comme vous le voulez. Par exemple, pour construire le prisme incliné de DICTO, commencez par le bloc à faces carrées, attachez le bloc tout en losanges à l'un de ses losanges de 72° et faites glisser jusqu'à ce que les faces hexagonales soient à plat, puis attachez un second bloc à faces carrées de la même façon.
 
+Les meilleurs ajustements viennent en premier : un placement qui affleure deux ou trois faces des pièces déjà construites (en se logeant dans un coin) est proposé avant celui qui ne touche que la face choisie, et le compteur l'indique (« registration 1/4 · 3 faces »). Les placements qui traverseraient une pièce déjà construite ne sont pas proposés. Pour les formes qui pavent l'espace, une copie fixée à sa propre forme commence à la position qui prolonge le pavage. Les faces qui se retrouvent contre une voisine comptent comme utilisées et ne sont plus proposées.
+
 ### Attacher une forme à un sommet
 
 1. Touchez un **sommet en surbrillance**. Seuls les sommets libres s'allument. Les formes qui ont encore de la place pour construire brillent.
