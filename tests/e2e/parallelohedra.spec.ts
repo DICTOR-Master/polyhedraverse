@@ -23,13 +23,14 @@ test('Parallelohedra shows Fedorov\'s five and the variants, with the Zometool c
 });
 
 // Kaleidoverse verified (direct request 2026-10-01): the Bain stretch's
-// equal-edge cells, in their own section, with where they came from.
+// equal-edge cells, plus (2026-10-01) DICTO's skewed ED in two forms, in
+// their own section, with where they came from.
 test('Parallelohedra shows the Kaleidoverse verified section, with the Bain credit', async ({ page }) => {
   await page.evaluate(() => (document.querySelector('[data-testid="corner-hud-wheel"]') as unknown as { __hudTriggerAction: (i: number) => void }).__hudTriggerAction(1));
   await page.getByRole('button', { name: /Parallelohedra/ }).first().click();
   const kaleido = page.locator('[data-testid="parallelohedra-section-kaleidoverse"]');
   await expect(kaleido).toContainText('Kaleidoverse verified');
-  await expect(kaleido.locator('div[role="button"]')).toHaveCount(3);
+  await expect(kaleido.locator('div[role="button"]')).toHaveCount(5);
   const ed = kaleido.locator('div[role="button"]', { hasText: 'Regular-hexagon elongated dodecahedron' }).first();
   await ed.scrollIntoViewIfNeeded();
   await ed.click();
