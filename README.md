@@ -284,3 +284,5 @@ stalls there. Where a second machine is available (`dicto-node` on the
 LAN, reachable over SSH with Chromium already installed), it's worth
 using for `npm run test:e2e` and other browser-dependent runs rather
 than waiting on the Pi.
+
+[![Featured on BitsExplorer](https://bitsexplorer.com/badge/117514.svg)](https://bitsexplorer.com/i/117514/polyhedraverse)
