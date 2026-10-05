@@ -12,12 +12,12 @@
  *     cube, regular hexagons the truncated octahedron and hexagonal prism,
  *     every face its own copy;
  *   - the family lists: home Miscellaneous, and in Parallelohedra's
- *     "Kaleidoverse verified" section.
+ *     "Kaleidohedra verified" section.
  */
 import { POLYHEDRA } from '../app/lib/polyhedra';
 import { type Vec3, facesCongruent, validateShape } from '../app/lib/polyhedra/core';
 import { BAIN_DIRECTIONS } from '../app/lib/polyhedra/miscellaneous';
-import { familiesFor, familyIds, KALEIDOVERSE_VERIFIED } from '../app/lib/polyhedra/families';
+import { familiesFor, familyIds, KALEIDOHEDRA_VERIFIED } from '../app/lib/polyhedra/families';
 import { faceAttachOptions } from '../app/lib/faceAttach';
 import * as THREE from 'three';
 
@@ -106,7 +106,7 @@ for (const [id, want] of Object.entries(EXPECT)) {
     check(attaches(spec, tf, POLYHEDRA[other]), `${id}: its ${kind} faces take the ${POLYHEDRA[other].name}`);
   }
   // 5. Families.
-  check(familyIds('PARALLELOHEDRA').includes(id) && KALEIDOVERSE_VERIFIED.includes(id) && familiesFor(id).includes('MISCELLANEOUS'), `${id} is in Parallelohedra (Kaleidoverse verified), home Miscellaneous`);
+  check(familyIds('PARALLELOHEDRA').includes(id) && KALEIDOHEDRA_VERIFIED.includes(id) && familiesFor(id).includes('MISCELLANEOUS'), `${id} is in Parallelohedra (Kaleidohedra verified), home Miscellaneous`);
 }
 
 console.log(`\n${checks} checks, ${failures} failures.`);

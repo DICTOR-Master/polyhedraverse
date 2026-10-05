@@ -97,24 +97,24 @@ export const ZOME_X: Vec3 = (() => {
 })();
 
 /**
- * DICTO's skewed ED (Kaleidoverse DISCOVERIES.md #7, direct request
+ * DICTO's skewed ED (Kaleidohedra DISCOVERIES.md #7, direct request
  * 2026-10-01): two ways to extend the skewed RD (v, w, d, ZOME_X) by a
  * fifth edge direction, the same way the regular-hexagon ED extends the
- * Bain RD. Found in Kaleidoverse by matching the skewed RD's Gram matrix
+ * Bain RD. Found in Kaleidohedra by matching the skewed RD's Gram matrix
  * against every already-catalogued equal-edge elongated-dodecahedron cell's
  * 4-direction sub-sets (geometry-targets.json); exactly two contain it:
  * TARGETS.md #16 (4 rhombi 60, 4 rhombi 72, 2 hexagons 36/36/72, 2 regular
  * hexagons; volume phi^2 + 2) and #18 (6 rhombi 60, 2 rhombi 72, 4 hexagons
  * 36/72/72; volume phi^3 + 1/2). Each direction below is that fifth
  * direction, carried over exactly (orthogonal alignment, not re-derived)
- * from Kaleidoverse's `src/geometry-extensions/dicto-fcc.js`.
+ * from Kaleidohedra's `src/geometry-extensions/dicto-fcc.js`.
  */
 export const DICTO_SKEWED_ED_16_DIRECTION: Vec3 = [0.30901699435345675, -0.7557613140236112, -0.5773502691494736];
 export const DICTO_SKEWED_ED_18_DIRECTION: Vec3 = [0.5000000002805582, 0.6454972241403993, -0.5773502687416553];
 
 /**
  * Not Zometool pieces (unlike the rest of this file): these two were found
- * by a pure Kaleidoverse Gram-matrix search, never built with struts. Used
+ * by a pure Kaleidohedra Gram-matrix search, never built with struts. Used
  * to keep them out of ZOME_PARALLELOHEDRA_ADDITION_IDS' "Zometool credit"
  * and give them their own, accurate one instead.
  */

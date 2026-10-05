@@ -1,5 +1,5 @@
 /**
- * The Bain parallelohedra (direct request 2026-10-01, from Kaleidoverse).
+ * The Bain parallelohedra (direct request 2026-10-01, from Kaleidohedra).
  * Stretch a body-centred cubic lattice by sqrt 2 along one axis and it
  * becomes face-centred cubic (the Bain stretch). The same stretch turns
  * the rhombic dodecahedron's four edge directions into four of length 1
@@ -18,7 +18,7 @@
  *   corners cut at 45 degrees).
  *
  * All three tile space by translation (Fedorov types: rhombic dodecahedron,
- * elongated dodecahedron). Kaleidoverse's verify-kaleido checks the faces;
+ * elongated dodecahedron). Kaleidohedra's verify-kaleido checks the faces;
  * verify-bain-parallelohedra checks these solids.
  */
 

@@ -2,7 +2,7 @@
  * Checks DICTO's skewed ED (miscellaneous/zome-parallelohedra:
  * DICTO_SKEWED_ED_16, DICTO_SKEWED_ED_18) — two ways to extend DICTO's
  * skewed rhombic dodecahedron (DICTO_SKEWED_RD) by a fifth edge direction,
- * found in Kaleidoverse (DISCOVERIES.md #7) by matching its Gram matrix
+ * found in Kaleidohedra (DISCOVERIES.md #7) by matching its Gram matrix
  * against every already-catalogued equal-edge elongated-dodecahedron cell
  * in geometry-targets.json:
  *

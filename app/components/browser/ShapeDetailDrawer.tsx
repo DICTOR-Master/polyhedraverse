@@ -205,7 +205,7 @@ export default function ShapeDetailDrawer({
           </div>
         )}
 
-        {/* DICTO's skewed ED: found by a pure Kaleidoverse Gram-matrix
+        {/* DICTO's skewed ED: found by a pure Kaleidohedra Gram-matrix
             search (DISCOVERIES.md #7). */}
         {DICTO_SKEWED_ED_IDS.includes(specId) && (
           <div data-testid="dicto-skewed-ed-credit" style={{ maxWidth: 380, fontSize: 12, color: '#a9f795', lineHeight: 1.45, textAlign: 'center' }}>
@@ -220,7 +220,7 @@ export default function ShapeDetailDrawer({
           </div>
         )}
 
-        {/* The Bain parallelohedra: where they came from (Kaleidoverse). */}
+        {/* The Bain parallelohedra: where they came from (Kaleidohedra). */}
         {BAIN_PARALLELOHEDRA_ADDITION_IDS.includes(specId) && (
           <div data-testid="bain-credit" style={{ maxWidth: 380, fontSize: 12, color: '#a9f795', lineHeight: 1.45, textAlign: 'center' }}>
             {t('detail.bainCredit', lang)}

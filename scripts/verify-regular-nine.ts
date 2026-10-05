@@ -4,7 +4,7 @@
  *
  *   - each has every edge 1 and only squares, regular hexagons and 60
  *     degree rhombi as faces, with exactly the face counts and volume of
- *     Kaleidoverse's list (TARGETS.md, "The most regular: 9 cells");
+ *     Kaleidohedra's list (TARGETS.md, "The most regular: 9 cells");
  *   - the nine are all different shapes (no two alike);
  *   - each tiles space by translation (Venkov), and is offered its slid
  *     copy first by face registration;
@@ -33,7 +33,7 @@ const check = (ok: boolean, msg: string) => {
 };
 type Spec = (typeof POLYHEDRA)[string];
 const R2 = Math.SQRT2, R3 = Math.sqrt(3);
-// Kaleidoverse's table (faces by kind, volume at edge 1).
+// Kaleidohedra's table (faces by kind, volume at edge 1).
 const WANT: Record<string, { faces: Record<string, number>; volume: number }> = {
   CUBE: { faces: { square: 6 }, volume: 1 },
   RHOMBOHEDRON_60: { faces: { rhombus: 6 }, volume: R2 / 2 },
@@ -70,7 +70,7 @@ for (const id of REGULAR_NINE) {
   const rhombi60 = s.faces.filter((f) => faceKind(s.vertices, f) === 'rhombus').every((f) => { const a = rhombusAngle(s, f); return Math.abs(a - 60) < 1e-6 || Math.abs(a - 120) < 1e-6; });
   const sorted = (o: Record<string, number>) => JSON.stringify(Object.fromEntries(Object.entries(o).sort()));
   check(sorted(counts) === sorted(WANT[id].faces) && rhombi60, `${id}: faces ${sorted(counts)}, every rhombus 60°`);
-  check(Math.abs(volume(s) - WANT[id].volume) < 1e-9, `${id}: volume ${volume(s).toFixed(6)} as in Kaleidoverse's table`);
+  check(Math.abs(volume(s) - WANT[id].volume) < 1e-9, `${id}: volume ${volume(s).toFixed(6)} as in Kaleidohedra's table`);
   // Venkov: centrally symmetric, faces centrally symmetric, belts of 4 or 6.
   const V = s.vertices.map((v) => new THREE.Vector3(...v));
   const c = V.reduce((a, b) => a.clone().add(b), new THREE.Vector3()).multiplyScalar(1 / V.length);

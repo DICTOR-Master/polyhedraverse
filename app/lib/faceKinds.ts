@@ -1,12 +1,12 @@
 /**
- * Face-kind colours (direct request 2026-10-01): the Kaleidoverse-verified
+ * Face-kind colours (direct request 2026-10-01): the Kaleidohedra-verified
  * parallelohedra and the four new members of the regular nine show each kind of face in its own colour, the same
  * everywhere -- on their cards and when placed -- so squares, rhombi and
  * hexagons read at a glance. One colour per polygon kind; every rhombus
  * angle shares the rhombus colour.
  */
 import type { PolyhedronSpec } from './polyhedra/core';
-import { KALEIDOVERSE_VERIFIED, REGULAR_NINE_NEW } from './polyhedra/families';
+import { KALEIDOHEDRA_VERIFIED, REGULAR_NINE_NEW } from './polyhedra/families';
 
 export type FaceKind = 'triangle' | 'square' | 'rhombus' | 'regularHexagon' | 'hexagon' | 'other';
 
@@ -20,7 +20,7 @@ export const FACE_KIND_COLORS: Record<FaceKind, number> = {
 };
 
 /** Whether a shape is drawn with face-kind colours instead of its piece colour. */
-export const usesFaceKindColors = (specId: string): boolean => KALEIDOVERSE_VERIFIED.includes(specId) || REGULAR_NINE_NEW.includes(specId);
+export const usesFaceKindColors = (specId: string): boolean => KALEIDOHEDRA_VERIFIED.includes(specId) || REGULAR_NINE_NEW.includes(specId);
 
 type V3 = readonly [number, number, number] | number[];
 

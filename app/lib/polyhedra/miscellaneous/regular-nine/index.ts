@@ -1,5 +1,5 @@
 /**
- * The regular nine (direct request 2026-10-01, from Kaleidoverse's two-way
+ * The regular nine (direct request 2026-10-01, from Kaleidohedra's two-way
  * target search): every space-filler with all edges equal whose faces are
  * only squares, regular hexagons and 60 degree rhombi (each two
  * equilateral triangles). There are exactly nine. Five were already here
