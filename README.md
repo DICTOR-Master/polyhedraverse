@@ -259,6 +259,15 @@ no `eval`/Web Workers anywhere in `app/`, so the CSP omits
 `unsafe-eval`/`worker-src` entirely rather than including them "just in
 case."
 
+## Citable work by DICTO
+
+Ideas that grew out of playing in these apps, archived on Zenodo with permanent DOIs. Please cite them by DOI and credit DICTO.
+
+| Work | What it is | Here | DOI |
+|---|---|---|---|
+| **RHOMBITURE** | An extractable golden-rhombohedron armature system for sculpture, with a keyed-dowel finding on the 3D Penrose tiling. First published 2026-09-26, open prior art. | its two blocks are in the **Aperiodic Sets** family (golden rhombohedra helper) | [10.5281/zenodo.23173896](https://doi.org/10.5281/zenodo.23173896) |
+| **Euclid–Kepler cell** and **Euclid–Kepler network** | A cube, Euclid's roofed dodecahedron and the folded icosahedron nested in one cell of a simple cubic lattice (Pm-3), containing Kepler's great stellated dodecahedron; the network shares corners between stars and icosahedra. First recorded 2026-10-06. | explored in the IDT world of [Rhombiverse](https://rhombiverse.vercel.app) and [Kaleidohedra](https://github.com/DICTOR-Master/kaleidohedra) | [10.5281/zenodo.23173809](https://doi.org/10.5281/zenodo.23173809) |
+
 ## Contributing
 
 Humans and AI coding agents are both welcome to open PRs — see
