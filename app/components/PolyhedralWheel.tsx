@@ -633,6 +633,11 @@ export default function PolyhedralWheel({
     // pull-back fix above. 12 gives some real zoom-out headroom past the
     // new default too, not just enough to avoid clamping it exactly.
     controls.maxDistance = 12;
+    // Horizontal only: the wheel turns about its vertical axis, like a
+    // carousel, never tilting over the top or underneath. Camera sits on
+    // the horizon (polar angle PI/2, see camera.position above).
+    controls.minPolarAngle = Math.PI / 2;
+    controls.maxPolarAngle = Math.PI / 2;
 
     scene.add(new THREE.AmbientLight(0xffffff, 0.8));
     const dirLight = new THREE.DirectionalLight(0xffffff, 0.9);

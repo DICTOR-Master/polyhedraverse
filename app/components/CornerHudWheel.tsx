@@ -260,6 +260,8 @@ export default function CornerHudWheel({
       group.rotation.x += dy * 0.01;
       lastX = e.clientX;
       lastY = e.clientY;
+      // Keep the loop running for the whole drag, so every move is drawn.
+      resumeAnimating();
     };
     const onPointerUp = () => {
       dragging = false;
