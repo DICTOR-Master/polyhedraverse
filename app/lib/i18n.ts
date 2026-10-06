@@ -25,7 +25,7 @@ type Dict = Record<string, string>;
 const en: Dict = {
   'projection.label': 'Projection',
   'projection.perspective': 'Perspective',
-  'projection.orthographic': 'Orthographic',
+  'projection.orthographic': 'Parallel (orthographic)',
   'projection.isometric': 'Isometric',
   'tab.home': 'Home',
   'tab.search': 'Search',
@@ -131,7 +131,7 @@ const en: Dict = {
 const ja: Dict = {
   'projection.label': '投影',
   'projection.perspective': '透視',
-  'projection.orthographic': '正投影',
+  'projection.orthographic': '平行投影（正投影）',
   'projection.isometric': '等角投影',
   'tab.home': 'ホーム',
   'tab.search': '検索',
@@ -237,7 +237,7 @@ const ja: Dict = {
 const es: Dict = {
   'projection.label': 'Proyección',
   'projection.perspective': 'Perspectiva',
-  'projection.orthographic': 'Ortográfica',
+  'projection.orthographic': 'Paralela (ortográfica)',
   'projection.isometric': 'Isométrica',
   'tab.home': 'Inicio',
   'tab.search': 'Buscar',
@@ -343,7 +343,7 @@ const es: Dict = {
 const fr: Dict = {
   'projection.label': 'Projection',
   'projection.perspective': 'Perspective',
-  'projection.orthographic': 'Orthographique',
+  'projection.orthographic': 'Parallèle (orthographique)',
   'projection.isometric': 'Isométrique',
   'tab.home': 'Accueil',
   'tab.search': 'Recherche',
@@ -449,7 +449,7 @@ const fr: Dict = {
 const ko: Dict = {
   'projection.label': '투영',
   'projection.perspective': '원근',
-  'projection.orthographic': '직교',
+  'projection.orthographic': '평행(직교)',
   'projection.isometric': '등각',
   'tab.home': '홈',
   'tab.search': '검색',
@@ -555,7 +555,7 @@ const ko: Dict = {
 const zh: Dict = {
   'projection.label': '投影',
   'projection.perspective': '透视',
-  'projection.orthographic': '正交',
+  'projection.orthographic': '平行（正交）',
   'projection.isometric': '等轴测',
   'tab.home': '首页',
   'tab.search': '搜索',
@@ -661,7 +661,7 @@ const zh: Dict = {
 const ru: Dict = {
   'projection.label': 'Проекция',
   'projection.perspective': 'Перспектива',
-  'projection.orthographic': 'Ортогональная',
+  'projection.orthographic': 'Параллельная (ортогональная)',
   'projection.isometric': 'Изометрия',
   'tab.home': 'Главная',
   'tab.search': 'Поиск',
