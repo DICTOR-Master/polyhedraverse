@@ -29,6 +29,7 @@ import { POLYTOPE_4D_IDS } from './polytopes4d';
 import { APERIODIC_ADDITION_IDS, APERIODIC_PAIRS } from './aperiodic';
 import { BRIDGES_3D_IDS } from './bridges';
 import { STELLATION_IDS } from './stellations';
+import { RD_TARGET_ADDITION_IDS } from './miscellaneous/rd-targets';
 
 export type FamilyKey =
   | 'DELTAHEDRA'
@@ -185,6 +186,10 @@ export const KALEIDOHEDRA_VERIFIED = ['BAIN_RD', 'REGULAR_HEX_ED', 'BAIN_ED', 'D
 // whose faces are only squares, regular hexagons and 60 degree rhombi, found
 // complete by Kaleidohedra's two-way search. Five were already here; the
 // four new ones (miscellaneous/regular-nine) are REGULAR_NINE_NEW.
+// Kaleidohedra's rhombic-dodecahedron sub-family (direct request 2026-10-06):
+// the 24 unbuilt RD rows of its target table, all realisable as zonohedra of
+// four edge directions (miscellaneous/rd-targets).
+export const KALEIDOHEDRA_RD_TARGETS = RD_TARGET_ADDITION_IDS;
 export const REGULAR_NINE_NEW = ['RHOMBOHEDRON_60', 'RHOMBIC_PRISM_60', 'LEANING_SQUARE_PRISM', 'LEANING_HEX_PRISM_60'];
 export const REGULAR_NINE = ['CUBE', 'RHOMBOHEDRON_60', 'LEANING_SQUARE_PRISM', 'RHOMBIC_PRISM_60', 'PRISM_6', 'LEANING_HEX_PRISM_60', 'BAIN_RD', 'REGULAR_HEX_ED', 'TRUNCATED_OCTAHEDRON'];
 
@@ -204,7 +209,7 @@ const BASE_IDS: Record<FamilyKey, string[]> = {
   // TRUNCATED_OCTAHEDRON: archimedean.ts) -- a cross-cutting list, not a
   // new geometry source. Curated by hand, since there are exactly 5 types
   // and they're a fixed, named mathematical result (Fedorov 1885).
-  PARALLELOHEDRA: [...FEDOROV_FIVE, ...PARALLELOHEDRON_VARIANTS, ...KALEIDOHEDRA_VERIFIED, ...REGULAR_NINE_NEW],
+  PARALLELOHEDRA: [...FEDOROV_FIVE, ...PARALLELOHEDRON_VARIANTS, ...KALEIDOHEDRA_VERIFIED, ...KALEIDOHEDRA_RD_TARGETS, ...REGULAR_NINE_NEW],
   // Every shape appearing in SPACE_FILLING_PAIRS below (deduped) -- the
   // pair structure itself is what the browser shows (pair rows), this is
   // just membership for counts/search/cross-family badges.

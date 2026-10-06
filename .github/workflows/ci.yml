@@ -58,6 +58,7 @@ jobs:
       - run: npm run verify:bain-parallelohedra
       - run: npm run verify:face-registration
       - run: npm run verify:regular-nine
+      - run: npm run verify:rd-targets
       - run: npm run verify:4d-polytopes
       - run: npm run verify:golden-helper
       - run: npm run verify:face-twist

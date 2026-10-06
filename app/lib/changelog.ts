@@ -15,6 +15,12 @@ export interface ChangelogDay {
 
 export const CHANGELOG: ChangelogDay[] = [
   {
+    date: '2026-10-06',
+    entries: [
+      'New in Parallelohedra: a rhombic dodecahedron sub-family of 24 space-fillers from Kaleidohedra\'s target table, each a sliding copy of four edge directions with equal edges and volumes checked against the table. They are the rhombic dodecahedra that DICTO\'s skewed RD belongs with, and every face attaches.',
+    ],
+  },
+  {
     date: '2026-10-01',
     entries: [
       'New in Parallelohedra\'s Kaleidohedra-verified section: two more space-fillers, each extending DICTO\'s skewed rhombic dodecahedron by one more edge direction, found by Kaleidohedra\'s own search of every equal-edge elongated dodecahedron rather than built by hand. One has 4 rhombi of 60°, 4 of 72°, 2 regular hexagons and 2 other hexagons, volume exactly φ² + 2; the other has 6 rhombi of 60°, 2 of 72° and 4 hexagons, volume exactly φ³ + ½. Both fill space by sliding alone, and every face attaches.',
