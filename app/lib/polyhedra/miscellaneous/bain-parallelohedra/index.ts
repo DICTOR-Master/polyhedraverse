@@ -11,7 +11,9 @@
  * - REGULAR_HEX_ED: plus a fifth direction along an unstretched axis. It
  *   lies at 60 degrees to two pairs of the others, in their planes, so
  *   the four hexagons are regular: 4 regular hexagons, 4 squares and 4
- *   rhombi of 60 degrees, every face made of regular polygons.
+ *   rhombi of 60 degrees, every face made of regular polygons. Already
+ *   known as the truncated octahedron with one zone removed (Gruenbaum
+ *   2010, Fig. 2b); DICTO reached it independently by this route.
  * - BAIN_ED: plus a fifth direction along the stretched axis instead, at
  *   45 degrees to all four: 8 rhombi of 60 degrees and 4 hexagons with
  *   corners 135, 135, 90, 135, 135, 90 (a square with two opposite
