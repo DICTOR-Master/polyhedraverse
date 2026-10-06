@@ -30,6 +30,7 @@ import { APERIODIC_ADDITION_IDS, APERIODIC_PAIRS } from './aperiodic';
 import { BRIDGES_3D_IDS } from './bridges';
 import { STELLATION_IDS } from './stellations';
 import { RD_TARGET_ADDITION_IDS } from './miscellaneous/rd-targets';
+import { HEX_TARGET_ADDITION_IDS } from './miscellaneous/hex-targets';
 
 export type FamilyKey =
   | 'DELTAHEDRA'
@@ -185,7 +186,10 @@ export const PARALLELOHEDRON_VARIANTS = ['RHOMBOHEDRON', 'DICTO_LEANING_HEX_PRIS
 // the 24 unbuilt RD rows of its target table, all realisable as zonohedra of
 // four edge directions (miscellaneous/rd-targets).
 export const KALEIDOHEDRA_RD_TARGETS = RD_TARGET_ADDITION_IDS;
-export const KALEIDOHEDRA_VERIFIED = ['BAIN_RD', 'REGULAR_HEX_ED', 'BAIN_ED', 'DICTO_SKEWED_ED_16', 'DICTO_SKEWED_ED_18', ...KALEIDOHEDRA_RD_TARGETS];
+// The hexagonal-prism sub-family (miscellaneous/hex-targets): the 20 unbuilt
+// rows whose face description matches the built shape.
+export const KALEIDOHEDRA_HEX_TARGETS = HEX_TARGET_ADDITION_IDS;
+export const KALEIDOHEDRA_VERIFIED = ['BAIN_RD', 'REGULAR_HEX_ED', 'BAIN_ED', 'DICTO_SKEWED_ED_16', 'DICTO_SKEWED_ED_18', ...KALEIDOHEDRA_RD_TARGETS, ...KALEIDOHEDRA_HEX_TARGETS];
 // The regular nine (direct request 2026-10-01): every equal-edge space-filler
 // whose faces are only squares, regular hexagons and 60 degree rhombi, found
 // complete by Kaleidohedra's two-way search. Five were already here; the
