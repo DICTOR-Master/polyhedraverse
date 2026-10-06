@@ -1,3 +1,4 @@
+import { KALEIDOHEDRA_VERIFIED } from '../../app/lib/polyhedra/families';
 import { test, expect } from './fixtures';
 
 test.beforeEach(async ({ page }) => {
@@ -30,7 +31,7 @@ test('Parallelohedra shows the Kaleidohedra verified section, with the Bain cred
   await page.getByRole('button', { name: /Parallelohedra/ }).first().click();
   const kaleido = page.locator('[data-testid="parallelohedra-section-kaleidohedra"]');
   await expect(kaleido).toContainText('Kaleidohedra verified');
-  await expect(kaleido.locator('div[role="button"]')).toHaveCount(5);
+  await expect(kaleido.locator('div[role="button"]')).toHaveCount(KALEIDOHEDRA_VERIFIED.length);
   const ed = kaleido.locator('div[role="button"]', { hasText: 'Regular-hexagon elongated dodecahedron' }).first();
   await ed.scrollIntoViewIfNeeded();
   await ed.click();
