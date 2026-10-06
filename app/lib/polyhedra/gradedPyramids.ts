@@ -70,7 +70,7 @@ import { type Vec3, centerVertices, dist, buildConnectors, type PolyhedronSpec }
  *   (`360/4`), so it crashed outright rather than silently building a
  *   slightly-wrong shape. Always compute this per base via
  *   `gradeApexAngleDeg`, never hard-code an angle for grade 1.
- * - Grade 3 (tall): 40 degrees (fixed, base-agnostic — verified below
+ * - Grade 3 (tall): 40 degrees (fixed, base-agnostic — except the triangular base, 36 degrees, see gradeApexAngleDeg — verified below
  *   to stay comfortably under every currently-supported base's own
  *   degenerate limit, not merely assumed safe).
  * - Grade 4 (highest/sharpest): 20 degrees — a deliberately sharp,
@@ -92,6 +92,10 @@ export function gradeApexAngleDeg(n: number, grade: number): number {
     const standardHeight = apexHeightForAngle(n, FIXED_GRADE_ANGLES[2]);
     return apexAngleForHeight(n, standardHeight / 2);
   }
+  // Triangular tall (grade 3): 36 degrees, so its slant edges are exactly
+  // phi (1.618 at unit base edge), the edge of the small stellated
+  // dodecahedron's spikes (stellation 2, dodecahedron edge 1).
+  if (grade === 3 && n === 3) return 36;
   const angle = FIXED_GRADE_ANGLES[grade];
   if (angle === undefined) throw new Error(`gradeApexAngleDeg: unknown grade ${grade}`);
   return angle;

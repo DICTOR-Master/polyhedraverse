@@ -17,6 +17,7 @@ export const CHANGELOG: ChangelogDay[] = [
   {
     date: '2026-10-06',
     entries: [
+      'Tall triangular pyramid (grade 3) is now a little taller: its slanted edges are exactly φ, the edge of the small stellated dodecahedron\'s spikes, so it fills the same voids as they do.',
       'New in Parallelohedra\'s Kaleidohedra-verified section: 28 more hexagonal prisms, each a sliding copy of four edge directions with three of them in one plane, so two hexagons and six sides, edges all equal, volumes checked against Kaleidohedra\'s table. They are coloured by face kind like the others, and every face attaches.',
       'New in Parallelohedra: a rhombic dodecahedron sub-family of 24 space-fillers from Kaleidohedra\'s target table, each a sliding copy of four edge directions with equal edges and volumes checked against the table. They sit in the Kaleidohedra-verified section, coloured by face kind like the others, and every face attaches.',
     ],
