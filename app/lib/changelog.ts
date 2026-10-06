@@ -17,7 +17,7 @@ export const CHANGELOG: ChangelogDay[] = [
   {
     date: '2026-10-06',
     entries: [
-      'New in Parallelohedra: a rhombic dodecahedron sub-family of 24 space-fillers from Kaleidohedra\'s target table, each a sliding copy of four edge directions with equal edges and volumes checked against the table. They are the rhombic dodecahedra that DICTO\'s skewed RD belongs with, and every face attaches.',
+      'New in Parallelohedra: a rhombic dodecahedron sub-family of 24 space-fillers from Kaleidohedra\'s target table, each a sliding copy of four edge directions with equal edges and volumes checked against the table. They sit in the Kaleidohedra-verified section, coloured by face kind like the others, and every face attaches.',
     ],
   },
   {
