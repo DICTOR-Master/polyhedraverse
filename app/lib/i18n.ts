@@ -23,6 +23,10 @@ export const LANG_ORDER: LangCode[] = ['en', 'ja', 'es', 'fr', 'ko', 'zh', 'ru']
 type Dict = Record<string, string>;
 
 const en: Dict = {
+  'projection.label': 'Projection',
+  'projection.perspective': 'Perspective',
+  'projection.orthographic': 'Orthographic',
+  'projection.isometric': 'Isometric',
   'tab.home': 'Home',
   'tab.search': 'Search',
   'tab.scene': 'Scene',
@@ -125,6 +129,10 @@ const en: Dict = {
 };
 
 const ja: Dict = {
+  'projection.label': '投影',
+  'projection.perspective': '透視',
+  'projection.orthographic': '正投影',
+  'projection.isometric': '等角投影',
   'tab.home': 'ホーム',
   'tab.search': '検索',
   'tab.scene': 'シーン',
@@ -227,6 +235,10 @@ const ja: Dict = {
 };
 
 const es: Dict = {
+  'projection.label': 'Proyección',
+  'projection.perspective': 'Perspectiva',
+  'projection.orthographic': 'Ortográfica',
+  'projection.isometric': 'Isométrica',
   'tab.home': 'Inicio',
   'tab.search': 'Buscar',
   'tab.scene': 'Escena',
@@ -329,6 +341,10 @@ const es: Dict = {
 };
 
 const fr: Dict = {
+  'projection.label': 'Projection',
+  'projection.perspective': 'Perspective',
+  'projection.orthographic': 'Orthographique',
+  'projection.isometric': 'Isométrique',
   'tab.home': 'Accueil',
   'tab.search': 'Recherche',
   'tab.scene': 'Scène',
@@ -431,6 +447,10 @@ const fr: Dict = {
 };
 
 const ko: Dict = {
+  'projection.label': '투영',
+  'projection.perspective': '원근',
+  'projection.orthographic': '직교',
+  'projection.isometric': '등각',
   'tab.home': '홈',
   'tab.search': '검색',
   'tab.scene': '장면',
@@ -533,6 +553,10 @@ const ko: Dict = {
 };
 
 const zh: Dict = {
+  'projection.label': '投影',
+  'projection.perspective': '透视',
+  'projection.orthographic': '正交',
+  'projection.isometric': '等轴测',
   'tab.home': '首页',
   'tab.search': '搜索',
   'tab.scene': '场景',
@@ -635,6 +659,10 @@ const zh: Dict = {
 };
 
 const ru: Dict = {
+  'projection.label': 'Проекция',
+  'projection.perspective': 'Перспектива',
+  'projection.orthographic': 'Ортогональная',
+  'projection.isometric': 'Изометрия',
   'tab.home': 'Главная',
   'tab.search': 'Поиск',
   'tab.scene': 'Сцена',

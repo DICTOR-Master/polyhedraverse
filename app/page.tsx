@@ -1,6 +1,9 @@
 'use client';
 
 import { useEffect, useRef, useState, useSyncExternalStore } from 'react';
+import { usePrefs } from './lib/prefs';
+import { t } from './lib/i18n';
+import type { ProjectionMode } from './components/ShapeViewer';
 import dynamic from 'next/dynamic';
 import { POLYHEDRON_IDS } from './lib/polyhedra';
 import type { NodeSelection, ShapeSelection, ShapeViewerHandle, ViewMode } from './components/ShapeViewer';
@@ -43,6 +46,8 @@ export default function Home() {
   const handleRef = useRef<ShapeViewerHandle | null>(null);
   const saveStatusResetRef = useRef<ReturnType<typeof setTimeout> | null>(null);
   const [fileMenuOpen, setFileMenuOpen] = useState(false);
+  const [projection, setProjection] = useState<ProjectionMode>('perspective');
+  const { language: lang } = usePrefs();
   const fileMenuRef = useRef<HTMLDivElement | null>(null);
   const [colorPrefs, setColorPrefsState] = useState<ColorPrefs>(DEFAULT_COLOR_PREFS);
   const [colorMenuOpen, setColorMenuOpen] = useState(false);
@@ -1068,7 +1073,21 @@ export default function Home() {
           </button>
         </div>
       )}
-      <main className="flex-1">
+      <main className="flex-1 relative">
+        <div className="absolute right-3 top-3 z-20 flex items-center gap-1 rounded bg-black/60 p-1" role="group" aria-label={t('projection.label', lang)}>
+          {(['perspective', 'orthographic', 'isometric'] as const).map((mode) => (
+            <button
+              key={mode}
+              type="button"
+              aria-pressed={projection === mode}
+              onClick={() => { setProjection(mode); handleRef.current?.setProjection(mode); }}
+              className="rounded px-2 py-1 text-xs"
+              style={{ background: projection === mode ? 'rgba(120,190,255,0.4)' : 'transparent', color: projection === mode ? '#fff' : '#9cd', border: '1px solid rgba(255,255,255,0.25)' }}
+            >
+              {t(`projection.${mode}`, lang)}
+            </button>
+          ))}
+        </div>
         <ShapeViewer
           initialShapeId={POLYHEDRON_IDS[0]}
           onSelectionChange={setSelection}

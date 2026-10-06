@@ -247,7 +247,12 @@ export interface DeleteResult {
   deletedCount: number;
 }
 
+/** How the 3D scene is projected: the default perspective, or orthographic, or isometric (orthographic seen along (1, 1, 1)). */
+export type ProjectionMode = 'perspective' | 'orthographic' | 'isometric';
+
 export interface ShapeViewerHandle {
+  /** Switches the projection. The geometry is unchanged; only the camera changes. */
+  setProjection(mode: ProjectionMode): void;
   /** Clears the scene and places a single instance of `specId` at the origin. */
   reset(specId: string): void;
   /**
@@ -872,13 +877,27 @@ export default function ShapeViewer({
       faceHighlightMesh.visible = false;
     };
 
-    const camera = new THREE.PerspectiveCamera(
+    const perspectiveCamera = new THREE.PerspectiveCamera(
       50,
       container.clientWidth / container.clientHeight,
       0.1,
       100,
     );
-    camera.position.set(2.4, 1.9, 2.8);
+    perspectiveCamera.position.set(2.4, 1.9, 2.8);
+    // Orthographic (and isometric, its fixed-angle case) share one camera.
+    // `camera` is whichever is active; setProjection swaps it and the controls.
+    const orthoCamera = new THREE.OrthographicCamera(-1, 1, 1, -1, 0.1, 100);
+    let orthoHalfHeight = 2;
+    const sizeOrtho = () => {
+      const aspect = container.clientWidth / container.clientHeight;
+      orthoCamera.left = -orthoHalfHeight * aspect;
+      orthoCamera.right = orthoHalfHeight * aspect;
+      orthoCamera.top = orthoHalfHeight;
+      orthoCamera.bottom = -orthoHalfHeight;
+      orthoCamera.updateProjectionMatrix();
+    };
+    sizeOrtho();
+    let camera: THREE.Camera = perspectiveCamera;
 
     const renderer = new THREE.WebGLRenderer({ antialias: true });
     renderer.setSize(container.clientWidth, container.clientHeight);
@@ -889,6 +908,26 @@ export default function ShapeViewer({
 
     const controls = new OrbitControls(camera, renderer.domElement);
     controls.enableDamping = true;
+
+    /**
+     * Switches projection, keeping the viewing direction (isometric uses
+     * (1, 1, 1) instead) and the current distance from the target. The
+     * controls follow the new camera, so orbit and zoom keep working.
+     */
+    const setProjection = (mode: ProjectionMode) => {
+      const target = controls.target.clone();
+      const offset = camera.position.clone().sub(target);
+      const distance = offset.length() > 1e-6 ? offset.length() : 6;
+      const direction = mode === 'isometric'
+        ? new THREE.Vector3(1, 1, 1).normalize()
+        : offset.lengthSq() > 1e-9 ? offset.normalize() : new THREE.Vector3(2.4, 1.9, 2.8).normalize();
+      camera = mode === 'perspective' ? perspectiveCamera : orthoCamera;
+      controls.object = camera;
+      camera.position.copy(target).addScaledVector(direction, distance);
+      camera.up.set(0, 1, 0);
+      camera.lookAt(target);
+      controls.update();
+    };
 
     /**
      * Zooms the camera so `objects`' own combined geometry fits in
@@ -934,19 +973,28 @@ export default function ShapeViewer({
       ].map(([x, y, z]) => new THREE.Vector3(x, y, z));
       const maxRadius = Math.max(...corners.map((c) => c.distanceTo(controls.target)));
       if (maxRadius <= 1e-6) return;
-      const fovRad = (camera.fov * Math.PI) / 180;
+      if (camera instanceof THREE.OrthographicCamera) {
+        // Orthographic has no distance to fit: the frustum's own size does it.
+        orthoHalfHeight = maxRadius * 1.3;
+        sizeOrtho();
+        controls.update();
+        return;
+      }
+      const fovRad = ((camera as THREE.PerspectiveCamera).fov * Math.PI) / 180;
       const FIT_MARGIN = 1.3; // headroom so the shape doesn't touch the frame edges
       const distance = (maxRadius / Math.sin(fovRad / 2)) * FIT_MARGIN;
       const currentDirection = camera.position.clone().sub(controls.target);
       const direction = currentDirection.lengthSq() > 1e-9 ? currentDirection.normalize() : new THREE.Vector3(2.4, 1.9, 2.8).normalize();
       camera.position.copy(controls.target).addScaledVector(direction, distance);
-      camera.updateProjectionMatrix();
+      (camera as THREE.PerspectiveCamera).updateProjectionMatrix();
       controls.update();
     };
 
     scene.add(new THREE.AmbientLight(0xffffff, 0.7));
     const dirLight = new THREE.DirectionalLight(0xffffff, 1.1);
-    attachHeadLight(scene, camera, dirLight, { x: 3, y: 4, z: 5 });
+    attachHeadLight(scene, perspectiveCamera, dirLight, { x: 3, y: 4, z: 5 });
+    const orthoLight = new THREE.DirectionalLight(0xffffff, 1.1);
+    attachHeadLight(scene, orthoCamera, orthoLight, { x: 3, y: 4, z: 5 });
 
     const findPlaced = (nodeId: string) =>
       placedRef.current.find((p) => (p.object.userData as ShapeObjectUserData).nodeId === nodeId);
@@ -2862,6 +2910,7 @@ export default function ShapeViewer({
       setColorPrefs,
       paintSelectedNode: withCheckpoint(paintSelectedNode),
       reset: withCheckpoint(placeRoot),
+      setProjection,
       startPolytopeBuild: withCheckpoint(startPolytopeBuild),
       beginAttach: withCheckpoint(beginAttach),
       beginFaceAttach: withCheckpoint(beginFaceAttach),
@@ -3243,8 +3292,9 @@ export default function ShapeViewer({
 
     const onResize = () => {
       const { clientWidth, clientHeight } = container;
-      camera.aspect = clientWidth / clientHeight;
-      camera.updateProjectionMatrix();
+      perspectiveCamera.aspect = clientWidth / clientHeight;
+      perspectiveCamera.updateProjectionMatrix();
+      sizeOrtho();
       renderer.setSize(clientWidth, clientHeight);
     };
     window.addEventListener('resize', onResize);
