@@ -638,6 +638,19 @@ export default function PolyhedralWheel({
     // the horizon (polar angle PI/2, see camera.position above).
     controls.minPolarAngle = Math.PI / 2;
     controls.maxPolarAngle = Math.PI / 2;
+    // Only a press that starts on this wheel's own canvas may drive it. A
+    // press that starts elsewhere (the corner HUD, the page) is ignored
+    // here, even if the pointer crosses the canvas, so nothing else can
+    // turn the wheel.
+    const gateToCanvas = (e: PointerEvent) => {
+      controls.enabled = e.target === renderer.domElement;
+    };
+    const releaseGate = () => {
+      controls.enabled = true;
+    };
+    window.addEventListener('pointerdown', gateToCanvas, true);
+    window.addEventListener('pointerup', releaseGate, true);
+    window.addEventListener('pointercancel', releaseGate, true);
 
     scene.add(new THREE.AmbientLight(0xffffff, 0.8));
     const dirLight = new THREE.DirectionalLight(0xffffff, 0.9);
@@ -906,6 +919,9 @@ export default function PolyhedralWheel({
       cancelAnimationFrame(frameId);
       clearTimeout(revealTimer);
       window.removeEventListener('resize', onResize);
+      window.removeEventListener('pointerdown', gateToCanvas, true);
+      window.removeEventListener('pointerup', releaseGate, true);
+      window.removeEventListener('pointercancel', releaseGate, true);
       container.removeEventListener('pointerdown', onContainerPointerDown);
       container.removeEventListener('click', onContainerClick);
       controls.dispose();
