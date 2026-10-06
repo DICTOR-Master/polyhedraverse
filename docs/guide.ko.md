@@ -1,6 +1,6 @@
 # Polyhedraverse 사용자 가이드
 
-Polyhedraverse와 그 쌍둥이인 [Rhombiverse](https://rhombiverse.vercel.app)는 같은 기하학을 바라보는 두 가지 방법입니다. Rhombiverse는 **풍경**입니다. 사방으로 뻗어 나가는 격자 그 자체를 보여 줍니다. Polyhedraverse는 **초상화 갤러리**입니다. 그 격자에 사는 도형을 하나씩 가까이에서 보여 줍니다.
+Polyhedraverse와 그 쌍둥이인 [Rhombiverse](https://rhombiverse.vercel.app)는 같은 기하학을 바라보는 두 가지 방법입니다. Rhombiverse는 **풍경**입니다. 사방으로 뻗어 나가는 격자 그 자체를 보여 줍니다. Polyhedraverse는 **초상화 갤러리**입니다. 그 격자에 사는 도형을 하나씩 가까이에서 보여 줍니다. 세 번째 자매 사이트 [Kaleidohedra](https://kaleidohedra.vercel.app)는 **풍경을 움직입니다**: 격자를 기울이고 미끄러뜨리면 모든 조각이 함께 움직입니다.
 
 여기에는 격자가 없습니다. 도형 하나에서 시작해 꼭짓점끼리, 또는 면끼리 다른 도형을 이어 붙이면, 도형 자체에서 구조가 생겨납니다. 몇몇 도형은 실제 4D 폴리토프로 셀 하나씩 키워 나갈 수도 있습니다.
 

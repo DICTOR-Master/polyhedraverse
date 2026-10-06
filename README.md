@@ -127,6 +127,9 @@ direction, not yet delivered.
 Its twin, **[Rhombiverse](https://rhombiverse.vercel.app)**, builds on
 lattices instead: a 1D signal and constructions, tilings, crystal
 lattices, 4D worlds and 5D/6D quasicrystals, from 1D to 6D.
+A third sibling, **[Kaleidohedra](https://kaleidohedra.vercel.app)**,
+moves the landscape: lattices you can shear and slide, with every piece
+moving with them.
 
 ## Structure
 

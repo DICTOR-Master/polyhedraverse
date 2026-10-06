@@ -39,6 +39,10 @@ const jsonLd = {
     "Save, export and import builds; User Guide in 7 languages",
   ],
   sameAs: ["https://rhombiverse.vercel.app"],
+  isRelatedTo: [
+    { "@type": "WebApplication", name: "Rhombiverse", url: "https://rhombiverse.vercel.app/" },
+    { "@type": "WebApplication", name: "Kaleidohedra", url: "https://kaleidohedra.vercel.app/" },
+  ],
   // Work by DICTO that grew out of these apps, archived with DOIs.
   citation: [
     {"@type": "CreativeWork", "name": "RHOMBITURE by DICTO: an extractable golden-rhombohedron armature system for sculpture", "author": {"@type": "Person", "name": "DICTO"}, "datePublished": "2026-09-26", "identifier": "https://doi.org/10.5281/zenodo.23173896", "url": "https://doi.org/10.5281/zenodo.23173896"},

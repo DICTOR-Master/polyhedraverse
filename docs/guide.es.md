@@ -1,6 +1,6 @@
 # Guía del usuario de Polyhedraverse
 
-Polyhedraverse y su gemelo, [Rhombiverse](https://rhombiverse.vercel.app), son dos maneras de mirar la misma geometría. Rhombiverse es el **paisaje**: las propias redes, que se extienden en todas direcciones. Polyhedraverse es la **galería de retratos**: las formas que viven en esas redes, de una en una y de cerca.
+Polyhedraverse y su gemelo, [Rhombiverse](https://rhombiverse.vercel.app), son dos maneras de mirar la misma geometría. Rhombiverse es el **paisaje**: las propias redes, que se extienden en todas direcciones. Polyhedraverse es la **galería de retratos**: las formas que viven en esas redes, de una en una y de cerca. Un tercer hermano, [Kaleidohedra](https://kaleidohedra.vercel.app), **mueve el paisaje**: redes que puedes cizallar y deslizar, con cada pieza moviéndose con ellas.
 
 Aquí no hay red. Empiezas con una forma y le conectas otras, vértice con vértice o cara con cara, y la estructura surge de las propias formas. Algunas formas también se pueden ampliar hasta su politopo 4D real, celda a celda.
 

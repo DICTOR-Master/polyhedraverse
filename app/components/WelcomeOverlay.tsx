@@ -190,6 +190,21 @@ export default function WelcomeOverlay({ open, onClose, onOpenGuide }: WelcomeOv
           </a>
         </div>
 
+        <div style={{ display: 'flex', alignItems: 'flex-start', gap: 8, fontSize: 12 }}>
+          {/* Kaleidohedra, the third sibling: its icon is cut from its own logo. */}
+          {/* eslint-disable-next-line @next/next/no-img-element -- a small static public/ PNG. */}
+          <img
+            src="/brand/kaleidohedra-icon.png"
+            alt=""
+            width={28}
+            height={28}
+            style={{ borderRadius: 6, flexShrink: 0 }}
+          />
+          <a href="https://kaleidohedra.vercel.app" target="_blank" rel="noopener" style={{ color: GREEN_BRIGHT }}>
+            {t('welcome.kaleidohedraLink', language)}
+          </a>
+        </div>
+
         <div style={{ display: 'flex', gap: 8, fontSize: 11, opacity: 0.7, color: GREEN_BRIGHT }}>
           {/* Rendered on-site from the repo-root .md files (app/terms,
               app/privacy, app/security), like Rhombiverse's own. */}

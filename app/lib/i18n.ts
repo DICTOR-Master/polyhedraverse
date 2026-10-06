@@ -121,6 +121,7 @@ const en: Dict = {
   'guide.loading': 'Loading…',
   'guide.failed': 'The guide could not be loaded. Check your connection and try again.',
   'welcome.rhombiverseLink': 'New here? Explore Rhombiverse, our twin: worlds from 1D to 6D, from lattices to quasicrystals →',
+  'welcome.kaleidohedraLink': "And Kaleidohedra, our sibling where whole lattices shear and slide →",
 };
 
 const ja: Dict = {
@@ -222,6 +223,7 @@ const ja: Dict = {
   'guide.loading': '読み込み中…',
   'guide.failed': 'ガイドを読み込めませんでした。接続を確認して、もう一度お試しください。',
   'welcome.rhombiverseLink': '初めての方へ：姉妹サイト Rhombiverse もどうぞ。1D から 6D までの世界、格子から準結晶まで →',
+  'welcome.kaleidohedraLink': "姉妹サイト Kaleidohedra もどうぞ：格子全体をずらし、滑らせる世界 →",
 };
 
 const es: Dict = {
@@ -323,6 +325,7 @@ const es: Dict = {
   'guide.loading': 'Cargando…',
   'guide.failed': 'No se pudo cargar la guía. Comprueba tu conexión y vuelve a intentarlo.',
   'welcome.rhombiverseLink': '¿Eres nuevo? Explora Rhombiverse, nuestro gemelo: mundos de 1D a 6D, de redes a cuasicristales →',
+  'welcome.kaleidohedraLink': "Y Kaleidohedra, nuestro hermano donde redes enteras se cizallan y deslizan →",
 };
 
 const fr: Dict = {
@@ -424,6 +427,7 @@ const fr: Dict = {
   'guide.loading': 'Chargement…',
   'guide.failed': 'Le guide n\'a pas pu être chargé. Vérifiez votre connexion et réessayez.',
   'welcome.rhombiverseLink': 'Nouveau ici ? Découvrez Rhombiverse, notre jumeau : des mondes de la 1D à la 6D, des réseaux aux quasicristaux →',
+  'welcome.kaleidohedraLink': "Et Kaleidohedra, notre site frère où des réseaux entiers se cisaillent et glissent →",
 };
 
 const ko: Dict = {
@@ -525,6 +529,7 @@ const ko: Dict = {
   'guide.loading': '불러오는 중…',
   'guide.failed': '안내서를 불러오지 못했습니다. 연결을 확인하고 다시 시도하세요.',
   'welcome.rhombiverseLink': '처음이신가요? 쌍둥이 사이트 Rhombiverse도 둘러보세요: 1D부터 6D까지의 세계, 격자부터 준결정까지 →',
+  'welcome.kaleidohedraLink': "격자 전체를 기울이고 미끄러뜨리는 자매 사이트 Kaleidohedra도 있습니다 →",
 };
 
 const zh: Dict = {
@@ -626,6 +631,7 @@ const zh: Dict = {
   'guide.loading': '加载中…',
   'guide.failed': '无法加载指南。请检查网络连接后重试。',
   'welcome.rhombiverseLink': '初次来访？也来看看我们的姊妹站 Rhombiverse：从 1D 到 6D 的世界，从晶格到准晶 →',
+  'welcome.kaleidohedraLink': "还有姊妹站点 Kaleidohedra：整个晶格可以剪切、滑动 →",
 };
 
 const ru: Dict = {
@@ -727,6 +733,7 @@ const ru: Dict = {
   'guide.loading': 'Загрузка…',
   'guide.failed': 'Не удалось загрузить руководство. Проверьте подключение и попробуйте ещё раз.',
   'welcome.rhombiverseLink': 'Впервые здесь? Загляните в Rhombiverse, наш сайт-близнец: миры от 1D до 6D, от решёток до квазикристаллов →',
+  'welcome.kaleidohedraLink': "А ещё Kaleidohedra, наш родственный сайт, где целые решётки сдвигаются и скользят →",
 };
 
 /** Exported for scripts/verify-i18n.ts's own key-parity check -- not otherwise consumed outside this module. */

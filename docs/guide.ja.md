@@ -1,6 +1,6 @@
 # Polyhedraverse ユーザーガイド
 
-Polyhedraverse とその双子の [Rhombiverse](https://rhombiverse.vercel.app) は、同じ幾何学を 2 つの見方で眺めるサイトです。Rhombiverse は**風景**：あらゆる方向へ広がる格子そのもの。Polyhedraverse は**肖像画ギャラリー**：その格子に住む形を、1 つずつ間近で見せます。
+Polyhedraverse とその双子の [Rhombiverse](https://rhombiverse.vercel.app) は、同じ幾何学を 2 つの見方で眺めるサイトです。Rhombiverse は**風景**：あらゆる方向へ広がる格子そのもの。Polyhedraverse は**肖像画ギャラリー**：その格子に住む形を、1 つずつ間近で見せます。3 番目の姉妹サイト [Kaleidohedra](https://kaleidohedra.vercel.app) は**風景を動かします**：格子をずらしたり滑らせたりでき、すべてのピースが一緒に動きます。
 
 ここには格子はありません。1 つの形から始めて、頂点どうし、面どうしで別の形をつなげていくと、形そのものから構造が生まれます。いくつかの形は、本物の 4D 多胞体へとセルを 1 つずつ組み上げることもできます。
 
