@@ -17,6 +17,7 @@ export const CHANGELOG: ChangelogDay[] = [
   {
     date: '2026-10-08',
     entries: [
+      'New: Net, in every shape\'s details (all but the star shapes, 236 in all). See the shape unfolded flat and fold it up with a slider, then download an A4 PDF to print and build it: cut lines solid, fold lines dashed, each pair of edges that glue together numbered alike, and glue tabs if you want them, one per pair.',
       'New: a chevron under the top controls folds them away so the shape has the whole screen, the same handle as every control panel in Rhombiverse and Kaleidohedra. It is remembered on this device; the actions for a placement in progress always stay.',
     ],
   },

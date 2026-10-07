@@ -60,6 +60,7 @@ Tap any shape to see its details: vertices, edges, faces and connectors. From th
 - **Favourite:** star it.
 - **Add to Compare:** put up to four shapes side by side.
 - **View 4D:** on 4D-capable shapes, show the 4D polytope it extends into.
+- **Net:** see the shape unfolded flat, fold it up with the slider or **Fold up**, and **Download PDF (A4)** to print it: cut the solid lines, fold the dashed ones, glue each number to its match. **Glue tabs** adds one tab to each glued pair. Star shapes have no net.
 
 Shapes in **3D+ Bridges** also say, in their details, which higher polytope they bridge to (for example, the rhombic dodecahedron is the shadow of the tesseract and the 24-cell).
 

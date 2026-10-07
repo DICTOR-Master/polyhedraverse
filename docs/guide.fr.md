@@ -62,6 +62,7 @@ Touchez une forme pour voir ses détails : sommets, arêtes, faces et connecteur
 - **Favori :** la marquer d'une étoile.
 - **Ajouter à Comparer :** mettre jusqu'à quatre formes côte à côte.
 - **Voir en 4D :** pour les formes compatibles 4D, afficher le polytope 4D dans lequel elle se prolonge.
+- **Patron :** voir la forme dépliée à plat, la plier avec le curseur ou **Plier**, et **Télécharger le PDF (A4)** pour l'imprimer : découpez les traits pleins, pliez les pointillés, collez chaque numéro à son pareil. **Languettes de collage** ajoute une languette à chaque paire à coller. Les formes étoilées n'ont pas de patron.
 
 Les formes de **3D+ Bridges** indiquent aussi, dans leurs détails, vers quel polytope supérieur elles font le pont (par exemple, le dodécaèdre rhombique est l'ombre du tesseract et du 24-cell).
 

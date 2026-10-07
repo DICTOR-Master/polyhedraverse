@@ -62,6 +62,7 @@ Toca cualquier forma para ver sus detalles: vértices, aristas, caras y conector
 - **Favorito:** marcarla con una estrella.
 - **Añadir a Comparar:** poner hasta cuatro formas una junto a otra.
 - **Ver en 4D:** en las formas con capacidad 4D, mostrar el politopo 4D en el que se extiende.
+- **Desarrollo:** ver la forma desplegada en plano, plegarla con el deslizador o con **Plegar**, y **Descargar PDF (A4)** para imprimirla: corta las líneas continuas, pliega las discontinuas y pega cada número con su pareja. **Pestañas para pegar** añade una pestaña a cada par que se pega. Las formas estrelladas no tienen desarrollo.
 
 Las formas de **3D+ Bridges** también dicen, en sus detalles, a qué politopo superior hacen de puente (por ejemplo, el dodecaedro rómbico es la sombra del tesseract y del 24-cell).
 

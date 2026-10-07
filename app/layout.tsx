@@ -15,7 +15,7 @@ const geistMono = Geist_Mono({
 const SITE = "https://polyhedraverse.vercel.app";
 const title = "Polyhedraverse — Build 256 Polyhedra in 3D and Real 4D Polytopes";
 const description =
-  "Snap together 256 polyhedra face to face in your browser — Platonic, Archimedean, Johnson, Catalan, stellations (the Kepler–Poinsot solids among them), prisms, parallelohedra, space-filling pairs, the golden rhombohedra and Penrose rhombus prisms of the aperiodic tilings, and 3D+ bridges (shadows, slices and cells of higher polytopes) — and build real 4D polytopes (tesseract, 24-cell, 120-cell, 600-cell) one cell at a time. Free, open source, 7 languages.";
+  "Snap together 256 polyhedra face to face in your browser — Platonic, Archimedean, Johnson, Catalan, stellations (the Kepler–Poinsot solids among them), prisms, parallelohedra, space-filling pairs, the golden rhombohedra and Penrose rhombus prisms of the aperiodic tilings, and 3D+ bridges (shadows, slices and cells of higher polytopes) — unfold them into printable paper nets, and build real 4D polytopes (tesseract, 24-cell, 120-cell, 600-cell) one cell at a time. Free, open source, 7 languages.";
 // Structured data for search engines: what the app is and does.
 const jsonLd = {
   "@context": "https://schema.org",

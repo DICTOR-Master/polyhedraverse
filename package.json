@@ -25,6 +25,7 @@
     "verify:regular-nine": "tsx scripts/verify-regular-nine.ts",
     "verify:rd-targets": "tsx scripts/verify-rd-targets.ts",
     "verify:hex-targets": "tsx scripts/verify-hex-targets.ts",
+    "verify:nets": "tsx scripts/verify-nets.ts",
     "verify:4d-polytopes": "tsx scripts/verify-4d-polytopes.ts",
     "verify:families": "tsx scripts/verify-families.ts",
     "verify:search": "tsx scripts/verify-search.ts",

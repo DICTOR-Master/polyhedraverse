@@ -23,6 +23,16 @@ export const LANG_ORDER: LangCode[] = ['en', 'ja', 'es', 'fr', 'ko', 'zh', 'ru']
 type Dict = Record<string, string>;
 
 const en: Dict = {
+  'net.button': 'Net',
+  'net.hideButton': 'Hide net',
+  'net.unfolding': 'Unfolding…',
+  'net.none': 'No flat net found for this shape.',
+  'net.foldUp': 'Fold up',
+  'net.unfold': 'Unfold',
+  'net.fold': 'Fold',
+  'net.tabs': 'Glue tabs',
+  'net.download': 'Download PDF (A4)',
+  'net.note': '{n} faces, {pairs} glued pairs: each pair is numbered alike on the printed net.',
   'projection.label': 'Projection',
   'projection.perspective': 'Perspective',
   'projection.orthographic': 'Parallel (orthographic)',
@@ -129,6 +139,16 @@ const en: Dict = {
 };
 
 const ja: Dict = {
+  'net.button': '展開図',
+  'net.hideButton': '展開図を閉じる',
+  'net.unfolding': '展開しています…',
+  'net.none': 'この形の平らな展開図は見つかりませんでした。',
+  'net.foldUp': '組み立てる',
+  'net.unfold': '開く',
+  'net.fold': '折り',
+  'net.tabs': 'のりしろ',
+  'net.download': 'PDF をダウンロード（A4）',
+  'net.note': '面 {n}、貼り合わせる辺の組 {pairs}。印刷した展開図では、組になる辺に同じ番号が付いています。',
   'projection.label': '投影',
   'projection.perspective': '透視',
   'projection.orthographic': '平行投影（正投影）',
@@ -235,6 +255,16 @@ const ja: Dict = {
 };
 
 const es: Dict = {
+  'net.button': 'Desarrollo',
+  'net.hideButton': 'Ocultar desarrollo',
+  'net.unfolding': 'Desplegando…',
+  'net.none': 'No se encontró un desarrollo plano para esta forma.',
+  'net.foldUp': 'Plegar',
+  'net.unfold': 'Desplegar',
+  'net.fold': 'Plegado',
+  'net.tabs': 'Pestañas para pegar',
+  'net.download': 'Descargar PDF (A4)',
+  'net.note': '{n} caras, {pairs} pares que se pegan: cada par lleva el mismo número en el desarrollo impreso.',
   'projection.label': 'Proyección',
   'projection.perspective': 'Perspectiva',
   'projection.orthographic': 'Paralela (ortográfica)',
@@ -341,6 +371,16 @@ const es: Dict = {
 };
 
 const fr: Dict = {
+  'net.button': 'Patron',
+  'net.hideButton': 'Masquer le patron',
+  'net.unfolding': 'Dépliage…',
+  'net.none': 'Aucun patron plat trouvé pour cette forme.',
+  'net.foldUp': 'Plier',
+  'net.unfold': 'Déplier',
+  'net.fold': 'Pliage',
+  'net.tabs': 'Languettes de collage',
+  'net.download': 'Télécharger le PDF (A4)',
+  'net.note': '{n} faces, {pairs} paires à coller : chaque paire porte le même numéro sur le patron imprimé.',
   'projection.label': 'Projection',
   'projection.perspective': 'Perspective',
   'projection.orthographic': 'Parallèle (orthographique)',
@@ -447,6 +487,16 @@ const fr: Dict = {
 };
 
 const ko: Dict = {
+  'net.button': '전개도',
+  'net.hideButton': '전개도 닫기',
+  'net.unfolding': '펼치는 중…',
+  'net.none': '이 모양의 평평한 전개도를 찾지 못했습니다.',
+  'net.foldUp': '접기',
+  'net.unfold': '펼치기',
+  'net.fold': '접기 정도',
+  'net.tabs': '풀칠 날개',
+  'net.download': 'PDF 다운로드 (A4)',
+  'net.note': '면 {n}개, 붙일 모서리 쌍 {pairs}개: 인쇄된 전개도에서 짝이 되는 모서리에 같은 번호가 있습니다.',
   'projection.label': '투영',
   'projection.perspective': '원근',
   'projection.orthographic': '평행(직교)',
@@ -553,6 +603,16 @@ const ko: Dict = {
 };
 
 const zh: Dict = {
+  'net.button': '展开图',
+  'net.hideButton': '隐藏展开图',
+  'net.unfolding': '正在展开…',
+  'net.none': '未找到此形状的平面展开图。',
+  'net.foldUp': '折起',
+  'net.unfold': '展开',
+  'net.fold': '折叠',
+  'net.tabs': '粘贴舌片',
+  'net.download': '下载 PDF（A4）',
+  'net.note': '{n} 个面，{pairs} 对需粘合的边：打印的展开图上，成对的边标有相同的数字。',
   'projection.label': '投影',
   'projection.perspective': '透视',
   'projection.orthographic': '平行（正交）',
@@ -659,6 +719,16 @@ const zh: Dict = {
 };
 
 const ru: Dict = {
+  'net.button': 'Развёртка',
+  'net.hideButton': 'Скрыть развёртку',
+  'net.unfolding': 'Разворачиваю…',
+  'net.none': 'Плоская развёртка для этой формы не найдена.',
+  'net.foldUp': 'Сложить',
+  'net.unfold': 'Развернуть',
+  'net.fold': 'Сгиб',
+  'net.tabs': 'Клапаны для склейки',
+  'net.download': 'Скачать PDF (A4)',
+  'net.note': 'Граней: {n}, пар склеиваемых рёбер: {pairs}; на напечатанной развёртке у каждой пары одинаковый номер.',
   'projection.label': 'Проекция',
   'projection.perspective': 'Перспектива',
   'projection.orthographic': 'Параллельная (ортогональная)',

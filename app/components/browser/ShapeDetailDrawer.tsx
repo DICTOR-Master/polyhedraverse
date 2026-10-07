@@ -12,6 +12,8 @@ import ShapeStatsBlock from './ShapeStatsBlock';
 import StarShapeViewer from './StarShapeViewer';
 import DuoprismShapeViewer from './DuoprismShapeViewer';
 import RadialProjectionViewer from './RadialProjectionViewer';
+import NetViewer from './NetViewer';
+import NET_ELIGIBLE from '../../lib/nets/eligible.json';
 
 // The dodecahedron's three stellations are Kepler-Poinsot solids: the star
 // can't be attached itself, but a dodecahedron with Stellations piece n on
@@ -52,6 +54,10 @@ export default function ShapeDetailDrawer({
   // which has no verified theta and so no radial-projection closure at
   // all, gets duoprism -- the only 4D construction defined for it.
   const [showFourD, setShowFourD] = useState(false);
+  // Net (2026-10-08): the shape unfolded and folded, with a printable PDF.
+  // Only shapes with a verified net (scripts/verify-nets.ts) get the button.
+  const [showNet, setShowNet] = useState(false);
+  const hasNet = (NET_ELIGIBLE as string[]).includes(specId);
   const isStellationPiece = STELLATION_IDS.includes(specId);
   if (!spec) return null;
   const displayName = spec.name.replaceAll('_', ' ');
@@ -172,7 +178,11 @@ export default function ShapeDetailDrawer({
       </div>
 
       <div style={{ display: 'flex', flexDirection: 'column', alignItems: 'center', padding: '0 20px 20px', gap: 14 }}>
-        {showFourD ? (
+        {showNet ? (
+          <div style={{ width: '100%', maxWidth: 520 }}>
+            <NetViewer specId={specId} lang={lang} />
+          </div>
+        ) : showFourD ? (
           // Radial projection gets a much bigger card than duoprism's:
           // seeing the cell-first structure (up to 120 cells) and flying
           // the camera inside it needs real screen space, not a 380px
@@ -276,7 +286,7 @@ export default function ShapeDetailDrawer({
           {!isStellationPiece && (
           <button
             type="button"
-            onClick={() => setShowFourD((v) => !v)}
+            onClick={() => { setShowNet(false); setShowFourD((v) => !v); }}
             aria-pressed={showFourD}
             style={{
               background: 'none',
@@ -289,6 +299,17 @@ export default function ShapeDetailDrawer({
           >
             {showFourD ? t('fourD.hideButton', lang) : t('fourD.viewButton', lang)}
           </button>
+          )}
+          {hasNet && (
+            <button
+              type="button"
+              onClick={() => { setShowFourD(false); setShowNet((v) => !v); }}
+              aria-pressed={showNet}
+              data-testid="net-button"
+              style={{ background: 'none', border: '1px solid rgba(169,247,149,.45)', color: '#a9f795', borderRadius: 999, padding: '8px 18px', cursor: 'pointer' }}
+            >
+              {showNet ? t('net.hideButton', lang) : t('net.button', lang)}
+            </button>
           )}
         </div>
       </div>

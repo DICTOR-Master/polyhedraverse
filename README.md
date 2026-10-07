@@ -38,6 +38,10 @@ literal points the construction generates each cell from. See
 the app implements that classical construction (Coxeter's reflection
 construction, shown as Schlegel-style perspective projections).
 
+**Nets:** every shape but the star ones (236 of them) unfolds into a flat net
+that folds back up on a slider, and downloads as an A4 PDF to print and build:
+cut lines solid, folds dashed, glued edges numbered in pairs, optional glue tabs.
+
 Two ways to connect ordinary 3D pieces: click a free vertex and snap on
 a new piece with a free rotational joint (molecular-model-kit style —
 started with the 8 convex deltahedra specifically because they don't
