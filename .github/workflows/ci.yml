@@ -95,5 +95,6 @@ jobs:
           node-version: 22
           cache: npm
       - run: npm ci
-      - run: npx playwright install --with-deps chromium
+      # GitHub runners sometimes hang in this download: give each try 4 minutes, up to 3 tries.
+      - run: for i in 1 2 3; do timeout 240 npx playwright install --with-deps chromium && break; [ "$i" = 3 ] && exit 1; echo "Playwright install hung or failed (try $i), retrying"; done
       - run: npm run test:e2e -- --shard=${{ matrix.shard }}/3
