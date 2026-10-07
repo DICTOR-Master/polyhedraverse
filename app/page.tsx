@@ -41,6 +41,7 @@ const VIEW_MODE_LABELS: Record<ViewMode, string> = {
 
 // The default-state instructions box, once dismissed, stays dismissed.
 const INSTRUCTIONS_DISMISSED_KEY = 'polyhedraverse:instructionsDismissed';
+const PANEL_MIN_KEY = 'polyhedraverse:controlsMinimised';
 
 export default function Home() {
   const handleRef = useRef<ShapeViewerHandle | null>(null);
@@ -138,6 +139,21 @@ export default function Home() {
   );
   const [instructionsDismissedNow, setInstructionsDismissedNow] = useState(false);
   const instructionsDismissed = instructionsDismissedEarlier || instructionsDismissedNow;
+  // Minimise chevron, the same as every control panel in Rhombiverse and
+  // Kaleidohedra: folds the top controls away so the scene has the screen.
+  // The action row for a placement or selection in progress always stays.
+  const controlsMinSaved = useSyncExternalStore(
+    noopSubscribe,
+    () => { try { return localStorage.getItem(PANEL_MIN_KEY) === '1'; } catch { return false; } },
+    () => false,
+  );
+  const [controlsMinNow, setControlsMinNow] = useState<boolean | null>(null);
+  const controlsMin = controlsMinNow ?? controlsMinSaved;
+  const toggleControls = () => {
+    const next = !controlsMin;
+    setControlsMinNow(next);
+    try { localStorage.setItem(PANEL_MIN_KEY, next ? '1' : '0'); } catch { /* storage blocked: session only */ }
+  };
   const dismissInstructions = () => {
     setInstructionsDismissedNow(true);
     try { localStorage.setItem(INSTRUCTIONS_DISMISSED_KEY, '1'); } catch { /* storage blocked: session only */ }
@@ -427,7 +443,7 @@ export default function Home() {
             {POLYHEDRON_IDS.length} shapes across {FAMILY_ORDER.length} families — vertex ball-joints and face-to-face connections
           </p>
         </div>
-        <div className="flex flex-wrap items-center gap-2 lg:flex-nowrap">
+        <div className="flex flex-wrap items-center gap-2 lg:flex-nowrap" style={controlsMin ? { display: 'none' } : undefined}>
           {assemblyName && (
             // A small fixed-size icon, never text -- keeps the header a
             // fixed single-line height regardless of how elaborate the
@@ -672,7 +688,7 @@ export default function Home() {
         </div>
       </header>
 
-      <nav className="flex flex-wrap items-center gap-2 px-4 pb-2 sm:px-6">
+      <nav className="flex flex-wrap items-center gap-2 px-4 pb-2 sm:px-6" style={controlsMin ? { display: 'none' } : undefined}>
         <button
           type="button"
           onClick={() => openPicker('reset')}
@@ -682,6 +698,20 @@ export default function Home() {
           Start over with… <span className="ml-1 text-xs opacity-70">(Tab / Space)</span>
         </button>
       </nav>
+      <div className="flex justify-center pb-1">
+        <button
+          type="button"
+          className="pv-panel-min"
+          onClick={toggleControls}
+          aria-expanded={!controlsMin}
+          aria-label={controlsMin ? 'Show controls' : 'Minimise controls'}
+          title={controlsMin ? 'Show controls' : 'Minimise controls'}
+        >
+          <svg viewBox="0 0 24 24" width="18" height="18" fill="none" stroke="currentColor" strokeWidth="2.2" aria-hidden="true">
+            <path d={controlsMin ? 'M6 9l6 6 6-6' : 'M6 15l6-6 6 6'} />
+          </svg>
+        </button>
+      </div>
 
       <nav className="flex min-h-11 flex-wrap items-center gap-2 px-4 pb-2 sm:px-6">
         {pending ? (
@@ -1026,7 +1056,7 @@ export default function Home() {
           buttons in the top nav, so this would be redundant there.
           On phones it sits in the page column above the scene instead
           (globals.css), so it never covers the shape. */}
-      {!pending && !nodeSelection && !selection && !instructionsDismissed && (
+      {!pending && !nodeSelection && !selection && !instructionsDismissed && !controlsMin && (
         <div
           className="pv-instructions"
           style={{

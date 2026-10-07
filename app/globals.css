@@ -64,3 +64,11 @@ body {
    clear of the always-on-top CornerHudWheel (160px + 16px, bottom-right),
    which sits about 132px above the tab bar. */
 [aria-label="Shape browser"] [style*="overflow-y: auto"] { padding-bottom: 150px !important; }
+
+/* Minimise chevron for the top controls: the same handle as Rhombiverse's
+   and Kaleidohedra's panel-min, in this app's green. */
+.pv-panel-min {
+  min-width: 44px; min-height: 26px; padding: 2px 10px;
+  background: rgba(0, 0, 0, 0.45); border: 1px solid rgba(71, 204, 36, 0.35);
+  border-radius: 6px; color: #5ee233; cursor: pointer; display: flex; justify-content: center; align-items: center;
+}

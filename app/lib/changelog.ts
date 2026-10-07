@@ -15,6 +15,12 @@ export interface ChangelogDay {
 
 export const CHANGELOG: ChangelogDay[] = [
   {
+    date: '2026-10-08',
+    entries: [
+      'New: a chevron under the top controls folds them away so the shape has the whole screen, the same handle as every control panel in Rhombiverse and Kaleidohedra. It is remembered on this device; the actions for a placement in progress always stay.',
+    ],
+  },
+  {
     date: '2026-10-06',
     entries: [
       'Tall triangular pyramid (grade 3) is now a little taller: its slanted edges are exactly φ, the edge of the small stellated dodecahedron\'s spikes, so it fills the same voids as they do.',
