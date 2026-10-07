@@ -115,8 +115,8 @@ export default function Home() {
   // and old saves' fold connections load as plain face attaches (see
   // assembly.ts's migrateLegacyAssembly).
   const [wheelMode, setWheelMode] = useState<'reset' | 'faceAttach' | 'vertexAttach'>('reset');
-  // RCP-C2B (Radial Cell Projection, click-to-build), replacing fold4 as
-  // the live 4D folding-construction feature: rcpPickerOpen shows the
+  // RCP-C2B (Radial Cell Projection, click-to-build), the 4D
+  // folding-construction feature: rcpPickerOpen shows the
   // small inline "which closure?" choice for a seed with more than one
   // real target (only D4/PYRAMID_TRI_G2 today) -- reset whenever the
   // selection changes to a different node (below). The 3D/4D view

@@ -5,12 +5,9 @@
  * 3D representation of a regular 4-polytope. One engine, parameterized
  * per seed shape, not four hardcoded objects.
  *
- * This supersedes the earlier fold4.ts approach for the *general*
- * multi-sibling case: fold4 tried to reconcile per-pair 3D rigid
- * corrections after the fact, which don't compose associatively (see
- * this session's own fold4 investigation — confirmed oscillation for
- * any node with 2+ simultaneous edge-partners). This engine instead
- * builds real 4D coordinates from the start via hyperplane rotations —
+ * It builds real 4D coordinates from the start via hyperplane rotations —
+ * not per-pair 3D rigid corrections after the fact, which don't compose
+ * associatively and oscillate for any node with 2+ edge-partners —
  * the literal Wythoff/Coxeter construction used to generate every
  * regular 4-polytope. Rotations in a finite reflection group compose
  * exactly and the orbit is *guaranteed* to close after finitely many

@@ -227,7 +227,7 @@ interface PendingDuoprismAttach {
   targetFaceIndex: number;
   // The connecting wall-prism cell -- built once at begin time (its own
   // geometry never changes before confirm, since there's no registration/
-  // twist step to drag through unlike ordinary/fold4 face-attach) and
+  // twist step to drag through unlike ordinary face-attach) and
   // added to the scene as a plain extra mesh, not part of either node's
   // own PlacedShape. Removed on cancel, kept (and re-derived on load) on
   // confirm -- see duoprismMeshesRef.
@@ -393,12 +393,12 @@ export interface NodeSelection {
    */
   faceDuoprismEligible: boolean;
   /**
-   * RCP-C2B (Radial Cell Projection, click-to-build), replacing fold4 as
-   * the live 4D folding-construction feature: true iff this NODE (its
+   * RCP-C2B (Radial Cell Projection, click-to-build), the 4D
+   * folding-construction feature: true iff this NODE (its
    * OWN shape, regardless of which face happens to also be hover/click-
    * selected -- RCP-C2B operates on the whole node, matching Delete's
    * own real, unconditional-on-faceIndex behavior, not gated on a
-   * WHOLE-node selection the way face-attach/fold4/duoprism deliberately
+   * WHOLE-node selection the way face-attach/duoprism deliberately
    * are) resolves to a real verified 4D closure (`resolveParamsKey` --
    * covers PYRAMID_TRI_G2 resolving to D4's own closures, not just the 4
    * directly-keyed ids), and it has no incoming connection (a real,
@@ -1013,7 +1013,7 @@ export default function ShapeViewer({
      * with several such cells piled almost on top of each other, ordinary
      * vertex-attach hover/click was "triggered everywhere across the
      * surface" (any of the overlapping cells' vertex spheres could catch
-     * the raycast), and face-attach/fold4/duoprism don't make sense on a
+     * the raycast), and face-attach/duoprism don't make sense on a
      * mid-build synthetic cell either -- in this mode only the dedicated
      * RCP-C2B build controls (whole-node selection, never a specific
      * vertex/face) are valid interactions. Shell 2+ is unconditionally
@@ -1363,8 +1363,7 @@ export default function ShapeViewer({
      * `Matrix4` from its own stored `transform.position/quaternion` are
      * equally valid inputs. Correct to use the root's own matrix
      * directly (never `foldGroup.matrixWorld`) because an RCP-C2B root
-     * never has an incoming fold4 connection (fold4 and rcp4d are
-     * mutually exclusive connection kinds), so `foldGroup`'s own local
+     * never has an incoming fold connection, so `foldGroup`'s own local
      * matrix is always identity for it.
      */
     const computeSelfAttachTransform = (rootWorldMatrix: THREE.Matrix4, spec: PolyhedronSpec, targetFaceIndex: number): { position: THREE.Vector3; quaternion: THREE.Quaternion } | null => {
@@ -2088,7 +2087,7 @@ export default function ShapeViewer({
           if (a && b) {
             // Re-derive every wall-prism mesh from the two nodes' own
             // baked transforms, never stored -- same "derive, don't
-            // duplicate" rule fold4 already follows. The offset is
+            // duplicate" rule. The offset is
             // read back from B's actual position relative to A's,
             // rather than recomputing duoprismBuildDepth, so this stays
             // correct even if that formula's own margin ever changes.
@@ -3080,7 +3079,7 @@ export default function ShapeViewer({
         // RCP-C2B-warped nodes (isRcpWarpedNode's own doc comment) stay
         // selectable -- the RCP-C2B build buttons need whole-node selection
         // to work -- but never offer a specific face: no face-attach,
-        // fold4, or duoprism affordance on a mid-build synthetic cell.
+        // or duoprism affordance on a mid-build synthetic cell.
         const faceIndex = isRcpWarpedNode(nodeId)
           ? null
           : typeof faceHit.faceIndex === 'number'

@@ -4,7 +4,7 @@ import type { Assembly } from '../../app/lib/assembly';
 
 /**
  * End-to-end coverage of RCP-C2B (Radial Cell Projection, click-to-build),
- * replacing fold4 as the live 4D folding-construction feature: shell 1
+ * the 4D folding-construction feature: shell 1
  * builds one cell at a time, defaulting to the SAME real, warped
  * projected geometry shell 2+ already uses (not the superseded
  * rigid-rotation open/closed toggle -- see docs/radial-cell-projection.md

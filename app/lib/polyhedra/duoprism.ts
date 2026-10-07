@@ -2,17 +2,14 @@
  * The 4D Prism (duoprism) construction: for any polyhedron P, the 4D
  * shape P x [0, depth] -- exactly how a tesseract is a cube extruded
  * along a 4th axis, generalized to any already-registered shape. Unlike
- * the OTHER 4D feature in this app (fold4.ts's dihedral-defect self-
- * attach, which needs a real angular gap to close and, past an isolated
- * pair, provably can't close it exactly with only 3D rotations — see
- * fourD.ts/fold4.ts's own comments), a duoprism has NO curvature at all:
+ * a folded 4-polytope (radialProjection.ts), a duoprism has NO curvature at all:
  * it's a flat Cartesian product with an interval, so it embeds in
  * ordinary 3D with zero approximation, for ANY shape, at ANY density of
  * chained attachments.
  *
  * The construction: two copies of P ("caps," translated relative to
  * each other along one chosen axis, in the SAME orientation -- unlike an
- * ordinary face-attach or fold4 join of two DIFFERENT solids, a
+ * ordinary face-attach of two DIFFERENT solids, a
  * duoprism's far cap IS the same polyhedron, not a mirrored copy, so
  * there's no registration/twist choice at all) plus one 3D prism cell
  * per FACE of P (replacing "one rectangle per EDGE" in `prisms.ts`'s own
