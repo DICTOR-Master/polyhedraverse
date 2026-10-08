@@ -20,7 +20,6 @@
 
 import { buildFaceConnectors, type Vec3, type PolyhedronSpec } from './core';
 
-const sub = (a: Vec3, b: Vec3): Vec3 => [a[0] - b[0], a[1] - b[1], a[2] - b[2]];
 const add = (a: Vec3, b: Vec3): Vec3 => [a[0] + b[0], a[1] + b[1], a[2] + b[2]];
 const scale = (a: Vec3, s: number): Vec3 => [a[0] * s, a[1] * s, a[2] * s];
 const norm = (a: Vec3): Vec3 => scale(a, 1 / Math.hypot(...a));
@@ -125,9 +124,15 @@ export function buildWallPrism(faceVerts: Vec3[], offset: Vec3): WallPrismRaw {
     edges.push([k, n + k]);
   }
 
-  const e1 = sub(faceVerts[1], faceVerts[0]);
-  const e2 = sub(faceVerts[2], faceVerts[0]);
-  const naturalNormal = cross(e1, e2);
+  // The face's own normal from the whole polygon (Newell), so a face with a straight corner (a seam
+  // meeting an edge mid-way, as on the seamed Sunstar pieces) still gets its true direction.
+  const naturalNormal: Vec3 = [0, 0, 0];
+  faceVerts.forEach((p, k) => {
+    const q = faceVerts[(k + 1) % faceVerts.length];
+    naturalNormal[0] += (p[1] - q[1]) * (p[2] + q[2]);
+    naturalNormal[1] += (p[2] - q[2]) * (p[0] + q[0]);
+    naturalNormal[2] += (p[0] - q[0]) * (p[1] + q[1]);
+  });
   const agreesWithOffset = dot(naturalNormal, offset) > 0;
 
   const faces: number[][] = [];
@@ -184,9 +189,6 @@ export function wallLateralFaces(wall: WallPrismRaw): number[][] {
   return wall.faces.slice(2);
 }
 
-function cross(a: Vec3, b: Vec3): Vec3 {
-  return [a[1] * b[2] - a[2] * b[1], a[2] * b[0] - a[0] * b[2], a[0] * b[1] - a[1] * b[0]];
-}
 function dot(a: Vec3, b: Vec3): number {
   return a[0] * b[0] + a[1] * b[1] + a[2] * b[2];
 }

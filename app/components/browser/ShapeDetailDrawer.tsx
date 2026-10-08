@@ -230,6 +230,15 @@ export default function ShapeDetailDrawer({
           </div>
         )}
 
+        {/* The Dogstar is known (direct request 2026-10-08: "add the credits"): George W. Hart's
+            stellation 8 of the dodecahedron (1996), also on Polyhedra-World. Its seamed dodecahedron
+            partner carries the same note. */}
+        {(specId === 'DOGSTAR' || specId === 'SEAMED_DODECAHEDRON') && (
+          <div data-testid="dogstar-credit" style={{ maxWidth: 380, fontSize: 12, color: '#a9f795', lineHeight: 1.45, textAlign: 'center' }}>
+            {t('detail.dogstarCredit', lang)}
+          </div>
+        )}
+
         {/* The Bain parallelohedra: where they came from (Kaleidohedra). */}
         {BAIN_PARALLELOHEDRA_ADDITION_IDS.includes(specId) && (
           <div data-testid="bain-credit" style={{ maxWidth: 380, fontSize: 12, color: '#a9f795', lineHeight: 1.45, textAlign: 'center' }}>

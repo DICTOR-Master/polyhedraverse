@@ -59,10 +59,15 @@ for (const id of POLYHEDRON_IDS) {
 
 // (3)+(4)+(5): winding correctness, cap congruence, and non-degeneracy of
 // BUILD's real right prisms, for every face of the 4 FOURD_CAPABLE shapes.
+// Newell: the normal from the whole polygon, true even for a face with a straight corner.
 function faceNormal(verts: Vec3[]): Vec3 {
-  const e1 = sub(verts[1], verts[0]);
-  const e2 = sub(verts[2], verts[0]);
-  const c = cross(e1, e2);
+  const c: Vec3 = [0, 0, 0];
+  verts.forEach((p, k) => {
+    const q = verts[(k + 1) % verts.length];
+    c[0] += (p[1] - q[1]) * (p[2] + q[2]);
+    c[1] += (p[2] - q[2]) * (p[0] + q[0]);
+    c[2] += (p[0] - q[0]) * (p[1] + q[1]);
+  });
   const len = Math.hypot(...c);
   return [c[0] / len, c[1] / len, c[2] / len];
 }
