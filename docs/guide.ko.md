@@ -79,7 +79,7 @@ Polyhedraverse와 그 쌍둥이인 [Rhombiverse](https://rhombiverse.vercel.app)
 | Prisms, Antiprisms | 두 다각형을 정사각형이나 삼각형의 띠로 이은 것 |
 | 4D Polytopes | 6개의 정규 4D 폴리토프(5·8·16·24·120·600포체)를 대칭별로. 하나를 열고 만들기를 누르면 씨앗 포가 놓이고 포 하나씩 만들기가 시작됩니다 |
 | Parallelohedra | 평행 이동만으로 공간을 채우는 도형: 페도로프의 5가지와 그 변형(능면체, 그리고 DICTO가 Zometool로 찾은 기울어진 육각기둥과 그 두 블록, 그리고 비스듬한 마름모십이면체와 그 납작한 능면체), 그리고 Kaleidohedra에서 검증된 것들(베인 변형에서 모든 모서리가 같은 셀: 베인 마름모십이면체, 이미 알려져 있었고 DICTO가 독립적으로 도달한 정육각형 늘린 십이면체, DICTO의 베인 늘린 십이면체), 그리고 Kaleidohedra Regular 9(모든 모서리가 같고 면이 정사각형, 정육각형, 60° 마름모뿐인 공간 채우기 도형 전부) |
-| Space-Filling Pairs | 둘이 함께 공간을 채우는 도형 |
+| Space-Filling Pairs | 둘이 함께 공간을 채우는 도형. DICTO의 드래곤 주얼과 스텔라 옥탕굴라(Kaleidohedra에서)도 있으며, 서로 면끼리 붙고 마름모는 펜로즈 두꺼운 마름모와 맞습니다 |
 | Aperiodic Sets | 두 쌍의 비주기 조각: 길쭉한·납작한 황금 능면체(3D 펜로즈 타일링)와 두꺼운·얇은 펜로즈 마름모 각기둥(층을 이루는 5D 타일링) |
 | 3D+ Bridges | 고차원 폴리토프의 그림자, 단면, 셀, 꼭짓점 중 하나인 도형. 어느 것인지는 세부 정보에 나옵니다 |
 | Miscellaneous | 단계별 피라미드, 연결용 조각, 각기둥 연장 조각 |

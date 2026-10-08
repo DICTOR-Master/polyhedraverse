@@ -17,6 +17,7 @@ export const CHANGELOG: ChangelogDay[] = [
   {
     date: '2026-10-08',
     entries: [
+      'New in Space-Filling Pairs: DICTO\'s Dragon Jewel and the stella octangula, from Kaleidohedra\'s Stella–Jewel Lattice. Alternated like a checkerboard they fill space exactly. Every face attaches to its partner, and the Dragon Jewel\'s 12 windows are Penrose thick rhombi of edge 1, so they also take the thick rhombus prism, DICTO\'s leaning hexagonal prism and its blocks, and the skewed RD.',
       'New: Net, in every shape\'s details (all but the star shapes, 236 in all). See the shape unfolded flat and fold it up with a slider, then download an A4 PDF to print and build it: cut lines solid, fold lines dashed, each pair of edges that glue together numbered alike, and glue tabs if you want them, one per pair.',
       'New: a chevron under the top controls folds them away so the shape has the whole screen, the same handle as every control panel in Rhombiverse and Kaleidohedra. It is remembered on this device; the actions for a placement in progress always stay.',
     ],

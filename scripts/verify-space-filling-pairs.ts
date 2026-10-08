@@ -34,7 +34,8 @@ function edgeLengths(id: string): number[] {
     return Math.hypot(p[0] - q[0], p[1] - q[1], p[2] - q[2]);
   });
 }
-for (const { ids, honeycomb } of SPACE_FILLING_PAIR_LIST) {
+for (const { ids, honeycomb, nonConvex } of SPACE_FILLING_PAIR_LIST) {
+  if (nonConvex) continue; // checked by its own script (verify-stella-jewel.ts)
   const exist = ids.every((id) => POLYHEDRA[id]);
   check(`${honeycomb}: both shapes exist (${ids.join(' + ')})`, exist);
   if (!exist) continue;
