@@ -1,6 +1,6 @@
 'use client';
 
-import { useEffect, useRef, useState, useSyncExternalStore } from 'react';
+import { useEffect, useRef, useState, useSyncExternalStore, useCallback } from 'react';
 import { usePrefs } from './lib/prefs';
 import { t } from './lib/i18n';
 import type { ProjectionMode } from './components/ShapeViewer';
@@ -42,6 +42,9 @@ const VIEW_MODE_LABELS: Record<ViewMode, string> = {
 // The default-state instructions box, once dismissed, stays dismissed.
 const INSTRUCTIONS_DISMISSED_KEY = 'polyhedraverse:instructionsDismissed';
 const PANEL_MIN_KEY = 'polyhedraverse:controlsMinimised';
+
+// Read once at load: arriving from the DICTO wizard (?from=dicto).
+const FROM_DICTO = typeof window !== 'undefined' && new URLSearchParams(window.location.search).get('from') === 'dicto';
 
 export default function Home() {
   const handleRef = useRef<ShapeViewerHandle | null>(null);
@@ -98,7 +101,9 @@ export default function Home() {
   // with…", "Attach via face…"). The browser has its own internal "Spin
   // the Wheel" affordance that renders this same PolyhedralWheel in
   // place, sharing the identical onSelect contract below.
-  const [browserOpen, setBrowserOpen] = useState(false);
+  const [browserOpenState, setBrowserOpenState] = useState(false);
+  // From DICTO the browser starts open, until it is first closed.
+  const [dictoBrowserDone, setDictoBrowserDone] = useState(false);
   // 'reset': picking a shape to start over with (no filter). 'faceAttach':
   // picking a shape to attach via the currently-selected free face (only
   // shapes with a matching face size are real options). 'vertexAttach':
@@ -171,10 +176,18 @@ export default function Home() {
     () => (window as { __PV_E2E_SKIP_WELCOME__?: boolean }).__PV_E2E_SKIP_WELCOME__ === true,
     () => false,
   );
+  // Arriving from the DICTO wizard in Kaleidohedra or Rhombiverse (?from=dicto, DICTO 2026-10-08:
+  // "it took me to welcome screen not wizard"): no welcome; the shape browser opens instead.
+  const fromDicto = useSyncExternalStore(noopSubscribe, () => FROM_DICTO, () => false);
   const [welcomeForceOpen, setWelcomeForceOpen] = useState(false);
   const [guideOpen, setGuideOpen] = useState(false);
   const [welcomeDismissedThisSession, setWelcomeDismissedThisSession] = useState(false);
-  const welcomeOpen = welcomeForceOpen || (!welcomeDismissedThisSession && !skipWelcomeForE2E);
+  const welcomeOpen = welcomeForceOpen || (!welcomeDismissedThisSession && !skipWelcomeForE2E && !fromDicto);
+  const browserOpen = browserOpenState || (fromDicto && !dictoBrowserDone);
+  const setBrowserOpen = useCallback((open: boolean) => {
+    setBrowserOpenState(open);
+    if (!open) setDictoBrowserDone(true);
+  }, []);
   const closeWelcome = () => {
     setWelcomeForceOpen(false);
     setWelcomeDismissedThisSession(true);
@@ -182,8 +195,15 @@ export default function Home() {
 
   const openPicker = (mode: 'reset' | 'faceAttach' | 'vertexAttach') => {
     setWheelMode(mode);
-    setBrowserOpen(true);
+    setBrowserOpenState(true);
   };
+  useEffect(() => {
+    if (!fromDicto) return;
+    // Drop ?from=dicto so a reload is an ordinary visit (FROM_DICTO was read once, at load).
+    const url = new URL(window.location.href);
+    url.searchParams.delete('from');
+    window.history.replaceState(null, '', url);
+  }, [fromDicto]);
   const openWheelDirectly = () => {
     setWheelMode('reset');
     setWheelOpen(true);
