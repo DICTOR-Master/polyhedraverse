@@ -1,0 +1,3 @@
+[submodule "krp-core"]
+	path = krp-core
+	url = https://github.com/DICTOR-Master/krp-core

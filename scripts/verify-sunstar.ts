@@ -14,6 +14,8 @@
 import { POLYHEDRA } from '../app/lib/polyhedra';
 import { familyIds, pairPartners } from '../app/lib/polyhedra/families';
 import { facesCongruent, type Vec3 } from '../app/lib/polyhedra/core';
+import { DOGSTAR_REQUEST } from '../app/lib/polyhedra/sunstar';
+import { fingerprintOf } from '../krp-core/src/vocabulary.js';
 
 let failures = 0;
 const check = (label: string, ok: boolean) => { console.log(`${ok ? 'OK  ' : 'FAIL'} ${label}`); if (!ok) failures++; };
@@ -74,6 +76,13 @@ for (let n = 0; n < N; n++) {
   if (count !== 1) bad++;
 }
 check(`dodecahedra (even cells) and Dogstars (odd cells) fill space: ${N} random points, ${bad} in none or several`, bad === 0);
+
+// KRP stage 3: the Dogstar is krp-core's recorded object, requested by ID, at this file's scale.
+{
+  const d = DOGSTAR_REQUEST.description;
+  check(`Dogstar is krp-core's ${d.id} (${d.status}): fingerprint ${d.fingerprint} reproduced, volume ${d.measurements.volume.toFixed(9)} x (phi/2)^3 = this piece's`,
+    d.fingerprint === fingerprintOf(DOGSTAR_REQUEST.faces) && Math.abs(d.measurements.volume * K ** 3 - g.vol) < 1e-9 && d.status === 'Curated');
+}
 
 console.log(failures === 0 ? '\nAll checks passed (0 failures).' : `\n${failures} check(s) FAILED.`);
 process.exit(failures === 0 ? 0 : 1);

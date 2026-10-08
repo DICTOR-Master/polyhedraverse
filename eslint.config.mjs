@@ -12,6 +12,8 @@ const eslintConfig = defineConfig([
     "out/**",
     "build/**",
     "next-env.d.ts",
+    // krp-core, the shared geometry (a git submodule with its own checks).
+    "krp-core/**",
   ]),
 ]);
 

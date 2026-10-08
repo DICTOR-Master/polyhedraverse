@@ -14,6 +14,7 @@ import DuoprismShapeViewer from './DuoprismShapeViewer';
 import RadialProjectionViewer from './RadialProjectionViewer';
 import NetViewer from './NetViewer';
 import NET_ELIGIBLE from '../../lib/nets/eligible.json';
+import { DOGSTAR_REQUEST } from '../../lib/polyhedra/sunstar';
 
 // The dodecahedron's three stellations are Kepler-Poinsot solids: the star
 // can't be attached itself, but a dodecahedron with Stellations piece n on
@@ -29,6 +30,15 @@ export interface ShapeDetailDrawerProps {
   onSelectShape: (specId: string) => void;
   onToggleFavorite: (specId: string) => void;
   onToggleCompare: (specId: string) => void;
+}
+
+function recordLine(lang: LangCode): string {
+  const d = DOGSTAR_REQUEST.description;
+  const n = d.novelty;
+  const novelty = n.kind === 'prior-art' ? t('krp.novelty.prior-art', lang, { credit: n.short })
+    : n.kind === 'not-found' ? t('krp.novelty.not-found', lang, { scope: t(`krp.scope.${n.scope}`, lang), date: n.date })
+    : t(`krp.novelty.${n.kind}`, lang);
+  return `${d.id} · ${t(`krp.status.${d.status}`, lang)} · ${novelty}`;
 }
 
 export default function ShapeDetailDrawer({
@@ -245,6 +255,14 @@ export default function ShapeDetailDrawer({
           <div data-testid="ekp-link" style={{ maxWidth: 380, fontSize: 12, color: '#a9f795', lineHeight: 1.45, textAlign: 'center' }}>
             {t('detail.ekpLink', lang)}{' '}
             <a href="https://kaleidohedra.vercel.app" target="_blank" rel="noopener" style={{ color: '#a9f795', textDecoration: 'underline' }}>Kaleidohedra ↗</a>
+          </div>
+        )}
+
+        {/* KRP stage 3 (DICTO's decision 2026-10-08): this Dogstar is requested from krp-core by its
+            ID, the same record Kaleidohedra and Rhombiverse show; its Record line. */}
+        {specId === 'DOGSTAR' && (
+          <div data-testid="krp-record" style={{ maxWidth: 380, fontSize: 11, color: '#a9f795', opacity: 0.85, lineHeight: 1.45, textAlign: 'center', fontFamily: 'ui-monospace, monospace' }}>
+            {t('krp.record', lang)}: {recordLine(lang)}
           </div>
         )}
 
