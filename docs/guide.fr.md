@@ -13,11 +13,9 @@ Les noms des boutons sont écrits tels qu'ils apparaissent dans l'application (c
 ### Choisir une forme
 
 1. Appuyez sur **ENTER** sur l'écran d'accueil.
-2. Touchez le bouton de la **roue des formes** (☰, en bas à gauche) ou ◐ sur la roue du coin pour ouvrir la roue des formes. (**Start over with…**, Tab ou Espace ouvrent plutôt le navigateur de formes.)
-3. La roue est un dodécaèdre. Chaque face est une famille de formes. Faites-la glisser pour la tourner (ou utilisez les flèches du clavier), et touchez une face pour ouvrir cette famille. Survolez une face, ou appuyez longuement dessus, pour voir son nom. Dans une famille, la face **Home** (un H dans un hexagone) vous ramène aux familles.
-4. Touchez une forme. Elle remplace ce qui est à l'écran : vous repartez de zéro.
-
-**Faire Tourner la Roue** choisit une famille au hasard.
+2. Touchez **Start over with…** (ou ◈ en haut à droite, ou appuyez sur Tab ou Espace) pour ouvrir le navigateur de formes.
+3. Touchez une famille dans **Accueil**, cherchez une forme, ou touchez **Catalogue complet** en haut du navigateur pour voir toutes les formes, famille par famille. Touchez une forme pour voir ses détails, puis **Ajouter à la Scène**.
+4. Elle remplace ce qui est à l'écran : vous repartez de zéro.
 
 ### Déplacer la caméra
 
@@ -49,7 +47,7 @@ Les meilleurs ajustements viennent en premier : un placement qui affleure deux o
 
 ## Parcourir le catalogue
 
-Le **navigateur de formes** (◈ sur la roue du coin) est la galerie. Il a ces onglets :
+Le **navigateur de formes** (◈ en haut à droite) est la galerie ; **Catalogue complet**, en haut, montre toutes les formes, famille par famille. Il a ces onglets :
 
 - **Accueil :** les familles, plus les formes vues récemment et vos favoris.
 - **Recherche :** cherchez par nom (essayez « J12 » ou « gyrobicupola »), ou filtrez par famille, forme de face et nombre de faces.
@@ -127,7 +125,7 @@ Tant que votre construction n'est faite que de rhomboèdres dorés, une barre in
 - **File → Export JSON :** télécharge votre construction sous forme de fichier, pour une sauvegarde ou pour la transférer sur un autre appareil.
 - **File → Import JSON… :** ouvre un fichier exporté auparavant. Il remplace ce qui est à l'écran, et **Undo** l'annule.
 - **What's New :** changements récents.
-- **Langue :** utilisez le sélecteur 🌐 en haut de l'écran d'accueil ou de ce guide, ou touchez la face 🌐 de la roue du coin pour passer à la langue suivante. Il y a 7 langues, et toutes ces commandes restent synchronisées.
+- **Langue :** utilisez le sélecteur 🌐 en haut de l'écran d'accueil ou de ce guide, ou touchez 🌐 en haut à droite pour passer à la langue suivante. Il y a 7 langues, et toutes ces commandes restent synchronisées.
 
 ---
 
@@ -157,18 +155,16 @@ Ces commandes changent selon ce que vous avez sélectionné.
 | Une forme compatible 4D est sélectionnée | 3D / 4D et, en 4D : Add next cell, Remove last cell, Build next shell, Remove last shell, Open / Closed, RCP-Coordinates, Shell colours |
 | Une nouvelle forme attend d'être posée | Confirm, Cancel (Esc) |
 
-## Roue du coin
+## Outils (en haut à droite)
 
-Le petit dodécaèdre dans le coin. Faites-le glisser pour le tourner, et touchez une face.
+Une colonne de boutons en haut à droite de la vue 3D.
 
 | Symbole | Commande |
 |---|---|
-| ◐ | Ouvrir ou fermer la roue des formes |
 | ◈ | Ouvrir ou fermer le navigateur de formes |
-| ⛶ | Mode d'affichage |
-| ▣ | Save |
+| 3D / ∥ / ISO | Projection : Perspective, Parallèle (orthographique) ou Isométrique (touchez pour changer) |
 | ℹ | About (rouvre l'écran d'accueil) |
-| 🌐 | Passer à la langue suivante (affiche le nom de la langue actuelle) |
+| 🌐 | Passer à la langue suivante (affiche le code de la langue actuelle) |
 
 ## Clavier et souris
 
@@ -179,7 +175,7 @@ Le petit dodécaèdre dans le coin. Faites-le glisser pour le tourner, et touche
 | Glisser avec le bouton gauche | Tourner la caméra, ou tourner une nouvelle forme avant de confirmer |
 | Molette | Zoomer |
 | Tab ou Espace | Ouvrir le navigateur de formes (Start over with…) |
-| Échap | Annuler la pose d'une forme, ou fermer la roue |
+| Échap | Annuler la pose d'une forme |
 
 ## Tactile
 

@@ -11,11 +11,9 @@ The first part of this guide walks through common tasks. The second part lists e
 ### Choose a shape
 
 1. Press **ENTER** on the welcome screen.
-2. Tap the **shape wheel** button (☰, bottom left) or ◐ on the corner wheel to open the shape wheel. (**Start over with…**, Tab or Space open the shape browser instead.)
-3. The wheel is a dodecahedron. Each face is a family of shapes. Drag to turn it (or use the arrow keys), and tap a face to open that family. Hover over a face, or press and hold it, to see its name. Inside a family, the **Home** face (an H in a hexagon) takes you back to the families.
-4. Tap a shape. It replaces whatever is on screen, so you start fresh.
-
-**Spin the Wheel** picks a family at random.
+2. Tap **Start over with…** (or ◈ at the top right, or press Tab or Space) to open the shape browser.
+3. Tap a family on **Home**, search for a shape, or tap **Full Catalog** at the top of the browser to see every shape, family by family. Tap a shape to see its details, then **Add to Scene**.
+4. It replaces whatever is on screen, so you start fresh.
 
 ### Move the camera
 
@@ -47,7 +45,7 @@ The best fits come first: a placement that sits flush on two or three faces of t
 
 ## Browsing the catalogue
 
-The **shape browser** (◈ on the corner wheel) is the gallery. It has these tabs:
+The **shape browser** (◈ at the top right) is the gallery; **Full Catalog** at its top shows every shape, family by family. It has these tabs:
 
 - **Home:** the families, plus the shapes you've viewed recently and your favourites.
 - **Search:** search by name (try "J12" or "gyrobicupola"), or filter by family, face shape and face count.
@@ -125,7 +123,7 @@ While your build is all golden rhombohedra, a bar shows how many pieces fit the 
 - **File → Export JSON:** downloads your build as a file, to keep a backup or move it to another device.
 - **File → Import JSON…:** opens a file you exported earlier. It replaces what's on screen, and **Undo** takes it back.
 - **What's New:** recent changes.
-- **Language:** use the 🌐 picker at the top of the welcome screen or this guide, or tap the 🌐 face on the corner wheel to step to the next language. There are 7 languages, and all of these stay in step.
+- **Language:** use the 🌐 picker at the top of the welcome screen or this guide, or tap 🌐 at the top right to step to the next language. There are 7 languages, and all of these stay in step.
 
 ---
 
@@ -155,18 +153,16 @@ These controls change with what you've selected.
 | A 4D-capable shape is selected | 3D / 4D, and in 4D: Add next cell, Remove last cell, Build next shell, Remove last shell, Open / Closed, RCP-Coordinates, Shell colours |
 | A new shape is waiting to be placed | Confirm, Cancel (Esc) |
 
-## Corner wheel
+## Tools (top right)
 
-The small dodecahedron in the corner. Drag to turn it, and tap a face.
+A column of buttons at the top right of the 3D view.
 
 | Symbol | Control |
 |---|---|
-| ◐ | Open or close the shape wheel |
 | ◈ | Open or close the shape browser |
-| ⛶ | View mode |
-| ▣ | Save |
+| 3D / ∥ / ISO | Projection: Perspective, Parallel (orthographic) or Isometric (tap to cycle) |
 | ℹ | About (reopens the welcome screen) |
-| 🌐 | Switch to the next language (shows the current one's name) |
+| 🌐 | Switch to the next language (shows the current one's code) |
 
 ## Keyboard and mouse
 
@@ -177,7 +173,7 @@ The small dodecahedron in the corner. Drag to turn it, and tap a face.
 | Left-drag | Rotate the camera, or turn a new shape before confirming |
 | Scroll wheel | Zoom |
 | Tab or Space | Open the shape browser (Start over with…) |
-| Esc | Cancel placing a shape, or close the wheel |
+| Esc | Cancel placing a shape |
 
 ## Touch
 

@@ -13,11 +13,9 @@ Los nombres de los botones aparecen tal como se ven en la aplicación (los que l
 ### Elige una forma
 
 1. Pulsa **ENTER** en la pantalla de bienvenida.
-2. Toca el botón de la **rueda de formas** (☰, abajo a la izquierda) o ◐ en la rueda de la esquina para abrir la rueda de formas. (**Start over with…**, Tab o Espacio abren el explorador de formas.)
-3. La rueda es un dodecaedro. Cada cara es una familia de formas. Arrástrala para girarla (o usa las flechas del teclado) y toca una cara para abrir esa familia. Pasa el cursor por una cara, o mantenla pulsada, para ver su nombre. Dentro de una familia, la cara **Home** (una H dentro de un hexágono) te lleva de vuelta a las familias.
-4. Toca una forma. Sustituye lo que haya en pantalla, así que empiezas desde cero.
-
-**Girar la Rueda** elige una familia al azar.
+2. Toca **Start over with…** (o ◈ arriba a la derecha, o pulsa Tab o Espacio) para abrir el explorador de formas.
+3. Toca una familia en **Inicio**, busca una forma o toca **Catálogo completo** en la parte superior del explorador para ver todas las formas, familia por familia. Toca una forma para ver sus detalles y luego **Añadir a la Escena**.
+4. Sustituye lo que haya en pantalla, así que empiezas desde cero.
 
 ### Mueve la cámara
 
@@ -49,7 +47,7 @@ Los mejores encajes van primero: una colocación que queda a ras de dos o tres c
 
 ## Explora el catálogo
 
-El **explorador de formas** (◈ en la rueda de la esquina) es la galería. Tiene estas pestañas:
+El **explorador de formas** (◈ arriba a la derecha) es la galería; **Catálogo completo**, en su parte superior, muestra todas las formas, familia por familia. Tiene estas pestañas:
 
 - **Inicio:** las familias, más las formas vistas recientemente y tus favoritas.
 - **Buscar:** busca por nombre (prueba «J12» o «gyrobicupola»), o filtra por familia, forma de cara y número de caras.
@@ -127,7 +125,7 @@ Mientras tu construcción sea solo de romboedros áureos, una barra muestra cuá
 - **File → Export JSON:** descarga tu construcción como archivo, para tener una copia de seguridad o llevarla a otro dispositivo.
 - **File → Import JSON…:** abre un archivo que exportaste antes. Sustituye lo que hay en pantalla, y **Undo** lo deshace.
 - **What's New:** cambios recientes.
-- **Idioma:** usa el selector 🌐 de la parte superior de la pantalla de bienvenida o de esta guía, o toca la cara 🌐 de la rueda de la esquina para pasar al siguiente idioma. Hay 7 idiomas, y todos estos controles van a la par.
+- **Idioma:** usa el selector 🌐 de la parte superior de la pantalla de bienvenida o de esta guía, o toca 🌐 arriba a la derecha para pasar al siguiente idioma. Hay 7 idiomas, y todos estos lugares cambian a la vez.
 
 ---
 
@@ -157,18 +155,16 @@ Estos controles cambian según lo que tengas seleccionado.
 | Hay una forma con capacidad 4D seleccionada | 3D / 4D y, en 4D: Add next cell, Remove last cell, Build next shell, Remove last shell, Open / Closed, RCP-Coordinates, Shell colours |
 | Una forma nueva espera a ser colocada | Confirm, Cancel (Esc) |
 
-## Rueda de la esquina
+## Herramientas (arriba a la derecha)
 
-El pequeño dodecaedro de la esquina. Arrástralo para girarlo y toca una cara.
+Una columna de botones arriba a la derecha de la vista 3D.
 
 | Símbolo | Control |
 |---|---|
-| ◐ | Abrir o cerrar la rueda de formas |
 | ◈ | Abrir o cerrar el explorador de formas |
-| ⛶ | Modo de vista |
-| ▣ | Save |
+| 3D / ∥ / ISO | Proyección: Perspectiva, Paralela (ortográfica) o Isométrica (toca para cambiar) |
 | ℹ | About (vuelve a abrir la pantalla de bienvenida) |
-| 🌐 | Cambiar al siguiente idioma (muestra el nombre del actual) |
+| 🌐 | Pasar al siguiente idioma (muestra el código del actual) |
 
 ## Teclado y ratón
 
@@ -179,7 +175,7 @@ El pequeño dodecaedro de la esquina. Arrástralo para girarlo y toca una cara.
 | Arrastrar con el botón izquierdo | Girar la cámara, o girar una forma nueva antes de confirmar |
 | Rueda del ratón | Zoom |
 | Tab o Espacio | Abrir el explorador de formas (Start over with…) |
-| Esc | Cancelar la colocación de una forma, o cerrar la rueda |
+| Esc | Cancelar la colocación de una forma |
 
 ## Táctil
 
