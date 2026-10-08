@@ -23,7 +23,7 @@ export const LANG_ORDER: LangCode[] = ['en', 'ja', 'es', 'fr', 'ko', 'zh', 'ru']
 type Dict = Record<string, string>;
 
 const en: Dict = {
-  'detail.dogstarCredit': "The Dogstar is George W. Hart's stellation 8 of the dodecahedron (1996), which he noted fills space alternated with regular dodecahedra; Polyhedra-World also shows it. DICTO named it the Dogstar, and a dodecahedron with 6 Dogstars on its faces a Sunstar.",
+  'detail.dogstarCredit': "The Dogstar is George W. Hart's stellation 8 of the dodecahedron (1996), which he noted fills space alternated with regular dodecahedra; Polyhedra-World also shows it. Hans Walser describes it too, as a cube with its six hip roofs cut away (his “semi-regular dodecahedron”), which fills space with regular dodecahedra like a 3D chessboard. DICTO named it the Dogstar, and a dodecahedron with 6 Dogstars on its faces a Sunstar.",
   'detail.ekpLink': "Part of the Euclid–Kepler–Pacioli cell by DICTO, shown built, layer inside layer, in",
   'krp.record': "Record",
   'krp.status.Generated': "Generated",
@@ -153,7 +153,7 @@ const en: Dict = {
 };
 
 const ja: Dict = {
-  'detail.dogstarCredit': "ドッグスターは George W. Hart による十二面体の星形化 No. 8（1996）で、Hart は正十二面体と交互に並べると空間を埋めることを記しています。Polyhedra-World にも載っています。DICTO がドッグスターと名付け、面に 6 つのドッグスターをつけた正十二面体をサンスターと呼んでいます。",
+  'detail.dogstarCredit': "ドッグスターは George W. Hart による十二面体の星形化 No. 8（1996）で、Hart は正十二面体と交互に並べると空間を埋めることを記しています。Polyhedra-World にも載っています。Hans Walser も、立方体から 6 つの寄棟屋根を取り除いた形（彼の言う「半正十二面体」）として記しており、正十二面体と 3D のチェス盤のように空間を埋めます。DICTO がドッグスターと名付け、面に 6 つのドッグスターをつけた正十二面体をサンスターと呼んでいます。",
   'detail.ekpLink': "DICTO による Euclid–Kepler–Pacioli セルの一部です。層の中に層を重ねて組み上げた姿は次で見られます：",
   'krp.record': "記録",
   'krp.status.Generated': "生成済み",
@@ -283,7 +283,7 @@ const ja: Dict = {
 };
 
 const es: Dict = {
-  'detail.dogstarCredit': "El Dogstar es la estelación 8 del dodecaedro de George W. Hart (1996), quien señaló que llena el espacio alternado con dodecaedros regulares; también aparece en Polyhedra-World. DICTO lo llamó Dogstar, y Sunstar a un dodecaedro con 6 Dogstars en sus caras.",
+  'detail.dogstarCredit': "El Dogstar es la estelación 8 del dodecaedro de George W. Hart (1996), quien señaló que llena el espacio alternado con dodecaedros regulares; también aparece en Polyhedra-World. Hans Walser también lo describe, como un cubo al que se le quitan sus seis tejados a cuatro aguas (su «dodecaedro semirregular»), que llena el espacio con dodecaedros regulares como un tablero de ajedrez en 3D. DICTO lo llamó Dogstar, y Sunstar a un dodecaedro con 6 Dogstars en sus caras.",
   'detail.ekpLink': "Parte de la celda Euclid–Kepler–Pacioli de DICTO, construida capa dentro de capa, en",
   'krp.record': "Registro",
   'krp.status.Generated': "Generado",
@@ -413,7 +413,7 @@ const es: Dict = {
 };
 
 const fr: Dict = {
-  'detail.dogstarCredit': "Le Dogstar est la stellation 8 du dodécaèdre de George W. Hart (1996), qui a noté qu'il remplit l'espace en alternance avec des dodécaèdres réguliers ; Polyhedra-World le montre aussi. DICTO l'a nommé Dogstar, et Sunstar un dodécaèdre portant 6 Dogstars sur ses faces.",
+  'detail.dogstarCredit': "Le Dogstar est la stellation 8 du dodécaèdre de George W. Hart (1996), qui a noté qu'il remplit l'espace en alternance avec des dodécaèdres réguliers ; Polyhedra-World le montre aussi. Hans Walser le décrit aussi, comme un cube privé de ses six toits en croupe (son « dodécaèdre semi-régulier »), qui remplit l'espace avec des dodécaèdres réguliers comme un échiquier en 3D. DICTO l'a nommé Dogstar, et Sunstar un dodécaèdre portant 6 Dogstars sur ses faces.",
   'detail.ekpLink': "Fait partie de la cellule Euclid–Kepler–Pacioli de DICTO, montrée construite, couche dans couche, dans",
   'krp.record': "Fiche",
   'krp.status.Generated': "Généré",
@@ -543,7 +543,7 @@ const fr: Dict = {
 };
 
 const ko: Dict = {
-  'detail.dogstarCredit': "도그스타는 George W. Hart의 십이면체 별모양 8번(1996)으로, Hart는 정십이면체와 번갈아 놓으면 공간을 채운다고 적었습니다. Polyhedra-World에도 실려 있습니다. DICTO가 도그스타라 이름 붙였고, 면에 도그스타 6개를 붙인 정십이면체를 선스타라 부릅니다.",
+  'detail.dogstarCredit': "도그스타는 George W. Hart의 십이면체 별모양 8번(1996)으로, Hart는 정십이면체와 번갈아 놓으면 공간을 채운다고 적었습니다. Polyhedra-World에도 실려 있습니다. Hans Walser도 정육면체에서 모임지붕 6개를 떼어 낸 모양(그가 말하는 '준정십이면체')으로 설명하며, 정십이면체와 함께 3D 체스판처럼 공간을 채웁니다. DICTO가 도그스타라 이름 붙였고, 면에 도그스타 6개를 붙인 정십이면체를 선스타라 부릅니다.",
   'detail.ekpLink': "DICTO의 Euclid–Kepler–Pacioli 셀의 일부입니다. 층 안에 층으로 쌓아 올린 모습은 다음에서 볼 수 있습니다:",
   'krp.record': "기록",
   'krp.status.Generated': "생성됨",
@@ -673,7 +673,7 @@ const ko: Dict = {
 };
 
 const zh: Dict = {
-  'detail.dogstarCredit': "犬星就是 George W. Hart 的十二面体第 8 号星形（1996），他指出它与正十二面体交替排列可填满空间；Polyhedra-World 也收录了它。DICTO 将它命名为犬星（Dogstar），并把面上带有 6 个犬星的正十二面体称为太阳星（Sunstar）。",
+  'detail.dogstarCredit': "犬星就是 George W. Hart 的十二面体第 8 号星形（1996），他指出它与正十二面体交替排列可填满空间；Polyhedra-World 也收录了它。Hans Walser 也描述过它：把立方体的六个四坡屋顶切掉后剩下的形状（他称之为“半正十二面体”），它与正十二面体像三维棋盘一样填满空间。DICTO 将它命名为犬星（Dogstar），并把面上带有 6 个犬星的正十二面体称为太阳星（Sunstar）。",
   'detail.ekpLink': "DICTO 的 Euclid–Kepler–Pacioli 单元的一部分，层层嵌套的构建过程见",
   'krp.record': "记录",
   'krp.status.Generated': "已生成",
@@ -803,7 +803,7 @@ const zh: Dict = {
 };
 
 const ru: Dict = {
-  'detail.dogstarCredit': "Звезда-пёс — это звёздчатая форма додекаэдра № 8 Джорджа Харта (1996); Харт отметил, что она заполняет пространство, чередуясь с правильными додекаэдрами. Она есть и на Polyhedra-World. DICTO назвал её Dogstar, а додекаэдр с 6 такими звёздами на гранях — Sunstar.",
+  'detail.dogstarCredit': "Звезда-пёс — это звёздчатая форма додекаэдра № 8 Джорджа Харта (1996); Харт отметил, что она заполняет пространство, чередуясь с правильными додекаэдрами. Она есть и на Polyhedra-World. Ханс Вальзер (Hans Walser) тоже описывает её — как куб со срезанными шестью вальмовыми крышами (его «полуправильный додекаэдр»), который вместе с правильными додекаэдрами заполняет пространство, как трёхмерная шахматная доска. DICTO назвал её Dogstar, а додекаэдр с 6 такими звёздами на гранях — Sunstar.",
   'detail.ekpLink': "Часть ячейки Евклида–Кеплера–Пачоли от DICTO; собранной слой в слой её можно увидеть в",
   'krp.record': "Запись",
   'krp.status.Generated': "Сгенерирован",
