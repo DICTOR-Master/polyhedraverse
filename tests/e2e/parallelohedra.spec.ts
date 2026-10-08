@@ -1,4 +1,4 @@
-import { KALEIDOHEDRA_VERIFIED } from '../../app/lib/polyhedra/families';
+import { KALEIDOHEDRA_VERIFIED } from '../../krp-core/src/polyhedra/families.js';
 import { test, expect } from './fixtures';
 
 test.beforeEach(async ({ page }) => {

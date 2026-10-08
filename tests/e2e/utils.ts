@@ -1,5 +1,5 @@
 import type { Page } from '@playwright/test';
-import { FAMILY_ORDER, FAMILY_META, familyIds } from '../../app/lib/polyhedra/families';
+import { FAMILY_ORDER, FAMILY_META, familyIds } from '../../krp-core/src/polyhedra/families.js';
 import { ASSEMBLY_STORAGE_KEY, type Assembly } from '../../app/lib/assembly';
 
 /**
