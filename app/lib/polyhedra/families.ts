@@ -159,6 +159,11 @@ export const FAMILY_META: Record<FamilyKey, { label: string; symbol: string }> =
  * reputation alone.
  */
 export const SPACE_FILLING_PAIR_LIST: Array<{ ids: [string, string]; honeycomb: string; nonConvex?: true }> = [
+  // New work first (direct request, 2026-10-08: "put new originalish work close to top"), from
+  // Kaleidohedra. Both are non-convex with several edge lengths, so they are checked by their own
+  // scripts (verify-sunstar.ts, verify-stella-jewel.ts) instead of the convex checks.
+  { ids: ['SEAMED_DODECAHEDRON', 'DOGSTAR'], honeycomb: 'Sunstar Lattice', nonConvex: true },
+  { ids: ['DRAGON_JEWEL', 'STELLA_OCTANGULA'], honeycomb: 'Stella–Jewel Lattice', nonConvex: true },
   { ids: ['D4', 'D8'], honeycomb: 'Octet truss (tetrahedral-octahedral)' },
   { ids: ['D4', 'TRUNCATED_TETRAHEDRON'], honeycomb: 'Pyrochlore (quarter cubic)' },
   { ids: ['D8', 'CUBOCTAHEDRON'], honeycomb: 'Rectified cubic' },
@@ -166,11 +171,6 @@ export const SPACE_FILLING_PAIR_LIST: Array<{ ids: [string, string]; honeycomb: 
   { ids: ['CUBE', 'PRISM_3'], honeycomb: 'Elongated triangular prismatic' },
   { ids: ['PRISM_3', 'PRISM_6'], honeycomb: 'Trihexagonal prismatic' },
   { ids: ['CUBE', 'PRISM_8'], honeycomb: 'Truncated square prismatic' },
-  // Kaleidohedra's Stella–Jewel Lattice (2026-10-08): non-convex, several edge lengths, so it is
-  // checked by scripts/verify-stella-jewel.ts instead of the convex checks.
-  { ids: ['DRAGON_JEWEL', 'STELLA_OCTANGULA'], honeycomb: 'Stella–Jewel Lattice', nonConvex: true },
-  // Kaleidohedra's Sunstar Lattice (2026-10-08): the dodecahedron, seamed where Dogstars meet it, and the Dogstar.
-  { ids: ['SEAMED_DODECAHEDRON', 'DOGSTAR'], honeycomb: 'Sunstar Lattice', nonConvex: true },
 ];
 
 /** Fedorov's five parallelohedra, one of each type in its most symmetric form. */
