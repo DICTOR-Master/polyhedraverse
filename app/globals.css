@@ -66,3 +66,15 @@ body {
   background: rgba(0, 0, 0, 0.45); border: 1px solid rgba(71, 204, 36, 0.35);
   border-radius: 6px; color: #5ee233; cursor: pointer; display: flex; justify-content: center; align-items: center;
 }
+
+/* Tablets (DICTO 2026-10-09, iPad: "top bar and right side difficult to access"): iPadOS keeps the top
+   edge and corners for Notification and Control Centre and the right edge for Slide Over, so on a
+   touch tablet the controls stand clear of those edges and every button is a full 44px target. */
+@media (pointer: coarse) and (min-width: 700px) and (min-height: 600px) {
+  header { padding-top: max(30px, env(safe-area-inset-top)) !important; padding-right: max(28px, env(safe-area-inset-right)) !important; }
+  header button, nav button, main > nav button { min-height: 44px; }
+  [data-testid="tools-column"] { top: 20px !important; right: 28px !important; }
+}
+@media (pointer: coarse) and (min-width: 700px) and (min-height: 600px) {
+  .pv-panel-min { min-height: 44px; }
+}

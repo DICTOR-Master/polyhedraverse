@@ -689,8 +689,11 @@ export default function ShapeViewer({
   onCageClosedChange,
   onAssemblyNameChange,
   onCanUndoChange,
+  onIsoLeft,
   onReady,
 }: {
+  /** Fired when the view turns away from the isometric direction while in ISO (it is then parallel). */
+  onIsoLeft?: () => void;
   initialShapeId: string;
   onSelectionChange?: (selection: ShapeSelection | null) => void;
   onPendingChange?: (pending: { specId: string; duoprism?: boolean } | null) => void;
@@ -759,6 +762,10 @@ export default function ShapeViewer({
   const onAssemblyNameChangeRef = useRef(onAssemblyNameChange);
   const onCanUndoChangeRef = useRef(onCanUndoChange);
   const onReadyRef = useRef(onReady);
+  const onIsoLeftRef = useRef(onIsoLeft);
+  useEffect(() => {
+    onIsoLeftRef.current = onIsoLeft;
+  }, [onIsoLeft]);
 
   useEffect(() => {
     onSelectionChangeRef.current = onSelectionChange;
@@ -914,7 +921,18 @@ export default function ShapeViewer({
      * (1, 1, 1) instead) and the current distance from the target. The
      * controls follow the new camera, so orbit and zoom keep working.
      */
+    let projectionMode: ProjectionMode = 'perspective';
+    const ISO_DIRECTION = new THREE.Vector3(1, 1, 1).normalize();
+    // ISO is a direction: turning away from it leaves a plain parallel view (DICTO 2026-10-09).
+    controls.addEventListener('change', () => {
+      if (projectionMode !== 'isometric') return;
+      if (camera.position.clone().sub(controls.target).normalize().dot(ISO_DIRECTION) < Math.cos(THREE.MathUtils.degToRad(0.5))) {
+        projectionMode = 'orthographic';
+        onIsoLeftRef.current?.();
+      }
+    });
     const setProjection = (mode: ProjectionMode) => {
+      projectionMode = mode;
       const target = controls.target.clone();
       const offset = camera.position.clone().sub(target);
       const distance = offset.length() > 1e-6 ? offset.length() : 6;

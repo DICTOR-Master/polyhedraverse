@@ -16,6 +16,7 @@ import { FAMILY_META, FAMILY_ORDER, pairPartners } from '../krp-core/src/polyhed
 import { GOLDEN_BUILDS, goldenZonohedron } from '../krp-core/src/assembly/goldenBuilds.js';
 import { COLOR_MODES, COLOR_MODE_LABELS, DEFAULT_COLOR_PREFS, FAMILY_COLORS, PIECE_COLORS, PIECE_COLOR_LABELS, type ColorPrefs, type PieceColorKey } from '../krp-core/src/assembly/pieceColors.js';
 import { loadColorPrefs, saveColorPrefs } from './lib/colorPrefs';
+import { loadProjection, saveProjection } from './lib/projectionPref';
 
 const ShapeViewer = dynamic(() => import('./components/ShapeViewer'), {
   ssr: false,
@@ -1099,7 +1100,7 @@ export default function Home() {
             browserOpen={browserOpen}
             onToggleBrowser={() => (browserOpen ? setBrowserOpen(false) : openPicker('reset'))}
             projection={projection}
-            onProjection={(mode) => { setProjection(mode); handleRef.current?.setProjection(mode); }}
+            onProjection={(mode) => { setProjection(mode); handleRef.current?.setProjection(mode); saveProjection(mode); }}
             onAbout={() => setWelcomeForceOpen(true)}
           />
         )}
@@ -1111,8 +1112,11 @@ export default function Home() {
           onCageClosedChange={setCageClosed}
           onAssemblyNameChange={setAssemblyName}
           onCanUndoChange={setCanUndo}
+          onIsoLeft={() => { setProjection('orthographic'); saveProjection('orthographic'); }}
           onReady={(handle) => {
             handleRef.current = handle;
+            const savedProjection = loadProjection();
+            if (savedProjection !== 'perspective') { handle.setProjection(savedProjection); setProjection(savedProjection); }
             const prefs = loadColorPrefs();
             setColorPrefsState(prefs);
             handle.setColorPrefs(prefs);

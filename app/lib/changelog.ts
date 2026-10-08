@@ -15,6 +15,12 @@ export interface ChangelogDay {
 
 export const CHANGELOG: ChangelogDay[] = [
   {
+    date: '2026-10-09',
+    entries: [
+      'New: your projection (3D, ∥ or ISO) is remembered on this device; ISO is a view direction, so once you turn away from it the button shows ∥. On iPad the top bar and the tools column stand clear of the screen\'s edges (where the system\'s swipes are), and every top-bar button is a full-size touch target.',
+    ],
+  },
+  {
     date: '2026-10-08',
     entries: [
       'New: the tools column, top right, as in Kaleidohedra and Rhombiverse: the shape browser, projection (3D, parallel, isometric), About and language. It replaces the corner wheel and the shape wheel. The shape browser\'s new Full Catalog button opens every shape in its family sections, the star polyhedra included.',
