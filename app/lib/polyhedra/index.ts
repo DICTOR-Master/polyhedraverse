@@ -17,6 +17,7 @@ import { PRISM_ANTIPRISM_ADDITIONS, PRISM_ANTIPRISM_ADDITION_IDS } from './prism
 import { MISCELLANEOUS_ADDITIONS, MISCELLANEOUS_ADDITION_IDS } from './miscellaneous';
 import { APERIODIC_ADDITIONS, APERIODIC_ADDITION_IDS } from './aperiodic';
 import { STELLA_JEWEL_ADDITIONS, STELLA_JEWEL_ADDITION_IDS } from './stellaJewel';
+import { SUNSTAR_ADDITIONS, SUNSTAR_ADDITION_IDS } from './sunstar';
 import { BRIDGE_ADDITIONS, BRIDGE_ADDITION_IDS } from './bridges';
 import { STELLATION_ADDITIONS, STELLATION_IDS } from './stellations';
 
@@ -30,6 +31,7 @@ export { PRISM_ANTIPRISM_ADDITIONS, PRISM_ANTIPRISM_ADDITION_IDS } from './prism
 export { MISCELLANEOUS_ADDITIONS, MISCELLANEOUS_ADDITION_IDS } from './miscellaneous';
 export { APERIODIC_ADDITIONS, APERIODIC_ADDITION_IDS, APERIODIC_PAIRS } from './aperiodic';
 export { STELLA_JEWEL_ADDITIONS, STELLA_JEWEL_ADDITION_IDS } from './stellaJewel';
+export { SUNSTAR_ADDITIONS, SUNSTAR_ADDITION_IDS } from './sunstar';
 export { BRIDGE_ADDITIONS, BRIDGE_ADDITION_IDS, BRIDGES_3D_IDS } from './bridges';
 export { STELLATION_ADDITIONS, STELLATION_IDS, stellationInfo } from './stellations';
 export { isFaceEligibleForAttach } from './attachEligibility';
@@ -44,6 +46,7 @@ export const POLYHEDRA: Record<string, PolyhedronSpec> = {
   ...MISCELLANEOUS_ADDITIONS,
   ...APERIODIC_ADDITIONS,
   ...STELLA_JEWEL_ADDITIONS,
+  ...SUNSTAR_ADDITIONS,
   ...BRIDGE_ADDITIONS,
   ...STELLATION_ADDITIONS,
 };
@@ -58,6 +61,7 @@ export const POLYHEDRON_IDS: string[] = [
   ...MISCELLANEOUS_ADDITION_IDS,
   ...APERIODIC_ADDITION_IDS,
   ...STELLA_JEWEL_ADDITION_IDS,
+  ...SUNSTAR_ADDITION_IDS,
   ...BRIDGE_ADDITION_IDS,
   ...STELLATION_IDS,
 ];

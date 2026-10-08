@@ -412,14 +412,16 @@ export function buildFaceConnectors(spec: PolyhedronSpec): FaceConnector[] {
     pos[1] /= pts.length;
     pos[2] /= pts.length;
 
-    const [p0, p1, p2] = pts;
-    const e1: Vec3 = [p1[0] - p0[0], p1[1] - p0[1], p1[2] - p0[2]];
-    const e2: Vec3 = [p2[0] - p0[0], p2[1] - p0[1], p2[2] - p0[2]];
-    const cross: Vec3 = [
-      e1[1] * e2[2] - e1[2] * e2[1],
-      e1[2] * e2[0] - e1[0] * e2[2],
-      e1[0] * e2[1] - e1[1] * e2[0],
-    ];
+    // Newell's method: the normal from the whole polygon, not just its first three corners, so a
+    // face with a straight corner (a seam meeting an edge mid-way, as on the seamed Sunstar pieces)
+    // still gets its true normal. For any other flat face it is the same as the first-corner cross.
+    const cross: Vec3 = [0, 0, 0];
+    pts.forEach((p, k) => {
+      const q = pts[(k + 1) % pts.length];
+      cross[0] += (p[1] - q[1]) * (p[2] + q[2]);
+      cross[1] += (p[2] - q[2]) * (p[0] + q[0]);
+      cross[2] += (p[0] - q[0]) * (p[1] + q[1]);
+    });
     const len = Math.hypot(cross[0], cross[1], cross[2]);
     const normal: Vec3 = [cross[0] / len, cross[1] / len, cross[2] / len];
 

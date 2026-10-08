@@ -169,6 +169,8 @@ export const SPACE_FILLING_PAIR_LIST: Array<{ ids: [string, string]; honeycomb: 
   // Kaleidohedra's Stella–Jewel Lattice (2026-10-08): non-convex, several edge lengths, so it is
   // checked by scripts/verify-stella-jewel.ts instead of the convex checks.
   { ids: ['DRAGON_JEWEL', 'STELLA_OCTANGULA'], honeycomb: 'Stella–Jewel Lattice', nonConvex: true },
+  // Kaleidohedra's Sunstar Lattice (2026-10-08): the dodecahedron, seamed where Dogstars meet it, and the Dogstar.
+  { ids: ['SEAMED_DODECAHEDRON', 'DOGSTAR'], honeycomb: 'Sunstar Lattice', nonConvex: true },
 ];
 
 /** Fedorov's five parallelohedra, one of each type in its most symmetric form. */
