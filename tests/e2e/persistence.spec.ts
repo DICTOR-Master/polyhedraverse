@@ -1,5 +1,5 @@
 import { test, expect } from './fixtures';
-import { getCanvasCenter, resetTo, findOnCanvas, readTooltipAt, openBrowserWheel, clickWheelLabel, exactLabel } from './utils';
+import { getCanvasCenter, resetTo, findOnCanvas, readTooltipAt, pickShape } from './utils';
 
 test('saving and reloading restores the assembly exactly', async ({ page }) => {
   await page.goto('/');
@@ -16,9 +16,7 @@ test('saving and reloading restores the assembly exactly', async ({ page }) => {
   // family-grouped picker face-attach already uses, via "Attach via
   // vertex…" (see attach.spec.ts's own identical fix).
   await page.getByRole('button', { name: 'Attach via vertex…' }).click();
-  await openBrowserWheel(page);
-  await clickWheelLabel(page, exactLabel('Deltahedra'));
-  await clickWheelLabel(page, 'D4');
+  await pickShape(page, 'D4');
   await page.getByRole('button', { name: 'Confirm' }).click();
   await expect(page.locator('text=/Click a highlighted/')).toBeVisible();
 

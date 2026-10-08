@@ -1,5 +1,5 @@
 import { test, expect } from './fixtures';
-import { openBrowserWheel, clickWheelLabel, exactLabel } from './utils';
+import { openFullCatalog } from './utils';
 
 test.beforeEach(async ({ page }) => {
   await page.goto('/');
@@ -15,8 +15,7 @@ test.beforeEach(async ({ page }) => {
  */
 test('Full Catalog has a Star Polyhedra section with all 4 Kepler-Poinsot solids', async ({ page }) => {
   await page.getByRole('button', { name: /^Start over with/ }).click();
-  await openBrowserWheel(page);
-  await clickWheelLabel(page, exactLabel('Full Catalog'));
+  await openFullCatalog(page);
 
   const header = page.locator('span', { hasText: /^Star Polyhedra$/ }).first();
   await header.scrollIntoViewIfNeeded();
@@ -38,8 +37,7 @@ test('Full Catalog has a Star Polyhedra section with all 4 Kepler-Poinsot solids
  */
 test('the great icosahedron stays reference only: it is not among the icosahedron\'s first three stellations', async ({ page }) => {
   await page.getByRole('button', { name: /^Start over with/ }).click();
-  await openBrowserWheel(page);
-  await clickWheelLabel(page, exactLabel('Full Catalog'));
+  await openFullCatalog(page);
   const card = page.locator('text=/^great icosahedron$/i').first();
   await card.scrollIntoViewIfNeeded();
   await card.click();
@@ -48,8 +46,7 @@ test('the great icosahedron stays reference only: it is not among the icosahedro
 
 test('a star polyhedron detail drawer shows Schläfli/density and has no Add to Scene button', async ({ page }) => {
   await page.getByRole('button', { name: /^Start over with/ }).click();
-  await openBrowserWheel(page);
-  await clickWheelLabel(page, exactLabel('Full Catalog'));
+  await openFullCatalog(page);
 
   const card = page.locator('text=/^great stellated dodecahedron$/i').first();
   await card.scrollIntoViewIfNeeded();
@@ -80,8 +77,7 @@ test('a star polyhedron detail drawer shows Schläfli/density and has no Add to 
  */
 test('the star polyhedron detail drawer is a real drag-rotatable 3D shape, not a static/auto-spin-only preview', async ({ page }) => {
   await page.getByRole('button', { name: /^Start over with/ }).click();
-  await openBrowserWheel(page);
-  await clickWheelLabel(page, exactLabel('Full Catalog'));
+  await openFullCatalog(page);
 
   const card = page.locator('text=/^great icosahedron$/i').first();
   await card.scrollIntoViewIfNeeded();
@@ -117,8 +113,7 @@ test('the star polyhedron detail drawer is a real drag-rotatable 3D shape, not a
  */
 test('a pentagram-faced star polyhedron has working Wireframe/Solid/Translucent mode toggles', async ({ page }) => {
   await page.getByRole('button', { name: /^Start over with/ }).click();
-  await openBrowserWheel(page);
-  await clickWheelLabel(page, exactLabel('Full Catalog'));
+  await openFullCatalog(page);
 
   const card = page.locator('text=/^small stellated dodecahedron$/i').first();
   await card.scrollIntoViewIfNeeded();

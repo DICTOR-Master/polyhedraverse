@@ -1,5 +1,5 @@
 import { test, expect } from './fixtures';
-import { getCanvasCenter, resetTo, findOnCanvas, openBrowserWheel, clickWheelLabel, exactLabel } from './utils';
+import { getCanvasCenter, resetTo, findOnCanvas, pickShape } from './utils';
 
 test.beforeEach(async ({ page }) => {
   await page.goto('/');
@@ -21,9 +21,7 @@ test('select a free vertex, attach a shape, twist it, and confirm', async ({ pag
   // family-grouped picker face-attach already used, via "Attach via
   // vertex…", unfiltered (any shape is a valid vertex-attach target).
   await page.getByRole('button', { name: 'Attach via vertex…' }).click();
-  await openBrowserWheel(page);
-  await clickWheelLabel(page, exactLabel('Deltahedra'));
-  await clickWheelLabel(page, 'D6');
+  await pickShape(page, 'D6');
   await expect(page.locator('text=/Placing D6/')).toBeVisible();
 
   // Drag to twist. The exact geometry (the connection point staying fixed
@@ -47,9 +45,7 @@ test('cancel removes the pending piece and frees the target vertex again', async
   expect(vertexHit).not.toBeNull();
 
   await page.getByRole('button', { name: 'Attach via vertex…' }).click();
-  await openBrowserWheel(page);
-  await clickWheelLabel(page, exactLabel('Deltahedra'));
-  await clickWheelLabel(page, 'D6');
+  await pickShape(page, 'D6');
   await expect(page.locator('text=/Placing D6/')).toBeVisible();
 
   await page.getByRole('button', { name: 'Cancel (Esc)' }).click();

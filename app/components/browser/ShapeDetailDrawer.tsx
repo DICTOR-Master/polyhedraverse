@@ -92,10 +92,6 @@ export default function ShapeDetailDrawer({
       >
         <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', padding: '10px 14px', flex: '0 0 auto' }}>
           <h2 style={{ color: '#a9f795', fontSize: 16, margin: 0 }}>{displayName}</h2>
-          {/* Favorite/Compare live here, not as a bottom-right canvas
-              overlay -- that corner is permanently claimed by the
-              always-on CornerHudWheel medallion (renders above this
-              dialog), so anything placed there would sit underneath it. */}
           <div style={{ display: 'flex', gap: 8, alignItems: 'center' }}>
             <button
               type="button"

@@ -17,8 +17,7 @@ export interface HomeScreenProps {
    *  Recent/Favorites shelves showed every shape regardless, the one
    *  corner of the picker that didn't narrow down to relevant options
    *  when a face was selected. Family tiles with zero compatible members
-   *  are hidden entirely (same convention PolyhedralWheel already uses
-   *  for its own family faces), and the two shelves are filtered down to
+   *  are hidden entirely, and the two shelves are filtered down to
    *  only compatible ids, same convention FullCatalogScreen/SearchScreen
    *  already use. */
   filterIds?: string[];

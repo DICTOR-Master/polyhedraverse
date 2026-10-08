@@ -1,5 +1,5 @@
 import { test, expect } from './fixtures';
-import { getCanvasCenter, resetTo, findOnCanvas, openBrowserWheel, clickWheelLabel, exactLabel } from './utils';
+import { getCanvasCenter, resetTo, findOnCanvas, pickShape } from './utils';
 
 /**
  * The assembly description moved from a permanent (if truncated) header
@@ -28,9 +28,7 @@ test('attaching a second piece shows the icon; tapping opens a closeable popover
   expect(vertexHit).not.toBeNull();
 
   await page.getByRole('button', { name: 'Attach via vertex…' }).click();
-  await openBrowserWheel(page);
-  await clickWheelLabel(page, exactLabel('Deltahedra'));
-  await clickWheelLabel(page, 'D6');
+  await pickShape(page, 'D6');
   await expect(page.locator('text=/Placing D6/')).toBeVisible();
   await page.getByRole('button', { name: 'Confirm' }).click();
 

@@ -1,5 +1,5 @@
 import { test, expect } from './fixtures';
-import { getCanvasCenter, resetTo, readTooltipAt, clickWheelLabel, openBrowserWheel, exactLabel, findOnCanvas, getSavedAssembly, setSavedAssembly } from './utils';
+import { getCanvasCenter, resetTo, readTooltipAt, findOnCanvas, getSavedAssembly, setSavedAssembly, pickShape } from './utils';
 
 test.beforeEach(async ({ page }) => {
   await page.goto('/');
@@ -23,9 +23,7 @@ test('selecting a CUBE face offers a matching face-attach, and confirming attach
   const attachBtn = page.getByRole('button', { name: 'Attach via face…' });
   await expect(attachBtn).toBeVisible();
   await attachBtn.click();
-  await openBrowserWheel(page);
-  await clickWheelLabel(page, 'Platonic');
-  await clickWheelLabel(page, 'CUBE');
+  await pickShape(page, 'CUBE');
 
   await expect(page.locator('text=/Placing CUBE/')).toBeVisible();
 
@@ -64,9 +62,7 @@ test('cancelling a face-attach frees the target face again', async ({ page }) =>
 
   await page.mouse.click(cx, cy);
   await page.getByRole('button', { name: 'Attach via face…' }).click();
-  await openBrowserWheel(page);
-  await clickWheelLabel(page, 'Platonic');
-  await clickWheelLabel(page, 'CUBE');
+  await pickShape(page, 'CUBE');
   await expect(page.locator('text=/Placing CUBE/')).toBeVisible();
 
   await page.getByRole('button', { name: 'Cancel (Esc)' }).click();
@@ -77,65 +73,18 @@ test('cancelling a face-attach frees the target face again', async ({ page }) =>
   expect(textAfter).toMatch(/attach via this 4-gon face/);
 });
 
-test('face-attaching a RHOMBIC_DODECAHEDRON face only offers Catalan, never a dead-end family', async ({ page }) => {
-  // Real user report: repeatedly hitting "Platonic" as an offered family
-  // when face-attaching onto an RD (rhombic dodecahedron) face, every
-  // time a guaranteed dead end (Platonic has zero shapes with a face
-  // congruent to RD's rhombus -- confirmed directly against the whole
-  // registry, not assumed) that had to be manually backed out of. Root
-  // cause: the wheel's family-selection screen never applied filterIds
-  // itself, only the shape-level screen one level in did, so every
-  // family stayed clickable regardless of whether it had any real match.
-  await resetTo(page, 'RHOMBIC_DODECAHEDRON');
-  const { cx, cy } = await getCanvasCenter(page);
-
-  await page.mouse.click(cx, cy);
-  await page.getByRole('button', { name: 'Attach via face…' }).click();
-  await openBrowserWheel(page);
-
-  // Platonic (and every other non-Catalan family) must not be offered at
-  // all -- not merely "offered but empty once you click in", genuinely
-  // absent as a clickable face.
-  await expect(page.locator('.pw-label-text', { hasText: exactLabel('Platonic') })).toHaveCount(0);
-  await expect(page.locator('.pw-label-text', { hasText: exactLabel('Archimedean') })).toHaveCount(0);
-  await expect(page.locator('.pw-label-text', { hasText: exactLabel('Johnson') })).toHaveCount(0);
-  await expect(page.locator('.pw-label-text', { hasText: exactLabel('Prisms') })).toHaveCount(0);
-  await expect(page.locator('.pw-label-text', { hasText: exactLabel('Antiprisms') })).toHaveCount(0);
-  await expect(page.locator('.pw-label-text', { hasText: exactLabel('Deltahedra') })).toHaveCount(0);
-
-  // Catalan IS offered, and drilling into it shows its FULL 13-member
-  // roster (a second real complaint: dropping incompatible shapes out
-  // of view entirely made the family look incomplete) -- but only RD
-  // itself (the one shape in the registry with a face congruent to RD's
-  // own rhombus) is actually clickable; everything else in the family
-  // is visible yet marked spare/non-selectable, not hidden.
-  await clickWheelLabel(page, exactLabel('Catalan'));
-
-  const rdEntry = page.locator('.pw-label', { has: page.locator('.pw-label-text', { hasText: /RHOMBIC DODECAHEDRON/ }) });
-  await expect(rdEntry).toBeVisible();
-  await expect(rdEntry).not.toHaveClass(/spare/);
-
-  const triakisTetEntry = page.locator('.pw-label', {
-    has: page.locator('.pw-label-text', { hasText: /TRIAKIS TETRAHEDRON/ }),
-  });
-  await expect(triakisTetEntry).toBeVisible();
-  await expect(triakisTetEntry).toHaveClass(/spare/);
-});
-
 /**
  * Real user request: "when attach a face is selected that relevant
- * options automatically appear across all groups." Following straight
- * from the dead-end-family bug fixed just above (the wheel's family
- * screen not applying filterIds) -- ShapeBrowser's own Home tab (family
+ * options automatically appear across all groups." ShapeBrowser's own Home tab (family
  * tiles + Recent/Favorites shelves) and Favorites tab had the identical
  * gap: filterIds was never threaded through to them at all, so a face-
  * attach in progress still showed every family and every favorited shape
  * regardless of whether it could ever actually attach. Checked here via
- * RHOMBIC_DODECAHEDRON, the same shape/family pairing as the test above:
+ * RHOMBIC_DODECAHEDRON, whose rhombus only Catalan shapes share:
  * only Catalan has a real match, and TRIAKIS_TETRAHEDRON (also Catalan,
  * but not congruent to RD's own rhombus) is a real non-match.
  */
-test('face-attaching onto an RD face filters Home and Favorites too, not just the wheel', async ({ page }) => {
+test('face-attaching onto an RD face filters Home and Favorites too', async ({ page }) => {
   // Favorite one compatible shape (RD itself) and one incompatible one
   // (TRIAKIS_TETRAHEDRON) via the plain, unfiltered 'reset' picker's
   // Search tab, before ever entering face-attach mode.
@@ -176,8 +125,9 @@ test('face-attaching onto an RD face filters Home and Favorites too, not just th
     await expect(browser.getByRole('button', { name: new RegExp(fam) })).toHaveCount(0);
   }
 
-  // Home tab's own Favorites shelf -- only the compatible favorite shows.
-  await expect(browser.locator('text=/^rhombic dodecahedron$/i')).toBeVisible();
+  // Home tab's own Favorites shelf -- only the compatible favorite shows (RD is in Recent too:
+  // resetTo opened its details).
+  await expect(browser.locator('text=/^rhombic dodecahedron$/i').first()).toBeVisible();
   await expect(browser.locator('text=/^triakis tetrahedron$/i')).toHaveCount(0);
 
   // Favorites tab -- same filtering, independently.
@@ -187,11 +137,7 @@ test('face-attaching onto an RD face filters Home and Favorites too, not just th
 });
 
 test('Miscellaneous pyramid: pointed lateral face offers no attach at all, regular base skips straight to filtered Full Catalog', async ({ page }) => {
-  // PYRAMID_SQUARE_G1 ("low" grade) isn't on the wheel yet (Miscellaneous
-  // has no wheel face -- FAMILY_FACE_SLOTS.MISCELLANEOUS is still []), so
-  // it can't be reached via resetTo()'s normal wheel navigation. Seed it
-  // directly through the same localStorage key Save/Load already use, then
-  // reload -- the app has no other UI path to this shape today.
+  // Seeded directly through the same localStorage key Save/Load use, then reloaded.
   await setSavedAssembly(page, {
     nodes: [{ id: 'a', shape: 'PYRAMID_SQUARE_G1', transform: { position: [0, 0, 0], quaternion: [0, 0, 0, 1] } }],
     connections: [],

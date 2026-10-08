@@ -6,10 +6,8 @@
  * drawer/Compare previews alike.
  *
  * Deliberately plain 2D <canvas> orthographic projection, NOT Three.js/
- * WebGL: no react-three-fiber exists in this project, and each of the
- * three existing 3D components (ShapeViewer, PolyhedralWheel,
- * CornerHudWheel) already stands up its own full THREE.Scene/
- * WebGLRenderer. A Search grid showing dozens of cards at once would need
+ * WebGL: no react-three-fiber exists in this project, and ShapeViewer
+ * already stands up its own full THREE.Scene/WebGLRenderer. A Search grid showing dozens of cards at once would need
  * dozens of simultaneous WebGL contexts, well past the ~8-16 concurrent
  * contexts most browsers allow. Previews are pure wireframes (no
  * lighting/materials needed), so a manual rotation-matrix + orthographic
@@ -23,13 +21,7 @@ import { useEffect, useRef, useState } from 'react';
 import { faceKind, faceKindCss, usesFaceKindColors } from '../../lib/faceKinds';
 import { getAnySpec } from '../../../krp-core/src/polyhedra/lookup.js';
 
-// Matches PolyhedralWheel's existing green identity (HUD_METAL_HEX /
-// SCRIPT_COLOR in PolyhedralWheel.tsx) so previews read as part of the same
-// visual system as the wheel/browser chrome. Note this is a different accent
-// from the corner HUD medallion itself (CornerHudWheel.tsx), which is
-// silver (HUD_SILVER_HEX) -- "HUD_METAL_HEX" here is a legacy name from
-// before that split, not a claim both are the same color. Phase 2's theme
-// system will make this swappable.
+// Polyhedraverse's green, so previews read as part of the browser chrome.
 const LINE_COLOR = '#47cc24';
 const LINE_COLOR_DIM = 'rgba(71, 204, 36, 0.35)';
 

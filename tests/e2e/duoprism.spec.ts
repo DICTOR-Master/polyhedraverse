@@ -1,5 +1,5 @@
 import { test, expect } from './fixtures';
-import { getCanvasCenter, resetTo, readTooltipAt, openBrowserWheel, clickWheelLabel, exactLabel, getSavedAssembly, setSavedAssembly } from './utils';
+import { getCanvasCenter, resetTo, readTooltipAt, getSavedAssembly, setSavedAssembly, openFullCatalog } from './utils';
 import type { Assembly } from '../../app/lib/assembly';
 
 test.beforeEach(async ({ page }) => {
@@ -37,7 +37,7 @@ test('a DODECAHEDRON face offers Duoprism self-attach with no picker step, and p
   const duoprismBtn = page.getByRole('button', { name: 'Attach via Duoprism…' });
   await expect(duoprismBtn).toBeVisible();
 
-  // No wheel/browser picker: clicking it goes straight to the pending
+  // No shape browser: clicking it goes straight to the pending
   // Confirm/Cancel state (there's no shape or registration choice to make).
   await duoprismBtn.click();
   await expect(page.locator('text=/Placing DODECAHEDRON via Duoprism/')).toBeVisible();
@@ -136,8 +136,7 @@ test('a non-4D-capable shape (RHOMBIC_DODECAHEDRON) never offers Duoprism self-a
  */
 test('View 4D is available on a non-FOURD-capable shape\'s detail drawer, showing the duoprism preview', async ({ page }) => {
   await page.getByRole('button', { name: /^Start over with/ }).click();
-  await openBrowserWheel(page);
-  await clickWheelLabel(page, exactLabel('Full Catalog'));
+  await openFullCatalog(page);
 
   const card = page.locator('text=/^cuboctahedron$/i').first();
   await card.scrollIntoViewIfNeeded();

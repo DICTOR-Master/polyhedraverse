@@ -18,7 +18,7 @@ import ShapePreviewCard from './ShapePreviewCard';
 export interface SearchScreenProps {
   lang: LangCode;
   /** When set, only these ids are selectable anywhere in the browser
-   *  (mirrors PolyhedralWheel's filterIds) -- e.g. face-attach mode. */
+   *  -- e.g. face-attach mode. */
   filterIds?: string[];
   /** Pre-seeded filter state, e.g. after tapping a family tile on Home. */
   initialFilters?: Partial<Filters>;

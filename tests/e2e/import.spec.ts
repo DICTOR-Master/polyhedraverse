@@ -1,5 +1,5 @@
 import { test, expect } from './fixtures';
-import { getCanvasCenter, resetTo, findOnCanvas, openBrowserWheel, clickWheelLabel, exactLabel, getSavedAssembly } from './utils';
+import { getCanvasCenter, resetTo, findOnCanvas, getSavedAssembly, pickShape } from './utils';
 import type { Page } from '@playwright/test';
 
 test.beforeEach(async ({ page }) => {
@@ -13,9 +13,7 @@ async function attachD6(page: Page) {
   const hit = await findOnCanvas(page, cx, cy, (t) => /^vertex \d+ — capacity \d+$/.test(t));
   expect(hit).not.toBeNull();
   await page.getByRole('button', { name: 'Attach via vertex…' }).click();
-  await openBrowserWheel(page);
-  await clickWheelLabel(page, exactLabel('Deltahedra'));
-  await clickWheelLabel(page, 'D6');
+  await pickShape(page, 'D6');
   await page.getByRole('button', { name: 'Confirm' }).click();
   await expect(page.locator('text=/Placing D6/')).toHaveCount(0);
 }

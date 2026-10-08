@@ -2,14 +2,9 @@
 
 /**
  * Full Catalog -- a single scrollable page showing every shape in the
- * registry, grouped into real family SECTIONS (not the wheel's one-
- * face-at-a-time pagination). Real user feedback: selecting "Full
- * Catalog" from the wheel used to just page through all 137 shapes one
- * wheel-face at a time ("not just go round the wheel itself almost
- * anonymously") -- this is the actual "full page of all images in
- * sections" that was expected instead. The wheel's Full Catalog face
- * now triggers this screen directly (see PolyhedralWheel's onSelectAll)
- * rather than drilling into its own pagination.
+ * registry, grouped into real family SECTIONS: the "full page of all
+ * images in sections" DICTO asked for. Opened from the shape browser's
+ * Full Catalog button.
  *
  * A shape belonging to more than one family (e.g. D4: Deltahedra AND
  * Platonic) legitimately appears in more than one section here -- same
@@ -38,8 +33,7 @@ export interface FullCatalogScreenProps {
   lang: LangCode;
   /** Mirrors every other screen's filterIds -- incompatible shapes are
    *  left out of each section entirely, same convention SearchScreen
-   *  already uses (rather than the wheel's own newer "show but dim"
-   *  convention), so a family with zero compatible members here just
+   *  already uses, so a family with zero compatible members here just
    *  shows an empty section rather than a jarring dimmed grid. */
   filterIds?: string[];
   /** Face-attach: the selected shape's complementary pieces (Space-
@@ -47,9 +41,8 @@ export interface FullCatalogScreenProps {
    *  listed first above every family (direct request 2026-09-30). */
   partnerIds?: string[];
   /**
-   * Real user request ("group by group summoning from wheel"): a
-   * family's own "View all" wheel face, or the wheel's dedicated Star
-   * Polyhedra face, opens THIS screen already scrolled to that one
+   * Real user request ("group by group summoning"): a family's tile
+   * opens THIS screen already scrolled to that one
    * section rather than landing at the top and making the user scroll
    * down themselves. This screen remounts fresh every time it's opened
    * (see ShapeBrowser's own `showFullCatalog` conditional render), so a

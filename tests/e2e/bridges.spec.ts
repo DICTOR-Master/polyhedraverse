@@ -1,5 +1,5 @@
 import { test, expect } from './fixtures';
-import { openBrowserWheel, clickWheelLabel, exactLabel } from './utils';
+import { openFullCatalog } from './utils';
 
 test.beforeEach(async ({ page }) => {
   await page.goto('/');
@@ -10,8 +10,7 @@ test.beforeEach(async ({ page }) => {
 // type, and each member's details say which higher polytope it bridges to.
 test('3D+ Bridges shows its four sections and the rhombic icosahedron\'s bridge', async ({ page }) => {
   await page.getByRole('button', { name: /^Start over with/ }).click();
-  await openBrowserWheel(page);
-  await clickWheelLabel(page, exactLabel('Full Catalog'));
+  await openFullCatalog(page);
   for (const sec of ['cells', 'shadows', 'slices', 'corners']) {
     await expect(page.locator(`[data-testid="bridge-section-${sec}"]`)).toHaveCount(1);
   }
@@ -24,7 +23,7 @@ test('3D+ Bridges shows its four sections and the rhombic icosahedron\'s bridge'
 // Direct report 2026-09-30 ("cant make out four sections"): the Home
 // screen's 3D+ Bridges card opens the Full Catalog at its sections.
 test('the 3D+ Bridges family card opens its four sections', async ({ page }) => {
-  await page.evaluate(() => (document.querySelector('[data-testid="corner-hud-wheel"]') as unknown as { __hudTriggerAction: (i: number) => void }).__hudTriggerAction(1));
+  await page.locator('[data-testid="tools-column"]').getByRole('button', { name: 'Shape browser' }).click();
   await page.getByRole('button', { name: /3D\+ Bridges/ }).first().click();
   for (const sec of ['cells', 'shadows', 'slices', 'corners']) {
     await expect(page.locator(`[data-testid="bridge-section-${sec}"]`)).toHaveCount(1);

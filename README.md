@@ -104,7 +104,7 @@ direction, not yet delivered.
   name; and the thick and thin Penrose rhombus prisms of the layered 5D
   tiling) and Miscellaneous (graded pyramids, RVCMG connector pieces, prism
   extenders, the rhombohedron and the elongated dodecahedron). Browse them
-  on the 3D shape wheel or in the Full Catalog, which also shows the **4
+  in the shape browser or its Full Catalog, which also shows the **4
   Kepler–Poinsot star polyhedra** to look at.
 - **Build by attaching** — join shapes face to face or vertex to vertex,
   with twist; a running name describes what you've built, and recognises

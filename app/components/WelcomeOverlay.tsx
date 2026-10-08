@@ -12,9 +12,7 @@
  * carries. Modeled directly on Rhombiverse's src/app/welcome.js (rotating
  * RD logo, static ENTER, "don't show again", persistent "About" reopen),
  * adapted to this project's green/black identity and React conventions
- * instead of ported wholesale -- see [[polyhedraverse-wheel]] memory for
- * why a straight port isn't always the right call, and this component for
- * where it genuinely is (the mechanic, not the RD-specific visuals).
+ * instead of ported wholesale (the mechanic, not the RD-specific visuals).
  */
 
 import { useCallback, useEffect } from 'react';

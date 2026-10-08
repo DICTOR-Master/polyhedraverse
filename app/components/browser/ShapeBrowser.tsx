@@ -4,20 +4,14 @@
  * ShapeBrowser -- the karaoke-box-style ("Joysound"-inspired) home/picker
  * for choosing a shape, replacing the flat "Start over with…" button row
  * and becoming the default entry point (Tab/Space, "Start over with…",
- * "Attach via face…") while PolyhedralWheel and CornerHudWheel stay
- * exactly as they are: CornerHudWheel keeps opening the literal 3D wheel
- * directly (see app/page.tsx), and this component's own "Spin the Wheel"
- * affordance renders that same real PolyhedralWheel in place, sharing its
- * existing {open,onClose,filterIds,onSelect} contract unmodified.
+ * "Attach via face…", the tools column's ◈).
  *
  * Progressive disclosure by construction: exactly one of four tab screens
  * (Home/Search/Scene/Favorites) is mounted at a time, plus at most one
- * overlay-within-overlay (the shape detail drawer, the wheel, or
- * Compare) -- never a single dashboard showing everything at once.
+ * overlay-within-overlay (the shape detail drawer or Compare) -- never a single dashboard showing everything at once.
  */
 
 import { useState } from 'react';
-import PolyhedralWheel from '../PolyhedralWheel';
 import { usePrefs } from '../../lib/prefs';
 import { t, LANG_ORDER, LANG_META, type LangCode } from '../../lib/i18n';
 import { type FamilyKey } from '../../../krp-core/src/polyhedra/families.js';
@@ -38,46 +32,19 @@ export type BrowserTab = 'home' | 'search' | 'scene' | 'favorites';
 export interface ShapeBrowserProps {
   open: boolean;
   onClose: () => void;
-  /** Mirrors PolyhedralWheelProps.filterIds exactly -- when set, only
+  /** When set, only
    *  these ids are selectable anywhere in the browser (e.g. face-attach). */
   filterIds?: string[];
   /** Face-attach: the selected shape's pair partners that fit, shown
    *  first in the Full Catalog. */
   partnerIds?: string[];
-  /** Fired once a shape is chosen for the current intent -- same single
-   *  callback contract as PolyhedralWheel's onSelect. */
+  /** Fired once a shape is chosen for the current intent. */
   onSelect: (shapeId: string) => void;
   /** A 4D polytope's Build: start RCP-C2B from this seed cell towards this target. */
   onBuildPolytope?: (seed: string, target: string) => void;
   /** Phase 2: live scene summary. Undefined in Phase 1 (Scene tab shows
    *  an empty-state placeholder). */
   assemblySummary?: AssemblySummary;
-  /**
-   * Bumped (any change in value, e.g. an incrementing counter) by a
-   * PARENT-level PolyhedralWheel's own onSelectAll/onSelectStarPolyhedra/
-   * onSelectFamilyGrid (page.tsx's direct corner-HUD wheel, not this
-   * component's own embedded one) to request FullCatalogScreen open
-   * externally. This component stays mounted with `open` toggling
-   * false/true rather than unmounting, so a plain initial-state seed
-   * wouldn't fire on a later request -- compared against a state-tracked
-   * previous value during render instead (see this component's own
-   * body). Omit when there's no such external wheel (this component's
-   * own embedded wheel needs no round-trip, it just flips local state
-   * directly).
-   */
-  fullCatalogRequestId?: number;
-  /** Paired with fullCatalogRequestId -- which section (if any) the
-   *  parent-level wheel's request should land scrolled to. Read at the
-   *  same moment fullCatalogRequestId is detected to have changed. */
-  fullCatalogFocusSection?: FamilyKey | 'STAR';
-  /**
-   * Bumped by a PARENT-level PolyhedralWheel's own onSelectSearch (see
-   * fullCatalogRequestId's own doc comment for why a counter, not a
-   * boolean) -- switches this browser to its own Search tab. This
-   * component's own embedded wheel needs no such round-trip, it just
-   * flips local state directly.
-   */
-  searchRequestId?: number;
 }
 
 const TABS: BrowserTab[] = ['home', 'search', 'scene', 'favorites'];
@@ -96,9 +63,6 @@ export default function ShapeBrowser({
   onSelect,
   onBuildPolytope,
   assemblySummary,
-  fullCatalogRequestId,
-  fullCatalogFocusSection,
-  searchRequestId,
 }: ShapeBrowserProps) {
   const { favorites, recents, language, toggleFavorite, recordViewed, setLanguage } = usePrefs();
   const [tab, setTab] = useState<BrowserTab>('home');
@@ -106,40 +70,9 @@ export default function ShapeBrowser({
   const [selectedShapeId, setSelectedShapeId] = useState<string | null>(null);
   const [compareIds, setCompareIds] = useState<string[]>([]);
   const [showCompare, setShowCompare] = useState(false);
-  const [showWheel, setShowWheel] = useState(false);
   const [showFullCatalog, setShowFullCatalog] = useState(false);
   const [focusSection, setFocusSection] = useState<FamilyKey | 'STAR' | undefined>(undefined);
   const [langMenuOpen, setLangMenuOpen] = useState(false);
-
-  // External request from a PARENT-level wheel (see fullCatalogRequestId's
-  // own doc comment) -- this component's own embedded wheel below just
-  // sets showFullCatalog directly, no round-trip needed. Adjusted during
-  // RENDER against a state-tracked previous prop value (React's own
-  // recommended "derive state from a prop change" pattern), not inside
-  // a useEffect -- a ref read/write during render isn't safe under
-  // concurrent rendering, and setState directly in an effect body
-  // triggers an extra, avoidable cascading render for no benefit here
-  // (same pattern PolyhedralWheel.tsx's own `prevOpen` comparison uses).
-  const [prevFullCatalogRequestId, setPrevFullCatalogRequestId] = useState(fullCatalogRequestId);
-  if (fullCatalogRequestId !== prevFullCatalogRequestId) {
-    setPrevFullCatalogRequestId(fullCatalogRequestId);
-    if (fullCatalogRequestId) {
-      setShowFullCatalog(true);
-      setFocusSection(fullCatalogFocusSection);
-    }
-  }
-
-  // Same external-request pattern as fullCatalogRequestId, for the
-  // direct wheel's own Search face.
-  const [prevSearchRequestId, setPrevSearchRequestId] = useState(searchRequestId);
-  if (searchRequestId !== prevSearchRequestId) {
-    setPrevSearchRequestId(searchRequestId);
-    if (searchRequestId) {
-      setShowFullCatalog(false);
-      setSearchSeed(undefined);
-      setTab('search');
-    }
-  }
 
   // Real user complaint (2026-09-15): opening the browser in face-attach
   // mode (filterIds set) used to always land on the plain Home screen --
@@ -244,10 +177,14 @@ export default function ShapeBrowser({
           )}
           <button
             type="button"
-            onClick={() => setShowWheel(true)}
-            style={{ background: 'none', border: '1px solid rgba(71,204,36,.3)', color: '#5ee233', borderRadius: 7, padding: '5px 12px', fontSize: 11, cursor: 'pointer' }}
+            onClick={() => {
+              setFocusSection(undefined);
+              setShowFullCatalog(true);
+            }}
+            aria-pressed={showFullCatalog}
+            style={{ background: showFullCatalog ? 'rgba(71,204,36,.18)' : 'none', border: '1px solid rgba(71,204,36,.3)', color: '#5ee233', borderRadius: 7, padding: '5px 12px', fontSize: 11, cursor: 'pointer' }}
           >
-            {t('wheel.spin', lang)}
+            {t('catalog.full', lang)}
           </button>
           <button
             type="button"
@@ -392,22 +329,6 @@ export default function ShapeBrowser({
         style={{
           display: 'flex',
           borderTop: '1px solid rgba(71,204,36,.16)',
-          // Real bug found live (Playwright pointer-interception, not
-          // eyeballed): CornerHudWheel is a fixed, always-on-top
-          // (zIndex 999, above this nav's own 985) 160px medallion
-          // anchored bottom-right:16 -- deliberately NOT covered by
-          // anything else here (see its own header comment on why it's
-          // bottom-right at all), but nothing had reserved that corner
-          // FROM this side either. At normal viewport widths the
-          // rightmost tab (Favorites, in a 4-way flex:1 row spanning the
-          // full width) has its own clickable center sitting directly
-          // under the medallion, silently swallowing the tap. Same class
-          // of bug as the star-polyhedra detail drawer's own bottom-right
-          // Favorite/Compare buttons, fixed the same way: reserve the
-          // medallion's real footprint (160 + its own 16 margin) so nav
-          // content never extends into that corner, rather than raising
-          // z-index further (the medallion must stay clickable itself).
-          paddingRight: 176,
         }}
       >
         {TABS.map((tb) => (
@@ -435,31 +356,6 @@ export default function ShapeBrowser({
         ))}
       </nav>
 
-      <PolyhedralWheel
-        open={showWheel}
-        onClose={() => setShowWheel(false)}
-        filterIds={filterIds}
-        onSelect={(id) => {
-          setShowWheel(false);
-          commitSelection(id);
-        }}
-        onSelectAll={() => {
-          setShowWheel(false);
-          setFocusSection(undefined);
-          setShowFullCatalog(true);
-        }}
-        onSelectFamilyGrid={(familyKey) => {
-          setShowWheel(false);
-          setFocusSection(familyKey);
-          setShowFullCatalog(true);
-        }}
-        onSelectSearch={() => {
-          setShowWheel(false);
-          setShowFullCatalog(false);
-          setSearchSeed(undefined);
-          setTab('search');
-        }}
-      />
     </div>
   );
 }

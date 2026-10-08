@@ -80,6 +80,7 @@ export default function ShapePreviewCard({
         position: 'relative',
       }}
       onClick={() => onOpen(specId)}
+      data-spec-id={specId}
       role="button"
       tabIndex={0}
       onKeyDown={(e) => {

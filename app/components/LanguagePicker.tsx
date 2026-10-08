@@ -2,7 +2,7 @@
 
 /**
  * 🌐 + each language's own name. Writes the same language preference as
- * the corner wheel's language face, so every place stays in step.
+ * the tools column's 🌐, so every place stays in step.
  * `value` / `onChange` override the preference (the /guide pages use
  * that to follow their URL instead).
  */

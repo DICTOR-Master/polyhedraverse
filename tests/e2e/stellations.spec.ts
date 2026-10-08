@@ -9,7 +9,7 @@ test.beforeEach(async ({ page }) => {
 // Stellations (direct decisions 2026-09-30): face pieces for the Platonic
 // and Catalan solids, in one Full Catalog section per solid.
 test('the Stellations card opens one section per stellated solid', async ({ page }) => {
-  await page.evaluate(() => (document.querySelector('[data-testid="corner-hud-wheel"]') as unknown as { __hudTriggerAction: (i: number) => void }).__hudTriggerAction(1));
+  await page.locator('[data-testid="tools-column"]').getByRole('button', { name: 'Shape browser' }).click();
   await page.getByRole('button', { name: /^✦?\s*Stellations/ }).first().click();
   await expect(page.locator('[data-testid^="stellation-section-"]')).toHaveCount(18);
   await expect(page.locator('[data-testid="stellation-section-D4"]')).toBeInViewport();

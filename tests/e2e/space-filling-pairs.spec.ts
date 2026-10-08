@@ -1,5 +1,5 @@
 import { test, expect } from './fixtures';
-import { openBrowserWheel, clickWheelLabel, exactLabel } from './utils';
+import { openFullCatalog } from './utils';
 
 test.beforeEach(async ({ page }) => {
   await page.goto('/');
@@ -17,8 +17,7 @@ test.beforeEach(async ({ page }) => {
  */
 test('Full Catalog shows Space-Filling Pairs as 9 named pair rows', async ({ page }) => {
   await page.getByRole('button', { name: /^Start over with/ }).click();
-  await openBrowserWheel(page);
-  await clickWheelLabel(page, exactLabel('Full Catalog'));
+  await openFullCatalog(page);
   const rows = page.locator('[data-testid="space-filling-pair"]');
   await expect(rows).toHaveCount(9);
   await expect(rows.filter({ hasText: 'Stella–Jewel Lattice' })).toHaveCount(1);
@@ -34,8 +33,7 @@ test('Full Catalog shows Space-Filling Pairs as 9 named pair rows', async ({ pag
 // already sits beside it.
 test('pair pieces show gold partner minis, except in the pair rows', async ({ page }) => {
   await page.getByRole('button', { name: /^Start over with/ }).click();
-  await openBrowserWheel(page);
-  await clickWheelLabel(page, exactLabel('Full Catalog'));
+  await openFullCatalog(page);
   await expect(page.locator('[data-testid="space-filling-pair"] [data-testid="pair-minis"]')).toHaveCount(0);
   const octa = page.locator('[data-testid="pair-minis"][title*="tetrahedron, cuboctahedron, truncated cube"]').first();
   await octa.scrollIntoViewIfNeeded();

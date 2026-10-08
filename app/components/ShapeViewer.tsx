@@ -514,7 +514,7 @@ function buildPlacedShape(spec: PolyhedronSpec, nodeId: string): PlacedShape {
     // overwrite this regardless -- see its own comment for why side is
     // mode-dependent, not a fixed DoubleSide).
     // Matches the brand green used consistently everywhere else (logo,
-    // PolyhedralWheel, CornerHudWheel, WelcomeOverlay, header) instead of
+    // shape browser, WelcomeOverlay, header) instead of
     // a leftover generic blue -- applies uniformly across every view
     // mode (Solid/Translucent/Inside) since applyViewMode only ever
     // touches opacity/side/depthWrite, never the base color itself.

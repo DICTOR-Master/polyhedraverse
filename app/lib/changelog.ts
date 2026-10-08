@@ -17,6 +17,7 @@ export const CHANGELOG: ChangelogDay[] = [
   {
     date: '2026-10-08',
     entries: [
+      'New: the tools column, top right, as in Kaleidohedra and Rhombiverse: the shape browser, projection (3D, parallel, isometric), About and language. It replaces the corner wheel and the shape wheel. The shape browser\'s new Full Catalog button opens every shape in its family sections, the star polyhedra included.',
       'New: the Dogstar\'s details show its Record, its ID in the geometry shared by Polyhedraverse, Kaleidohedra and Rhombiverse (krp-core), its status and its credit. The Dogstar here is now that shared object itself, the same one the other two apps show.',
       'New in Space-Filling Pairs: the Sunstar Lattice pair, from Kaleidohedra. The Dogstar is the hole regular dodecahedra leave in their densest packing, an 8-pointed star with only golden edges and volume exactly φ/2; the dodecahedron beside it is seamed where Dogstars meet it, so every Dogstar face attaches. Attach 6 Dogstars to its faces to build a Sunstar, the sun with its sun dogs.',
       'New in Space-Filling Pairs: DICTO\'s Dragon Jewel and the stella octangula, from Kaleidohedra\'s Stella–Jewel Lattice. Alternated like a checkerboard they fill space exactly. Every face attaches to its partner, and the Dragon Jewel\'s 12 windows are Penrose thick rhombi of edge 1, so they also take the thick rhombus prism, DICTO\'s leaning hexagonal prism and its blocks, and the skewed RD.',

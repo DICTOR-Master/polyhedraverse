@@ -1,86 +1,23 @@
-import type { Page } from '@playwright/test';
 import { test, expect } from './fixtures';
-import { getCanvasCenter, resetTo, findOnCanvas, WHEEL_FAMILIES, clickWheelLabel, CONTENT_FACES_PER_PAGE, PAGED_CONTENT_PER_PAGE, openBrowserWheel, exactLabel } from './utils';
-
-/**
- * A navigating click's onSelect fires after a setTimeout(0), so reading
- * .pw-label-text in the same tick can catch the wheel mid-transition.
- * Polls until two reads 80ms apart agree, rather than trusting a single
- * immediate snapshot or a fixed sleep -- defense in depth alongside the
- * real fix for the flake this originally caught (clickWheelLabel double-
- * clicking "More" -- see utils.ts).
- */
-async function stableLabelTexts(page: Page): Promise<string[]> {
-  let prev = await page.locator('.pw-label-text').allTextContents();
-  const deadline = Date.now() + 2000;
-  while (Date.now() < deadline) {
-    await page.waitForTimeout(80);
-    const next = await page.locator('.pw-label-text').allTextContents();
-    if (next.length === prev.length && next.every((t, i) => t === prev[i])) return next;
-    prev = next;
-  }
-  return prev;
-}
+import { getCanvasCenter, resetTo, findOnCanvas, openFullCatalog } from './utils';
+import { FAMILY_ORDER, FAMILY_META, familyIds } from '../../krp-core/src/polyhedra/families.js';
 
 test.beforeEach(async ({ page }) => {
   await page.goto('/');
   await page.waitForTimeout(500);
 });
 
-test('renders the canvas and every shape in every family that has a wheel face', async ({ page }) => {
-  // Scoped to <main> -- CornerHudWheel mounts its own small canvas too.
+test('renders the canvas, and every shape of every family has its card in the Full Catalog', async ({ page }) => {
   await expect(page.getByRole('main').locator('canvas')).toBeVisible();
 
   await page.getByRole('button', { name: /^Start over with/ }).click();
-  await openBrowserWheel(page);
-  // 4D Polytopes and Miscellaneous deliberately claim no wheel face
-  // (PolyhedralWheel.tsx's FAMILY_FACE_SLOTS): both are reachable via the
-  // Full Catalog and search, just not wheel-navigable, so both are left
-  // out of this "every family is a wheel face" check. 4D Polytopes holds
-  // polytopes, not shapes (4d-polytopes.spec
-  // covers them); Miscellaneous's shapes have no wheel path to check.
-  // Parallelohedra, Space-Filling Pairs and Stellations claim no wheel
-  // face either (FAMILY_FACE_SLOTS), for the same reason.
-  const NO_WHEEL_FACE = ['4D Polytopes', '3D+ Bridges', 'Miscellaneous', 'Parallelohedra', 'Space-Filling Pairs', 'Aperiodic Sets', 'Stellations'];
-  for (const family of WHEEL_FAMILIES.filter((f) => !NO_WHEEL_FACE.includes(f.label))) {
-    // Exact match, not substring -- "Prisms" is a substring of "Antiprisms"
-    // now that both are separate families, so a plain hasText: family.label
-    // would match both faces' labels at once. See exactLabel()'s doc comment.
-    //
-    // >=1, not exactly 1: PolyhedralWheel.tsx's own family-face assignment
-    // now clones some families (Deltahedra/Platonic/Johnson) onto their
-    // own antipodal face too, to fill the wheel's otherwise-half-empty
-    // first view -- see its resolveSlots comment for the full layout.
-    // This test only actually cares that the family is reachable at all,
-    // not the exact face count, which is a layout detail free to change.
-    const familyFaceCount = await page.locator('.pw-label-text', { hasText: exactLabel(family.label) }).count();
-    expect(familyFaceCount, `${family.label} should have at least one wheel face`).toBeGreaterThanOrEqual(1);
-
-    await clickWheelLabel(page, exactLabel(family.label));
-    // Existence in the DOM (not visibility -- that depends on which way
-    // the wheel currently faces) is what this test cares about: every
-    // registered shape actually reached the picker as a real face, paging
-    // through "More" for families that overflow a single 12-face wheel.
-    const pages = family.ids.length > CONTENT_FACES_PER_PAGE ? Math.ceil(family.ids.length / PAGED_CONTENT_PER_PAGE) : 1;
-    const seen = new Set<string>();
-    for (let p = 0; p < pages; p++) {
-      const texts = await stableLabelTexts(page);
-      texts.forEach((t) => seen.add(t));
-      if (p < pages - 1) await clickWheelLabel(page, 'More');
-    }
-    for (const id of family.ids) {
-      // Label text is "[catalog number] NAME" (e.g. "[1] D4"), not the
-      // bare name -- checking "some label ends with this id's text"
-      // rather than an exact match keeps this test agnostic to that
-      // catalog-number prefix's exact formatting.
-      const wantSuffix = id.replaceAll('_', ' ');
-      const found = [...seen].some((t) => t.endsWith(wantSuffix));
-      expect(found, `${family.label} family should list ${id}`).toBe(true);
-    }
-
-    await page.keyboard.press('Escape'); // back to the family list
+  await openFullCatalog(page);
+  const seen = new Set(await page.locator('[data-spec-id]').evaluateAll((els) => els.map((el) => el.getAttribute('data-spec-id'))));
+  // 4D Polytopes holds polytopes, not shapes (4d-polytopes.spec covers them); Space-Filling Pairs
+  // lists pairs of shapes that have their own cards in their own families.
+  for (const key of FAMILY_ORDER.filter((k) => k !== 'POLYTOPES_4D' && k !== 'SPACE_FILLING_PAIRS')) {
+    for (const id of familyIds(key)) expect(seen.has(id), `${FAMILY_META[key].label} should list ${id}`).toBe(true);
   }
-  await page.keyboard.press('Escape'); // close the wheel
 });
 
 test('"Start over" resets to a single fresh shape with no selection', async ({ page }) => {

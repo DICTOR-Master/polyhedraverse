@@ -9,7 +9,7 @@ test.beforeEach(async ({ page }) => {
 // in symmetry sections; Build places the seed cell and starts RCP-C2B with
 // that polytope already chosen, no picker.
 test('4D Polytopes shows the six by symmetry, and Build starts the 24-cell from an octahedron', async ({ page }) => {
-  await page.evaluate(() => (document.querySelector('[data-testid="corner-hud-wheel"]') as unknown as { __hudTriggerAction: (i: number) => void }).__hudTriggerAction(1));
+  await page.locator('[data-testid="tools-column"]').getByRole('button', { name: 'Shape browser' }).click();
   await page.getByRole('button', { name: /4D Polytopes/ }).first().click();
   for (const group of ['A4', 'B4', 'F4', 'H4']) await expect(page.locator(`[data-testid="polytope-section-${group}"]`)).toHaveCount(1);
   await expect(page.locator('[data-testid^="polytope-card-"]')).toHaveCount(6);
@@ -36,7 +36,7 @@ test('4D Polytopes shows the six by symmetry, and Build starts the 24-cell from 
 });
 
 test('the 600-cell offers a vertex-first build too', async ({ page }) => {
-  await page.evaluate(() => (document.querySelector('[data-testid="corner-hud-wheel"]') as unknown as { __hudTriggerAction: (i: number) => void }).__hudTriggerAction(1));
+  await page.locator('[data-testid="tools-column"]').getByRole('button', { name: 'Shape browser' }).click();
   await page.getByRole('button', { name: /4D Polytopes/ }).first().click();
   const card = page.locator('[data-testid="polytope-card-POLYTOPE_600_CELL"]');
   await card.scrollIntoViewIfNeeded();

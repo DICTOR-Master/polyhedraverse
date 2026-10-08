@@ -1,21 +1,18 @@
 'use client';
 
 import { useEffect, useRef, useState, useSyncExternalStore, useCallback } from 'react';
-import { usePrefs } from './lib/prefs';
-import { t } from './lib/i18n';
 import type { ProjectionMode } from './components/ShapeViewer';
 import dynamic from 'next/dynamic';
 import { POLYHEDRON_IDS } from '../krp-core/src/polyhedra/index.js';
 import type { NodeSelection, ShapeSelection, ShapeViewerHandle, ViewMode } from './components/ShapeViewer';
-import PolyhedralWheel from './components/PolyhedralWheel';
-import CornerHudWheel from './components/CornerHudWheel';
+import ToolsColumn from './components/ToolsColumn';
 import ShapeBrowser from './components/browser/ShapeBrowser';
 import WelcomeOverlay from './components/WelcomeOverlay';
 import GuideOverlay from './components/GuideOverlay';
 import ChangelogOverlay from './components/ChangelogOverlay';
 import AssemblyDescriptionPopover from './components/AssemblyDescriptionPopover';
 import GoldenHelperBar from './components/GoldenHelperBar';
-import { FAMILY_META, FAMILY_ORDER, pairPartners, type FamilyKey } from '../krp-core/src/polyhedra/families.js';
+import { FAMILY_META, FAMILY_ORDER, pairPartners } from '../krp-core/src/polyhedra/families.js';
 import { GOLDEN_BUILDS, goldenZonohedron } from './lib/goldenBuilds';
 import { COLOR_MODES, COLOR_MODE_LABELS, DEFAULT_COLOR_PREFS, FAMILY_COLORS, PIECE_COLORS, PIECE_COLOR_LABELS, loadColorPrefs, saveColorPrefs, type ColorPrefs, type PieceColorKey } from './lib/pieceColors';
 
@@ -51,7 +48,6 @@ export default function Home() {
   const saveStatusResetRef = useRef<ReturnType<typeof setTimeout> | null>(null);
   const [fileMenuOpen, setFileMenuOpen] = useState(false);
   const [projection, setProjection] = useState<ProjectionMode>('perspective');
-  const { language: lang } = usePrefs();
   const fileMenuRef = useRef<HTMLDivElement | null>(null);
   const [colorPrefs, setColorPrefsState] = useState<ColorPrefs>(DEFAULT_COLOR_PREFS);
   const [colorMenuOpen, setColorMenuOpen] = useState(false);
@@ -74,33 +70,11 @@ export default function Home() {
   const [descriptionOpen, setDescriptionOpen] = useState(false);
   const [descriptionAnchor, setDescriptionAnchor] = useState<{ x: number; y: number } | null>(null);
   const [canUndo, setCanUndo] = useState(false);
-  // Bumped whenever the DIRECT wheel (below, opened via CornerHudWheel's
-  // medallion) picks "Full Catalog" -- see ShapeBrowser's own
-  // fullCatalogRequestId doc comment for why a plain boolean/counter
-  // seed wouldn't fire on a second request once ShapeBrowser is already
-  // mounted. The embedded wheel INSIDE ShapeBrowser needs no such
-  // round-trip, it flips its own local state directly.
-  const [fullCatalogRequestId, setFullCatalogRequestId] = useState(0);
-  // Paired with fullCatalogRequestId -- which section (if any) the
-  // direct wheel's Full Catalog/Star Polyhedra/family "View all" face
-  // should land scrolled to. See ShapeBrowser's own
-  // fullCatalogFocusSection doc comment.
-  const [fullCatalogFocusSection, setFullCatalogFocusSection] = useState<FamilyKey | 'STAR' | undefined>(undefined);
-  // Bumped whenever the DIRECT wheel picks "Search" -- same pattern as
-  // fullCatalogRequestId, see ShapeBrowser's own searchRequestId doc
-  // comment.
-  const [searchRequestId, setSearchRequestId] = useState(0);
   const [saveStatus, setSaveStatus] = useState<SaveStatus>('idle');
   const [viewMode, setViewModeState] = useState<ViewMode>('normal');
-  // wheelOpen now drives ONLY the literal 3D PolyhedralWheel, opened
-  // directly via CornerHudWheel's medallion -- a fast, unchanged shortcut
-  // for anyone who wants the wheel itself rather than the browser.
-  const [wheelOpen, setWheelOpen] = useState(false);
   // browserOpen drives the karaoke-style ShapeBrowser, which is now the
   // DEFAULT entry point for picking a shape (Tab/Space, "Start over
-  // with…", "Attach via face…"). The browser has its own internal "Spin
-  // the Wheel" affordance that renders this same PolyhedralWheel in
-  // place, sharing the identical onSelect contract below.
+  // with…", "Attach via face…", the tools column's ◈).
   const [browserOpenState, setBrowserOpenState] = useState(false);
   // From DICTO the browser starts open, until it is first closed.
   const [dictoBrowserDone, setDictoBrowserDone] = useState(false);
@@ -114,12 +88,12 @@ export default function Home() {
   // own mode so onSelect below knows to call beginAttach() instead of
   // reset(). Each is set only when opened via that specific trigger, so
   // it's naturally gone the next time the picker opens from anywhere
-  // else. Shared by both the wheel and the browser.
+  // else.
   //
   // The old 4D fold (and its slider) is retired: nothing creates folds,
   // and old saves' fold connections load as plain face attaches (see
   // assembly.ts's migrateLegacyAssembly).
-  const [wheelMode, setWheelMode] = useState<'reset' | 'faceAttach' | 'vertexAttach'>('reset');
+  const [pickMode, setPickMode] = useState<'reset' | 'faceAttach' | 'vertexAttach'>('reset');
   // RCP-C2B (Radial Cell Projection, click-to-build), the 4D
   // folding-construction feature: rcpPickerOpen shows the
   // small inline "which closure?" choice for a seed with more than one
@@ -166,7 +140,7 @@ export default function Home() {
 
   // Welcome overlay: shown on every visit (direct decision 2026-09-25 --
   // the "Don't show this again" opt-out was removed), reopenable anytime
-  // via About on the corner wheel. dismissedThisSession hides it for the
+  // via the tools column's ℹ. dismissedThisSession hides it for the
   // rest of the visit once entered. The only bypass is the e2e suite's own
   // window flag (tests/e2e/fixtures.ts), set before any page script runs --
   // read via useSyncExternalStore so the server render (always "show")
@@ -194,7 +168,7 @@ export default function Home() {
   };
 
   const openPicker = (mode: 'reset' | 'faceAttach' | 'vertexAttach') => {
-    setWheelMode(mode);
+    setPickMode(mode);
     setBrowserOpenState(true);
   };
   useEffect(() => {
@@ -204,14 +178,9 @@ export default function Home() {
     url.searchParams.delete('from');
     window.history.replaceState(null, '', url);
   }, [fromDicto]);
-  const openWheelDirectly = () => {
-    setWheelMode('reset');
-    setWheelOpen(true);
-  };
-
   useEffect(() => {
     const onKeyDown = (e: KeyboardEvent) => {
-      if (wheelOpen || browserOpen || welcomeOpen) return;
+      if (browserOpen || welcomeOpen) return;
       const target = e.target as HTMLElement | null;
       if (target && ['INPUT', 'TEXTAREA'].includes(target.tagName)) return;
       if (e.key === 'Tab' || e.key === ' ') {
@@ -221,7 +190,7 @@ export default function Home() {
     };
     window.addEventListener('keydown', onKeyDown);
     return () => window.removeEventListener('keydown', onKeyDown);
-  }, [wheelOpen, browserOpen, welcomeOpen]);
+  }, [browserOpen, welcomeOpen]);
 
   // Both are pure page-level UI state scoped to "the current selection" --
   // reset whenever the selection moves to a different node (or away
@@ -445,7 +414,7 @@ export default function Home() {
           {/* Same green-split treatment as WelcomeOverlay's <h1> --
               "Polyhedra" pale, "verse" the brand green -- rather than
               plain zinc-50, matching the identity established there and
-              in the wheel/browser instead of a leftover generic default. */}
+              in the shape browser instead of a leftover generic default. */}
           <h1 className="text-lg font-semibold tracking-tight" style={{ color: '#a9f795' }}>
             Polyhedra<span style={{ color: '#47cc24' }}>verse</span>
           </h1>
@@ -816,7 +785,7 @@ export default function Home() {
               // see duoprism.ts's own header comment). Distinct teal
               // accent so it reads as a third, visually separate attach
               // mode, not a variant of either amber (ordinary) or gold
-              // (4D fold). No wheel/browser picker: there's no shape or
+              // (4D fold). No shape browser: there's no shape or
               // registration choice to make, so this calls straight
               // through to beginDuoprismAttach.
               <button
@@ -1039,7 +1008,7 @@ export default function Home() {
               {selection.degree}):
             </span>
             {/* Real leftover found live: this used to render a flat button
-                for all 137 POLYHEDRON_IDS directly (predating the wheel/
+                for all 137 POLYHEDRON_IDS directly (predating the shape
                 browser system entirely) -- "the huge amorphous list
                 format," in the user's own words, never migrated to the
                 same family-grouped picker face-attach already uses below.
@@ -1124,20 +1093,15 @@ export default function Home() {
         </div>
       )}
       <main className="flex-1 relative">
-        <div className="absolute right-3 top-3 z-20 flex items-center gap-1 rounded bg-black/60 p-1" role="group" aria-label={t('projection.label', lang)}>
-          {(['perspective', 'orthographic', 'isometric'] as const).map((mode) => (
-            <button
-              key={mode}
-              type="button"
-              aria-pressed={projection === mode}
-              onClick={() => { setProjection(mode); handleRef.current?.setProjection(mode); }}
-              className="rounded px-2 py-1 text-xs"
-              style={{ background: projection === mode ? 'rgba(120,190,255,0.4)' : 'transparent', color: projection === mode ? '#fff' : '#9cd', border: '1px solid rgba(255,255,255,0.25)' }}
-            >
-              {t(`projection.${mode}`, lang)}
-            </button>
-          ))}
-        </div>
+        {!welcomeOpen && (
+          <ToolsColumn
+            browserOpen={browserOpen}
+            onToggleBrowser={() => (browserOpen ? setBrowserOpen(false) : openPicker('reset'))}
+            projection={projection}
+            onProjection={(mode) => { setProjection(mode); handleRef.current?.setProjection(mode); }}
+            onAbout={() => setWelcomeForceOpen(true)}
+          />
+        )}
         <ShapeViewer
           initialShapeId={POLYHEDRON_IDS[0]}
           onSelectionChange={setSelection}
@@ -1156,47 +1120,17 @@ export default function Home() {
         <GoldenHelperBar handleRef={handleRef} assemblyName={assemblyName} showNote={showNote} />
       </main>
 
-      <PolyhedralWheel
-        open={wheelOpen}
-        onClose={() => setWheelOpen(false)}
-        filterIds={wheelMode === 'faceAttach' ? nodeSelection?.faceAttachOptions : undefined}
-        onSelect={(id) => {
-          if (wheelMode === 'faceAttach') handleRef.current?.beginFaceAttach(id);
-          else if (wheelMode === 'vertexAttach') handleRef.current?.beginAttach(id);
-          else handleRef.current?.reset(id);
-        }}
-        onSelectAll={() => {
-          setWheelOpen(false);
-          setFullCatalogFocusSection(undefined);
-          setFullCatalogRequestId((n) => n + 1);
-          setBrowserOpen(true);
-        }}
-        onSelectFamilyGrid={(familyKey) => {
-          setWheelOpen(false);
-          setFullCatalogFocusSection(familyKey);
-          setFullCatalogRequestId((n) => n + 1);
-          setBrowserOpen(true);
-        }}
-        onSelectSearch={() => {
-          setWheelOpen(false);
-          setSearchRequestId((n) => n + 1);
-          setBrowserOpen(true);
-        }}
-      />
       <ShapeBrowser
         open={browserOpen}
         onClose={() => setBrowserOpen(false)}
-        filterIds={wheelMode === 'faceAttach' ? nodeSelection?.faceAttachOptions : undefined}
-        partnerIds={wheelMode === 'faceAttach' && nodeSelection
+        filterIds={pickMode === 'faceAttach' ? nodeSelection?.faceAttachOptions : undefined}
+        partnerIds={pickMode === 'faceAttach' && nodeSelection
           ? pairPartners(nodeSelection.specId).filter((id) => nodeSelection.faceAttachOptions.includes(id))
           : undefined}
-        fullCatalogRequestId={fullCatalogRequestId}
-        fullCatalogFocusSection={fullCatalogFocusSection}
-        searchRequestId={searchRequestId}
         onSelect={(id) => {
           setBrowserOpen(false);
-          if (wheelMode === 'faceAttach') handleRef.current?.beginFaceAttach(id);
-          else if (wheelMode === 'vertexAttach') handleRef.current?.beginAttach(id);
+          if (pickMode === 'faceAttach') handleRef.current?.beginFaceAttach(id);
+          else if (pickMode === 'vertexAttach') handleRef.current?.beginAttach(id);
           else handleRef.current?.reset(id);
         }}
         onBuildPolytope={(seed, target) => {
@@ -1214,58 +1148,6 @@ export default function Home() {
         anchor={descriptionAnchor}
         onClose={() => setDescriptionOpen(false)}
       />
-      {!welcomeOpen && (
-        <CornerHudWheel
-          wheelOpen={wheelOpen}
-          browserOpen={browserOpen}
-          onToggleWheel={() => (wheelOpen ? setWheelOpen(false) : openWheelDirectly())}
-          onToggleBrowser={() => (browserOpen ? setBrowserOpen(false) : openPicker('reset'))}
-          viewMode={viewMode}
-          onCycleView={cycleViewMode}
-          onSave={handleSave}
-          onAbout={() => setWelcomeForceOpen(true)}
-        />
-      )}
-      {/* Real user request: "a little bottom left hand 'menu' button that
-          summons wheel from anywhere" -- a second, always-visible trigger
-          for the direct wheel, deliberately alongside (not replacing)
-          CornerHudWheel's own medallion (bottom-right, see its own
-          right:16/bottom:16) rather than unifying them into one -- this
-          project has already decided against collapsing the wheel and
-          browser's separate entry points into a single toggle, and the
-          same reasoning applies here: more doors in, not fewer.
-          bottom:72 (not 16) -- real bug caught by e2e: Next.js's own dev-
-          mode indicator badge lives in the literal bottom-left corner and
-          its portal intercepts clicks there, so a plain bottom:16 button
-          was unclickable under `next dev` (this doesn't exist in a
-          production build, but local dev/test needs to work too). */}
-      {!welcomeOpen && (
-        <button
-          type="button"
-          onClick={() => (wheelOpen ? setWheelOpen(false) : openWheelDirectly())}
-          aria-label="Open shape wheel"
-          title="Open shape wheel"
-          style={{
-            position: 'fixed',
-            left: 16,
-            bottom: 72,
-            zIndex: 60,
-            width: 44,
-            height: 44,
-            borderRadius: '50%',
-            background: 'rgba(5,5,10,.75)',
-            border: '1px solid rgba(71,204,36,.4)',
-            color: '#5ee233',
-            fontSize: 18,
-            display: 'flex',
-            alignItems: 'center',
-            justifyContent: 'center',
-            cursor: 'pointer',
-          }}
-        >
-          ☰
-        </button>
-      )}
     </div>
   );
 }

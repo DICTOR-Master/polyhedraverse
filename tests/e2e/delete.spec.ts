@@ -1,5 +1,5 @@
 import { test, expect } from './fixtures';
-import { getCanvasCenter, resetTo, findOnCanvas, findNodeBody, openBrowserWheel, clickWheelLabel, exactLabel } from './utils';
+import { getCanvasCenter, resetTo, findOnCanvas, findNodeBody, pickShape } from './utils';
 
 test.beforeEach(async ({ page }) => {
   await page.goto('/');
@@ -17,9 +17,7 @@ test('deleting the root cascades to its attached child, leaving nothing behind',
   // family-grouped picker face-attach already uses, via "Attach via
   // vertex…" (see attach.spec.ts's own identical fix).
   await page.getByRole('button', { name: 'Attach via vertex…' }).click();
-  await openBrowserWheel(page);
-  await clickWheelLabel(page, exactLabel('Deltahedra'));
-  await clickWheelLabel(page, 'D6');
+  await pickShape(page, 'D6');
   await page.getByRole('button', { name: 'Confirm' }).click();
   await expect(page.locator('text=/Click a highlighted/')).toBeVisible();
 

@@ -1,5 +1,5 @@
 import { test, expect } from './fixtures';
-import { resetTo, getCanvasCenter, findOnCanvas, openBrowserWheel, clickWheelLabel, exactLabel } from './utils';
+import { resetTo, getCanvasCenter, findOnCanvas, pickShape } from './utils';
 
 test.beforeEach(async ({ page }) => {
   await page.goto('/');
@@ -32,9 +32,7 @@ test('Export JSON reflects a confirmed attach, not just the root shape', async (
   expect(vertexHit).not.toBeNull();
 
   await page.getByRole('button', { name: 'Attach via vertex…' }).click();
-  await openBrowserWheel(page);
-  await clickWheelLabel(page, exactLabel('Platonic'));
-  await clickWheelLabel(page, 'CUBE');
+  await pickShape(page, 'CUBE');
   await expect(page.locator('text=/Placing CUBE/')).toBeVisible();
   await page.getByRole('button', { name: 'Confirm' }).click();
   await expect(page.locator('text=/Placing CUBE/')).toHaveCount(0);

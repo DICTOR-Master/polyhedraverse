@@ -1,5 +1,5 @@
 import { test, expect } from './fixtures';
-import { getCanvasCenter, resetTo, findOnCanvas, findNodeBody, openBrowserWheel, clickWheelLabel, exactLabel, getSavedAssembly } from './utils';
+import { getCanvasCenter, resetTo, findOnCanvas, findNodeBody, getSavedAssembly, pickShape } from './utils';
 
 test.beforeEach(async ({ page }) => {
   await page.goto('/');
@@ -16,9 +16,7 @@ test('Undo removes the most recently confirmed attach and frees its target verte
   expect(vertexHit).not.toBeNull();
 
   await page.getByRole('button', { name: 'Attach via vertex…' }).click();
-  await openBrowserWheel(page);
-  await clickWheelLabel(page, exactLabel('Deltahedra'));
-  await clickWheelLabel(page, 'D6');
+  await pickShape(page, 'D6');
   await expect(page.locator('text=/Placing D6/')).toBeVisible();
   await page.getByRole('button', { name: 'Confirm' }).click();
   await expect(page.locator('text=/Placing D6/')).toHaveCount(0);
@@ -59,9 +57,7 @@ test('Undo is disabled while a new shape is waiting to be placed', async ({ page
   const vertexHit = await findOnCanvas(page, cx, cy, (t) => /^vertex \d+ — capacity/.test(t));
   expect(vertexHit).not.toBeNull();
   await page.getByRole('button', { name: 'Attach via vertex…' }).click();
-  await openBrowserWheel(page);
-  await clickWheelLabel(page, exactLabel('Deltahedra'));
-  await clickWheelLabel(page, 'D6');
+  await pickShape(page, 'D6');
   await expect(page.locator('text=/Placing D6/')).toBeVisible();
   await expect(undoBtn).toBeDisabled();
   await page.getByRole('button', { name: 'Confirm' }).click();
@@ -76,9 +72,7 @@ test('Undo steps back through several attaches, most recent first', async ({ pag
     const hit = await findOnCanvas(page, cx, cy, (t) => /^vertex \d+ — capacity \d+$/.test(t));
     expect(hit, 'expected a free vertex to attach at').not.toBeNull();
     await page.getByRole('button', { name: 'Attach via vertex…' }).click();
-    await openBrowserWheel(page);
-    await clickWheelLabel(page, exactLabel('Deltahedra'));
-    await clickWheelLabel(page, 'D6');
+    await pickShape(page, 'D6');
     await page.getByRole('button', { name: 'Confirm' }).click();
     await expect(page.locator('text=/Placing D6/')).toHaveCount(0);
   };
@@ -111,9 +105,7 @@ test('Undo also reverses a delete and a Start over, not just attaches', async ({
   const hit = await findOnCanvas(page, cx, cy, (t) => /^vertex \d+ — capacity \d+$/.test(t));
   expect(hit).not.toBeNull();
   await page.getByRole('button', { name: 'Attach via vertex…' }).click();
-  await openBrowserWheel(page);
-  await clickWheelLabel(page, exactLabel('Deltahedra'));
-  await clickWheelLabel(page, 'D6');
+  await pickShape(page, 'D6');
   await page.getByRole('button', { name: 'Confirm' }).click();
   await expect(page.locator('text=/Placing D6/')).toHaveCount(0);
   expect(await nodes()).toBe('D4,D6');
