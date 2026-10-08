@@ -239,6 +239,15 @@ export default function ShapeDetailDrawer({
           </div>
         )}
 
+        {/* The new EKP pieces (direct request 2026-10-08: "add the Kaleidohedra link to those pieces"):
+            they come from the Euclid–Kepler–Pacioli cell, shown built in Kaleidohedra. */}
+        {(specId === 'DOGSTAR' || specId === 'SEAMED_DODECAHEDRON' || specId === 'DRAGON_JEWEL') && (
+          <div data-testid="ekp-link" style={{ maxWidth: 380, fontSize: 12, color: '#a9f795', lineHeight: 1.45, textAlign: 'center' }}>
+            {t('detail.ekpLink', lang)}{' '}
+            <a href="https://kaleidohedra.vercel.app" target="_blank" rel="noopener" style={{ color: '#a9f795', textDecoration: 'underline' }}>Kaleidohedra ↗</a>
+          </div>
+        )}
+
         {/* The Bain parallelohedra: where they came from (Kaleidohedra). */}
         {BAIN_PARALLELOHEDRA_ADDITION_IDS.includes(specId) && (
           <div data-testid="bain-credit" style={{ maxWidth: 380, fontSize: 12, color: '#a9f795', lineHeight: 1.45, textAlign: 'center' }}>
