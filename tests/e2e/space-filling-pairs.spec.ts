@@ -9,16 +9,18 @@ test.beforeEach(async ({ page }) => {
 /**
  * Space-Filling Pairs (2026-09-24, direct request): the family renders as
  * one row per pair -- the honeycomb's name, then both shapes -- not as a
- * flat shape grid like every other family. All 7 pairs are verified
- * geometrically by scripts/verify-space-filling-pairs.ts; this checks the
- * user-facing rows.
+ * flat shape grid like every other family. The 7 convex pairs are verified
+ * geometrically by scripts/verify-space-filling-pairs.ts, the eighth (the
+ * Dragon Jewel and stella octangula) by scripts/verify-stella-jewel.ts;
+ * this checks the user-facing rows.
  */
-test('Full Catalog shows Space-Filling Pairs as 7 named pair rows', async ({ page }) => {
+test('Full Catalog shows Space-Filling Pairs as 8 named pair rows', async ({ page }) => {
   await page.getByRole('button', { name: /^Start over with/ }).click();
   await openBrowserWheel(page);
   await clickWheelLabel(page, exactLabel('Full Catalog'));
   const rows = page.locator('[data-testid="space-filling-pair"]');
-  await expect(rows).toHaveCount(7);
+  await expect(rows).toHaveCount(8);
+  await expect(rows.filter({ hasText: 'Stella–Jewel Lattice' })).toHaveCount(1);
   const pyro = rows.filter({ hasText: 'Pyrochlore (quarter cubic)' });
   await pyro.scrollIntoViewIfNeeded();
   await expect(pyro).toBeVisible();
