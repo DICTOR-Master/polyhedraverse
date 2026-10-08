@@ -1,5 +1,5 @@
 import type { Page } from '@playwright/test';
-import { ASSEMBLY_STORAGE_KEY, type Assembly } from '../../app/lib/assembly';
+import { ASSEMBLY_STORAGE_KEY, type Assembly } from '../../krp-core/src/assembly/assembly.js';
 
 /**
  * Save/load moved from a server API route to browser localStorage

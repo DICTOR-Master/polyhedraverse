@@ -12,10 +12,10 @@
  *   triacontahedron (6); the same pieces jumbled get no such name.
  */
 import { Vector3 } from 'three';
-import { goldenZonohedron } from '../app/lib/goldenBuilds';
-import { isValidAssembly } from '../app/lib/assembly';
+import { goldenZonohedron } from '../krp-core/src/assembly/goldenBuilds.js';
+import { isValidAssembly } from '../krp-core/src/assembly/assembly.js';
 import { POLYHEDRA, facesCongruent } from '../krp-core/src/polyhedra/index.js';
-import { describeAssembly } from '../app/lib/assemblyNaming';
+import { describeAssembly } from '../krp-core/src/assembly/assemblyNaming.js';
 import { pairPartners } from '../krp-core/src/polyhedra/families.js';
 
 let failures = 0;

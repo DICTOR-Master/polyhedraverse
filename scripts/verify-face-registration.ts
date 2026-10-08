@@ -16,8 +16,8 @@
 import * as THREE from 'three';
 import { POLYHEDRA } from '../krp-core/src/polyhedra/index.js';
 import { facesCongruent } from '../krp-core/src/polyhedra/core.js';
-import { faceAttachOptions } from '../app/lib/faceAttach';
-import { FaceIndex, convexOverlap, isConvex, rankFaceAttachOptions, type BuiltPiece } from '../app/lib/faceRegistration';
+import { faceAttachOptions } from '../krp-core/src/assembly/faceAttach.js';
+import { FaceIndex, convexOverlap, isConvex, rankFaceAttachOptions, type BuiltPiece } from '../krp-core/src/assembly/faceRegistration.js';
 import { familyIds } from '../krp-core/src/polyhedra/families.js';
 
 let failures = 0;

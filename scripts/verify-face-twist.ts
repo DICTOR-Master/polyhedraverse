@@ -16,7 +16,7 @@ import * as THREE from 'three';
 import { POLYHEDRA, POLYHEDRON_IDS, type PolyhedronSpec } from '../krp-core/src/polyhedra/index.js';
 import { buildFaceConnectors, facesCongruent, faceRotationalSymmetry } from '../krp-core/src/polyhedra/core.js';
 import { isFaceEligibleForAttach } from '../krp-core/src/polyhedra/attachEligibility.js';
-import { faceAttachOptions, type FaceAttachOption } from '../app/lib/faceAttach';
+import { faceAttachOptions, type FaceAttachOption } from '../krp-core/src/assembly/faceAttach.js';
 
 let checks = 0;
 let failures = 0;

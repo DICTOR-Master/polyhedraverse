@@ -30,8 +30,8 @@ import { STELLATION_ADDITIONS, stellationBuilds } from '../krp-core/src/polyhedr
 import { stellationPieceOnFace, facePlanes, faceIncircle, pyramidHeight, type StellationSize } from '../krp-core/src/polyhedra/stellations/build.js';
 import { STELLATION_PIECES } from '../krp-core/src/polyhedra/stellations/pieces.generated.js';
 import { generateStellationSource, STELLATED_SOLIDS } from './stellationSource';
-import { describeAssembly } from '../app/lib/assemblyNaming';
-import type { AssemblyConnection, AssemblyNode } from '../app/lib/assembly';
+import { describeAssembly } from '../krp-core/src/assembly/assemblyNaming.js';
+import type { AssemblyConnection, AssemblyNode } from '../krp-core/src/assembly/assembly.js';
 
 let failures = 0;
 let checks = 0;

@@ -18,7 +18,7 @@
  */
 
 import { useEffect, useRef, useState } from 'react';
-import { faceKind, faceKindCss, usesFaceKindColors } from '../../lib/faceKinds';
+import { faceKind, faceKindCss, usesFaceKindColors } from '../../../krp-core/src/assembly/faceKinds.js';
 import { getAnySpec } from '../../../krp-core/src/polyhedra/lookup.js';
 
 // Polyhedraverse's green, so previews read as part of the browser chrome.

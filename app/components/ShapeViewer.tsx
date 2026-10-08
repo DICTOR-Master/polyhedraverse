@@ -14,14 +14,14 @@ import {
   isFaceEligibleForAttach,
 } from '../../krp-core/src/polyhedra/index.js';
 import { DELTAHEDRA } from '../../krp-core/src/polyhedra/deltahedra.js';
-import { faceKindColorsOf, usesFaceKindColors } from '../lib/faceKinds';
-import { DEFAULT_COLOR_PREFS, NODE_BASE_COLOR, newPieceColor, pieceColorHex, type ColorPrefs, type PieceColorKey } from '../lib/pieceColors';
-import { emptyAssembly, isValidAssembly, migrateLegacyAssembly, ASSEMBLY_STORAGE_KEY, type Assembly } from '../lib/assembly';
+import { faceKindColorsOf, usesFaceKindColors } from '../../krp-core/src/assembly/faceKinds.js';
+import { DEFAULT_COLOR_PREFS, NODE_BASE_COLOR, newPieceColor, pieceColorHex, type ColorPrefs, type PieceColorKey } from '../../krp-core/src/assembly/pieceColors.js';
+import { emptyAssembly, isValidAssembly, migrateLegacyAssembly, ASSEMBLY_STORAGE_KEY, type Assembly } from '../../krp-core/src/assembly/assembly.js';
 import { matchRewriteVertices, REWRITE_TARGET } from '../../krp-core/src/polyhedra/rewrite.js';
-import { collectSubtree, findParentConnection, hasCycle } from '../lib/graph';
-import { describeAssembly } from '../lib/assemblyNaming';
-import { faceAttachOptions } from '../lib/faceAttach';
-import { FaceIndex, rankFaceAttachOptions } from '../lib/faceRegistration';
+import { collectSubtree, findParentConnection, hasCycle } from '../../krp-core/src/assembly/graph.js';
+import { describeAssembly } from '../../krp-core/src/assembly/assemblyNaming.js';
+import { faceAttachOptions } from '../../krp-core/src/assembly/faceAttach.js';
+import { FaceIndex, rankFaceAttachOptions } from '../../krp-core/src/assembly/faceRegistration.js';
 import { familyIds } from '../../krp-core/src/polyhedra/families.js';
 import { FOURD_CAPABLE_IDS } from '../../krp-core/src/polyhedra/fourD.js';
 import { buildWallPrism, duoprismBuildDepth } from '../../krp-core/src/polyhedra/duoprism.js';

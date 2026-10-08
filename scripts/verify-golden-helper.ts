@@ -9,10 +9,10 @@
 import { Quaternion, Vector3 } from 'three';
 import { ConvexHull } from 'three/examples/jsm/math/ConvexHull.js';
 import { POLYHEDRA } from '../krp-core/src/polyhedra/index.js';
-import { isValidAssembly, type Assembly, type AssemblyNode } from '../app/lib/assembly';
-import { goldenStatus, withNextSafePiece } from '../app/lib/golden/goldenHelper';
-import { goldenZonohedron, withNextRecipePiece, GOLDEN_BUILDS } from '../app/lib/goldenBuilds';
-import { describeAssembly } from '../app/lib/assemblyNaming';
+import { isValidAssembly, type Assembly, type AssemblyNode } from '../krp-core/src/assembly/assembly.js';
+import { goldenStatus, withNextSafePiece } from '../krp-core/src/assembly/goldenHelper.js';
+import { goldenZonohedron, withNextRecipePiece, GOLDEN_BUILDS } from '../krp-core/src/assembly/goldenBuilds.js';
+import { describeAssembly } from '../krp-core/src/assembly/assemblyNaming.js';
 
 let failures = 0;
 function check(label: string, ok: boolean, extra = '') {

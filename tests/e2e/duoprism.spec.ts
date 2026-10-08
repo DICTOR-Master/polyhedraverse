@@ -1,6 +1,6 @@
 import { test, expect } from './fixtures';
 import { getCanvasCenter, resetTo, readTooltipAt, getSavedAssembly, setSavedAssembly, openFullCatalog } from './utils';
-import type { Assembly } from '../../app/lib/assembly';
+import type { Assembly } from '../../krp-core/src/assembly/assembly.js';
 
 test.beforeEach(async ({ page }) => {
   await page.goto('/');

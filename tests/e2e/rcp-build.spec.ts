@@ -1,6 +1,6 @@
 import { test, expect } from './fixtures';
 import { getCanvasCenter, resetTo, getSavedAssembly, setSavedAssembly } from './utils';
-import type { Assembly } from '../../app/lib/assembly';
+import type { Assembly } from '../../krp-core/src/assembly/assembly.js';
 
 /**
  * End-to-end coverage of RCP-C2B (Radial Cell Projection, click-to-build),

@@ -1,5 +1,5 @@
-import { collectSubtree, findParentConnection, hasCycle } from '../app/lib/graph';
-import type { Assembly } from '../app/lib/assembly';
+import { collectSubtree, findParentConnection, hasCycle } from '../krp-core/src/assembly/graph.js';
+import type { Assembly } from '../krp-core/src/assembly/assembly.js';
 
 let failures = 0;
 function check(label: string, condition: boolean) {

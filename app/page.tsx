@@ -13,8 +13,9 @@ import ChangelogOverlay from './components/ChangelogOverlay';
 import AssemblyDescriptionPopover from './components/AssemblyDescriptionPopover';
 import GoldenHelperBar from './components/GoldenHelperBar';
 import { FAMILY_META, FAMILY_ORDER, pairPartners } from '../krp-core/src/polyhedra/families.js';
-import { GOLDEN_BUILDS, goldenZonohedron } from './lib/goldenBuilds';
-import { COLOR_MODES, COLOR_MODE_LABELS, DEFAULT_COLOR_PREFS, FAMILY_COLORS, PIECE_COLORS, PIECE_COLOR_LABELS, loadColorPrefs, saveColorPrefs, type ColorPrefs, type PieceColorKey } from './lib/pieceColors';
+import { GOLDEN_BUILDS, goldenZonohedron } from '../krp-core/src/assembly/goldenBuilds.js';
+import { COLOR_MODES, COLOR_MODE_LABELS, DEFAULT_COLOR_PREFS, FAMILY_COLORS, PIECE_COLORS, PIECE_COLOR_LABELS, type ColorPrefs, type PieceColorKey } from '../krp-core/src/assembly/pieceColors.js';
+import { loadColorPrefs, saveColorPrefs } from './lib/colorPrefs';
 
 const ShapeViewer = dynamic(() => import('./components/ShapeViewer'), {
   ssr: false,

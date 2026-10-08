@@ -10,7 +10,7 @@ import {
   type WallPrismRaw,
 } from '../krp-core/src/polyhedra/duoprism.js';
 import { buildFaceConnectors, type PolyhedronSpec } from '../krp-core/src/polyhedra/core.js';
-import { isValidAssembly, type Assembly } from '../app/lib/assembly';
+import { isValidAssembly, type Assembly } from '../krp-core/src/assembly/assembly.js';
 
 type Vec3 = [number, number, number];
 

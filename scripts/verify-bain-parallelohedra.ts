@@ -18,7 +18,7 @@ import { POLYHEDRA } from '../krp-core/src/polyhedra/index.js';
 import { type Vec3, facesCongruent, validateShape } from '../krp-core/src/polyhedra/core.js';
 import { BAIN_DIRECTIONS } from '../krp-core/src/polyhedra/miscellaneous/index.js';
 import { familiesFor, familyIds, KALEIDOHEDRA_VERIFIED } from '../krp-core/src/polyhedra/families.js';
-import { faceAttachOptions } from '../app/lib/faceAttach';
+import { faceAttachOptions } from '../krp-core/src/assembly/faceAttach.js';
 import * as THREE from 'three';
 
 let failures = 0;

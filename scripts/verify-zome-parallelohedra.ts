@@ -19,7 +19,7 @@ import { POLYHEDRA } from '../krp-core/src/polyhedra/index.js';
 import { type Vec3, facesCongruent, isRegularFace, validateShape } from '../krp-core/src/polyhedra/core.js';
 import { ZOME_DIRECTIONS, ZOME_X } from '../krp-core/src/polyhedra/miscellaneous/index.js';
 import { familiesFor, familyIds } from '../krp-core/src/polyhedra/families.js';
-import { faceAttachOptions } from '../app/lib/faceAttach';
+import { faceAttachOptions } from '../krp-core/src/assembly/faceAttach.js';
 import * as THREE from 'three';
 
 let failures = 0;

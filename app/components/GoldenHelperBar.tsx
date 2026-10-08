@@ -9,8 +9,8 @@
  */
 import { useEffect, useState, type RefObject } from 'react';
 import type { ShapeViewerHandle } from './ShapeViewer';
-import { goldenStatus, isGoldenBuild, withNextSafePiece, type GoldenStatus } from '../lib/golden/goldenHelper';
-import { GOLDEN_BUILDS, withNextRecipePiece } from '../lib/goldenBuilds';
+import { goldenStatus, isGoldenBuild, withNextSafePiece, type GoldenStatus } from '../../krp-core/src/assembly/goldenHelper.js';
+import { GOLDEN_BUILDS, withNextRecipePiece } from '../../krp-core/src/assembly/goldenBuilds.js';
 
 interface Props {
   handleRef: RefObject<ShapeViewerHandle | null>;

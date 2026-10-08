@@ -19,9 +19,9 @@
 import * as THREE from 'three';
 import { POLYHEDRA } from '../krp-core/src/polyhedra/index.js';
 import { facesCongruent, validateShape } from '../krp-core/src/polyhedra/core.js';
-import { faceAttachOptions } from '../app/lib/faceAttach';
-import { rankFaceAttachOptions } from '../app/lib/faceRegistration';
-import { faceKind } from '../app/lib/faceKinds';
+import { faceAttachOptions } from '../krp-core/src/assembly/faceAttach.js';
+import { rankFaceAttachOptions } from '../krp-core/src/assembly/faceRegistration.js';
+import { faceKind } from '../krp-core/src/assembly/faceKinds.js';
 import { REGULAR_NINE, REGULAR_NINE_NEW, familiesFor, familyIds } from '../krp-core/src/polyhedra/families.js';
 
 let failures = 0;
