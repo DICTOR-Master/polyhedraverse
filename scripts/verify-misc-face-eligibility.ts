@@ -1,6 +1,6 @@
 /**
  * Verifies the Miscellaneous-family-only face-attach eligibility gate
- * (`isRegularFace` in app/lib/polyhedra/core.ts, applied in
+ * (`isRegularFace` in krp-core/src/polyhedra/core.js, applied in
  * ShapeViewer.tsx's incoming-face-match and faceAttachOptions logic) --
  * direct user instruction (2026-09-15): "only regular faces (plus
  * irregular hexagons) are offered for attachment so pointed pyramids
@@ -16,11 +16,11 @@
  * covers the underlying click/attach mechanics end to end; this script
  * covers the policy this session added on top of it.
  */
-import { POLYHEDRA, POLYHEDRON_IDS } from '../app/lib/polyhedra/index';
-import { MISCELLANEOUS_ADDITION_IDS, GRADED_PYRAMID_ADDITION_IDS } from '../app/lib/polyhedra/miscellaneous';
-import { RVCMG_V2_CONNECTOR_ADDITION_IDS } from '../app/lib/polyhedra/miscellaneous/rvcmg-connectors-v2';
-import { QUAD_PRISM_ADDITION_IDS } from '../app/lib/polyhedra/miscellaneous/quad-prisms';
-import { facesCongruent, isRegularFace, faceRotationalSymmetry, type PolyhedronSpec } from '../app/lib/polyhedra/core';
+import { POLYHEDRA, POLYHEDRON_IDS } from '../krp-core/src/polyhedra/index.js';
+import { MISCELLANEOUS_ADDITION_IDS, GRADED_PYRAMID_ADDITION_IDS } from '../krp-core/src/polyhedra/miscellaneous/index.js';
+import { RVCMG_V2_CONNECTOR_ADDITION_IDS } from '../krp-core/src/polyhedra/miscellaneous/rvcmg-connectors-v2/index.js';
+import { QUAD_PRISM_ADDITION_IDS } from '../krp-core/src/polyhedra/miscellaneous/quad-prisms/index.js';
+import { facesCongruent, isRegularFace, faceRotationalSymmetry, type PolyhedronSpec } from '../krp-core/src/polyhedra/core.js';
 
 let failures = 0;
 function check(label: string, condition: boolean) {

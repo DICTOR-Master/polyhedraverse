@@ -1,5 +1,5 @@
-import { JOHNSON_ADDITIONS, JOHNSON_ADDITION_IDS } from '../app/lib/polyhedra/johnson';
-import { validateShape } from '../app/lib/polyhedra/core';
+import { JOHNSON_ADDITIONS, JOHNSON_ADDITION_IDS } from '../krp-core/src/polyhedra/johnson.js';
+import { validateShape } from '../krp-core/src/polyhedra/core.js';
 
 let failed = false;
 for (const id of JOHNSON_ADDITION_IDS) {

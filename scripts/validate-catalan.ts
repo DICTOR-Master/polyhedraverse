@@ -1,5 +1,5 @@
-import { CATALAN_ADDITIONS, CATALAN_ADDITION_IDS } from '../app/lib/polyhedra/catalan';
-import { validateCatalanShape } from '../app/lib/polyhedra/core';
+import { CATALAN_ADDITIONS, CATALAN_ADDITION_IDS } from '../krp-core/src/polyhedra/catalan.js';
+import { validateCatalanShape } from '../krp-core/src/polyhedra/core.js';
 
 let failed = false;
 for (const id of CATALAN_ADDITION_IDS) {

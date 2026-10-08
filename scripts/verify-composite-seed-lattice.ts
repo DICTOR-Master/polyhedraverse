@@ -10,8 +10,8 @@
  * doubled (±1,±1,±1)/(±2,0,0) realization, or RVCMG's archived
  * RD-native hex interface) carries over.
  */
-import { POLYHEDRA } from '../app/lib/polyhedra';
-import { dist } from '../app/lib/polyhedra/core';
+import { POLYHEDRA } from '../krp-core/src/polyhedra/index.js';
+import { dist } from '../krp-core/src/polyhedra/core.js';
 import {
   RD_CIRCUMRADIUS,
   RD_INRADIUS,
@@ -19,7 +19,7 @@ import {
   DELTA_RD,
   isLatticePoint,
   latticePointsInBox,
-} from '../app/lib/polyhedra/composite-seed-rcp/lattice';
+} from '../krp-core/src/polyhedra/composite-seed-rcp/lattice.js';
 import {
   sCube,
   sOct,
@@ -28,7 +28,7 @@ import {
   OCT_BOUNDARY_CLASSES,
   TET_BOUNDARY_CLASSES,
   buildEffectiveSeed,
-} from '../app/lib/polyhedra/composite-seed-rcp/rcpMap';
+} from '../krp-core/src/polyhedra/composite-seed-rcp/rcpMap.js';
 
 let failures = 0;
 function check(label: string, cond: boolean) {

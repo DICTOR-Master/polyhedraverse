@@ -1,6 +1,6 @@
 import * as THREE from 'three';
-import { POLYHEDRA, POLYHEDRON_IDS, isFaceEligibleForAttach } from '../app/lib/polyhedra';
-import { buildFaceConnectors, facesCongruent } from '../app/lib/polyhedra/core';
+import { POLYHEDRA, POLYHEDRON_IDS, isFaceEligibleForAttach } from '../krp-core/src/polyhedra/index.js';
+import { buildFaceConnectors, facesCongruent } from '../krp-core/src/polyhedra/core.js';
 import { faceAttachOptions } from '../app/lib/faceAttach';
 
 // Every face pair the app can offer, placed by the app's own face-attach

@@ -1,6 +1,6 @@
 'use client';
 
-import { getAnySpec } from '../../lib/polyhedra/lookup';
+import { getAnySpec } from '../../../krp-core/src/polyhedra/lookup.js';
 import { t, type LangCode } from '../../lib/i18n';
 import ShapePreview from './ShapePreview';
 import ShapeStatsBlock from './ShapeStatsBlock';

@@ -1,6 +1,6 @@
 /**
  * Verifies the ARCHIVED v1 RVCMG connector registry entries
- * (RVCMG_CONNECTOR_ADDITIONS, app/lib/polyhedra/miscellaneous/
+ * (RVCMG_CONNECTOR_ADDITIONS, krp-core/src/polyhedra/miscellaneous/
  * rvcmg-connectors-v1-archived/) directly -- not a parallel
  * re-derivation, so this can never silently drift from that module's
  * own real code (an earlier version of this script rebuilt its own
@@ -21,19 +21,19 @@
  * own header), and that `attachableFaceIndices` names exactly the two
  * real ports (hex + target), never a wall/side triangle.
  */
-import { RVCMG_CONNECTOR_ADDITIONS, RVCMG_CONNECTOR_ADDITION_IDS } from '../app/lib/polyhedra/miscellaneous/rvcmg-connectors-v1-archived';
-import { hemiRdInterfaceFrame } from '../app/lib/rvcmg/hemiRdInterface';
-import { validateAdapterSolid } from '../app/lib/rvcmg/solid';
-import { hemiRdStartState, RD_EDGE_LENGTH } from '../app/lib/rvcmg/adapters/triangleToRdH';
-import { deriveSquareToRdH } from '../app/lib/rvcmg/adapters/squareToRdH';
-import { derivePentagonToRdH } from '../app/lib/rvcmg/adapters/pentagonToRdH';
-import { deriveGoldenRhombusToRdH } from '../app/lib/rvcmg/adapters/goldenRhombusToRdH';
-import { deriveDIKiteToRdH } from '../app/lib/rvcmg/adapters/diKiteToRdH';
-import { deriveDHKiteToRdH } from '../app/lib/rvcmg/adapters/dhKiteToRdH';
-import { deriveRegularHexToRdH } from '../app/lib/rvcmg/adapters/regularHexToRdH';
-import { deriveTriangleToRdH } from '../app/lib/rvcmg/adapters/triangleToRdH';
-import { CATALAN_ADDITIONS } from '../app/lib/polyhedra/catalan';
-import { isRegularFace, rotateFaceToMirrorAxis, facesCongruent, dist, buildFaceConnectors, type Vec3 } from '../app/lib/polyhedra/core';
+import { RVCMG_CONNECTOR_ADDITIONS, RVCMG_CONNECTOR_ADDITION_IDS } from '../krp-core/src/polyhedra/miscellaneous/rvcmg-connectors-v1-archived/index.js';
+import { hemiRdInterfaceFrame } from '../krp-core/src/rvcmg/hemiRdInterface.js';
+import { validateAdapterSolid } from '../krp-core/src/rvcmg/solid.js';
+import { hemiRdStartState, RD_EDGE_LENGTH } from '../krp-core/src/rvcmg/adapters/triangleToRdH.js';
+import { deriveSquareToRdH } from '../krp-core/src/rvcmg/adapters/squareToRdH.js';
+import { derivePentagonToRdH } from '../krp-core/src/rvcmg/adapters/pentagonToRdH.js';
+import { deriveGoldenRhombusToRdH } from '../krp-core/src/rvcmg/adapters/goldenRhombusToRdH.js';
+import { deriveDIKiteToRdH } from '../krp-core/src/rvcmg/adapters/diKiteToRdH.js';
+import { deriveDHKiteToRdH } from '../krp-core/src/rvcmg/adapters/dhKiteToRdH.js';
+import { deriveRegularHexToRdH } from '../krp-core/src/rvcmg/adapters/regularHexToRdH.js';
+import { deriveTriangleToRdH } from '../krp-core/src/rvcmg/adapters/triangleToRdH.js';
+import { CATALAN_ADDITIONS } from '../krp-core/src/polyhedra/catalan.js';
+import { isRegularFace, rotateFaceToMirrorAxis, facesCongruent, dist, buildFaceConnectors, type Vec3 } from '../krp-core/src/polyhedra/core.js';
 
 const sub = (a: Vec3, b: Vec3): Vec3 => [a[0] - b[0], a[1] - b[1], a[2] - b[2]];
 const cross = (a: Vec3, b: Vec3): Vec3 => [a[1] * b[2] - a[2] * b[1], a[2] * b[0] - a[0] * b[2], a[0] * b[1] - a[1] * b[0]];

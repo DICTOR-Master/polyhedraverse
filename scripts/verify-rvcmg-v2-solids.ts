@@ -1,6 +1,6 @@
 /**
  * Verifies the actual, shipped RVCMG v2 connector registry entries
- * (RVCMG_V2_CONNECTOR_ADDITIONS, app/lib/polyhedra/miscellaneous/
+ * (RVCMG_V2_CONNECTOR_ADDITIONS, krp-core/src/polyhedra/miscellaneous/
  * rvcmg-connectors-v2/) directly -- not a parallel re-derivation, so
  * this can never silently drift from what the app actually ships.
  * Mirrors scripts/verify-rvcmg-solids.ts's own checks (now scoped to
@@ -17,18 +17,18 @@
  * shape-specific target) so it's checked separately, below the main
  * per-piece loop.
  */
-import { RVCMG_V2_CONNECTOR_ADDITIONS, RVCMG_V2_CONNECTOR_ADDITION_IDS } from '../app/lib/polyhedra/miscellaneous/rvcmg-connectors-v2';
-import { universalHexInterfaceFrame, UNIVERSAL_HEX_INTERFACE, HEX_CIRCUMRADIUS } from '../app/lib/rvcmg/universalHexInterface';
-import { validateAdapterSolid } from '../app/lib/rvcmg/solid';
-import { uHexStartState, deriveTriangleToUHex } from '../app/lib/rvcmg/adapters/triangleToUHex';
-import { deriveSquareToUHex } from '../app/lib/rvcmg/adapters/squareToUHex';
-import { derivePentagonToUHex } from '../app/lib/rvcmg/adapters/pentagonToUHex';
-import { deriveGoldenRhombusToUHex } from '../app/lib/rvcmg/adapters/goldenRhombusToUHex';
-import { deriveRdNativeRhombusToUHex } from '../app/lib/rvcmg/adapters/rdNativeRhombusToUHex';
-import { deriveDIKiteToUHex } from '../app/lib/rvcmg/adapters/diKiteToUHex';
-import { deriveDHKiteToUHex } from '../app/lib/rvcmg/adapters/dhKiteToUHex';
-import { deriveRegularHexToUHex } from '../app/lib/rvcmg/adapters/regularHexToUHex';
-import { isRegularFace, rotateFaceToMirrorAxis, dist, type Vec3 } from '../app/lib/polyhedra/core';
+import { RVCMG_V2_CONNECTOR_ADDITIONS, RVCMG_V2_CONNECTOR_ADDITION_IDS } from '../krp-core/src/polyhedra/miscellaneous/rvcmg-connectors-v2/index.js';
+import { universalHexInterfaceFrame, UNIVERSAL_HEX_INTERFACE, HEX_CIRCUMRADIUS } from '../krp-core/src/rvcmg/universalHexInterface.js';
+import { validateAdapterSolid } from '../krp-core/src/rvcmg/solid.js';
+import { uHexStartState, deriveTriangleToUHex } from '../krp-core/src/rvcmg/adapters/triangleToUHex.js';
+import { deriveSquareToUHex } from '../krp-core/src/rvcmg/adapters/squareToUHex.js';
+import { derivePentagonToUHex } from '../krp-core/src/rvcmg/adapters/pentagonToUHex.js';
+import { deriveGoldenRhombusToUHex } from '../krp-core/src/rvcmg/adapters/goldenRhombusToUHex.js';
+import { deriveRdNativeRhombusToUHex } from '../krp-core/src/rvcmg/adapters/rdNativeRhombusToUHex.js';
+import { deriveDIKiteToUHex } from '../krp-core/src/rvcmg/adapters/diKiteToUHex.js';
+import { deriveDHKiteToUHex } from '../krp-core/src/rvcmg/adapters/dhKiteToUHex.js';
+import { deriveRegularHexToUHex } from '../krp-core/src/rvcmg/adapters/regularHexToUHex.js';
+import { isRegularFace, rotateFaceToMirrorAxis, dist, type Vec3 } from '../krp-core/src/polyhedra/core.js';
 
 let failures = 0;
 function check(label: string, condition: boolean) {

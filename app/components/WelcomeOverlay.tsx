@@ -20,8 +20,8 @@
 import { useCallback, useEffect } from 'react';
 import ShapePreview from './browser/ShapePreview';
 import { usePrefs } from '../lib/prefs';
-import { POLYHEDRON_IDS } from '../lib/polyhedra';
-import { STAR_POLYHEDRON_IDS } from '../lib/polyhedra/starPolyhedra';
+import { POLYHEDRON_IDS } from '../../krp-core/src/polyhedra/index.js';
+import { STAR_POLYHEDRON_IDS } from '../../krp-core/src/polyhedra/starPolyhedra.js';
 import { t } from '../lib/i18n';
 import LanguagePicker from './LanguagePicker';
 

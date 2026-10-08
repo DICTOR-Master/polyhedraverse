@@ -1,5 +1,5 @@
-import { PLATONIC_ADDITIONS, PLATONIC_ADDITION_IDS } from '../app/lib/polyhedra/platonic';
-import { validateShape } from '../app/lib/polyhedra/core';
+import { PLATONIC_ADDITIONS, PLATONIC_ADDITION_IDS } from '../krp-core/src/polyhedra/platonic.js';
+import { validateShape } from '../krp-core/src/polyhedra/core.js';
 
 let failed = false;
 for (const id of PLATONIC_ADDITION_IDS) {

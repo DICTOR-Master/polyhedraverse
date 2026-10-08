@@ -5,10 +5,10 @@
  * graph, not the other way around.
  */
 
-import { POLYHEDRA } from './polyhedra';
-import { FOURD_CAPABLE_IDS } from './polyhedra/fourD';
-import { FOUR_D_SHAPE_PARAMS, resolveParamsKey } from './polyhedra/radialProjection';
-import { parseRcpTarget, rcpTargetOptions } from './polyhedra/rcpBuild';
+import { POLYHEDRA } from '../../krp-core/src/polyhedra/index.js';
+import { FOURD_CAPABLE_IDS } from '../../krp-core/src/polyhedra/fourD.js';
+import { FOUR_D_SHAPE_PARAMS, resolveParamsKey } from '../../krp-core/src/polyhedra/radialProjection.js';
+import { parseRcpTarget, rcpTargetOptions } from '../../krp-core/src/polyhedra/rcpBuild.js';
 
 export interface AssemblyNode {
   id: string;
@@ -24,7 +24,7 @@ export interface AssemblyNode {
   // is the real registry id whose closures apply (e.g. 'D4'); `target`
   // is which of that seed's (up to 3) closures this root is building
   // (e.g. '16-cell', '5-cell', '600-cell' — see
-  // app/lib/polyhedra/radialProjection.ts's own FOUR_D_SHAPE_PARAMS).
+  // krp-core/src/polyhedra/radialProjection.js's own FOUR_D_SHAPE_PARAMS).
   // The root's own `shape`/`transform` are already ordinary — this is
   // the only extra bookkeeping a root needs; every child cell's own
   // geometry is fully re-derived from this field + its own connection's
@@ -54,7 +54,7 @@ export interface AssemblyConnection {
   // mode existed was implicitly this kind) means vertexA/vertexB are
   // vertex indices, the original ball-joint connection. 'face' means
   // they're face indices instead — a face-to-face join, only valid
-  // between two faces of the same size (see app/lib/polyhedra/core.ts's
+  // between two faces of the same size (see krp-core/src/polyhedra/core.js's
   // FaceConnector / buildFaceConnectors). 'duoprism' also uses face
   // indices, but for a structurally different join (see duoprism.ts):
   // nodeB is an identical-orientation TRANSLATED copy of nodeA (not a
@@ -100,7 +100,7 @@ export interface AssemblyConnection {
   duoprismExtraFaces?: number[];
   // RCP-C2B only (kind === 'rcp4d'). `cellId` is which cell of the
   // root's own deterministic complex nodeB represents (re-derive its
-  // geometry via app/lib/polyhedra/rcpBuild.ts's buildRcpComplex, never
+  // geometry via krp-core/src/polyhedra/rcpBuild.js's buildRcpComplex, never
   // stored). `shell` is that cell's own BFS ring distance from the
   // root — technically redundant with cellId+a recomputed complex, but
   // cheap to store and avoids recomputing the whole complex just to
@@ -257,7 +257,7 @@ export function isAssembly(v: unknown): v is Assembly {
 
 /**
  * Beyond structural shape: every node's `shape` must be a real polyhedron id
- * (any family — see app/lib/polyhedra/index.ts) and every connection must
+ * (any family — see krp-core/src/polyhedra/index.js) and every connection must
  * reference node ids and vertex indices that actually exist. Guards the
  * renderer against a corrupted or hand-edited save file crashing on load.
  */

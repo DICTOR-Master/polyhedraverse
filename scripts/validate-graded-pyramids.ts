@@ -1,5 +1,5 @@
 /**
- * Real verification for the graded-pyramid family (app/lib/polyhedra/
+ * Real verification for the graded-pyramid family (krp-core/src/polyhedra/
  * gradedPyramids.ts + miscellaneous.ts): per-grade shape correctness
  * (validateGradedPyramid) across all THREE currently-supported base
  * shapes (triangular/square/pentagonal, matching D4/J1/J2), grade 2
@@ -14,10 +14,10 @@
  * number reused for every base, which crashed outright for a square
  * base (90° is precisely n=4's own degenerate limit).
  */
-import { buildGradedPyramid, validateGradedPyramid, apexHeightForAngle, gradeApexAngleDeg, degenerateApexAngleDeg, regularPolygonCircumradius, GRADE_NUMBERS } from '../app/lib/polyhedra/gradedPyramids';
-import { GRADED_PYRAMID_ADDITIONS } from '../app/lib/polyhedra/miscellaneous';
-import { POLYHEDRA } from '../app/lib/polyhedra/index';
-import { dist } from '../app/lib/polyhedra/core';
+import { buildGradedPyramid, validateGradedPyramid, apexHeightForAngle, gradeApexAngleDeg, degenerateApexAngleDeg, regularPolygonCircumradius, GRADE_NUMBERS } from '../krp-core/src/polyhedra/gradedPyramids.js';
+import { GRADED_PYRAMID_ADDITIONS } from '../krp-core/src/polyhedra/miscellaneous/index.js';
+import { POLYHEDRA } from '../krp-core/src/polyhedra/index.js';
+import { dist } from '../krp-core/src/polyhedra/core.js';
 
 let failures = 0;
 function check(label: string, condition: boolean) {

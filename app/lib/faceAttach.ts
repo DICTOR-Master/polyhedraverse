@@ -14,7 +14,7 @@
  * as a sheared block.
  */
 import * as THREE from 'three';
-import { type PolyhedronSpec, buildFaceConnectors } from './polyhedra/core';
+import { type PolyhedronSpec, buildFaceConnectors } from '../../krp-core/src/polyhedra/core.js';
 
 export interface FaceAttachOption {
   incomingFaceIndex: number;

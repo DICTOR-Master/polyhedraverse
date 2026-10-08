@@ -1,6 +1,6 @@
-import { POLYHEDRA, POLYHEDRON_IDS } from '../app/lib/polyhedra';
-import { buildFaceConnectors, dist } from '../app/lib/polyhedra/core';
-import { STELLATION_IDS } from '../app/lib/polyhedra/stellations';
+import { POLYHEDRA, POLYHEDRON_IDS } from '../krp-core/src/polyhedra/index.js';
+import { buildFaceConnectors, dist } from '../krp-core/src/polyhedra/core.js';
+import { STELLATION_IDS } from '../krp-core/src/polyhedra/stellations/index.js';
 
 let checks = 0;
 let failures = 0;

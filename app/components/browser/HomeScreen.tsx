@@ -1,7 +1,7 @@
 'use client';
 
 import type { ReactNode } from 'react';
-import { FAMILY_ORDER, FAMILY_META, familyIds, type FamilyKey } from '../../lib/polyhedra/families';
+import { FAMILY_ORDER, FAMILY_META, familyIds, type FamilyKey } from '../../../krp-core/src/polyhedra/families.js';
 import { t, type LangCode } from '../../lib/i18n';
 import ShapePreviewCard from './ShapePreviewCard';
 

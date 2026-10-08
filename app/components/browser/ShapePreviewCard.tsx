@@ -1,10 +1,10 @@
 'use client';
 
-import { getAnySpec } from '../../lib/polyhedra/lookup';
-import { FAMILY_META, familiesFor, catalogByFamily, pairPartners, type FamilyKey } from '../../lib/polyhedra/families';
+import { getAnySpec } from '../../../krp-core/src/polyhedra/lookup.js';
+import { FAMILY_META, familiesFor, catalogByFamily, pairPartners, type FamilyKey } from '../../../krp-core/src/polyhedra/families.js';
 import { t, type LangCode } from '../../lib/i18n';
 import ShapePreview from './ShapePreview';
-import { FOURD_CAPABLE_IDS } from '../../lib/polyhedra/fourD';
+import { FOURD_CAPABLE_IDS } from '../../../krp-core/src/polyhedra/fourD.js';
 
 const CARD_PREVIEW_SIZE = 88;
 const PAIR_MINI_SIZE = 22;

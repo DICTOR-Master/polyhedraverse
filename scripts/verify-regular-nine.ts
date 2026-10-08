@@ -17,12 +17,12 @@
  *     Parallelohedra.
  */
 import * as THREE from 'three';
-import { POLYHEDRA } from '../app/lib/polyhedra';
-import { facesCongruent, validateShape } from '../app/lib/polyhedra/core';
+import { POLYHEDRA } from '../krp-core/src/polyhedra/index.js';
+import { facesCongruent, validateShape } from '../krp-core/src/polyhedra/core.js';
 import { faceAttachOptions } from '../app/lib/faceAttach';
 import { rankFaceAttachOptions } from '../app/lib/faceRegistration';
 import { faceKind } from '../app/lib/faceKinds';
-import { REGULAR_NINE, REGULAR_NINE_NEW, familiesFor, familyIds } from '../app/lib/polyhedra/families';
+import { REGULAR_NINE, REGULAR_NINE_NEW, familiesFor, familyIds } from '../krp-core/src/polyhedra/families.js';
 
 let failures = 0;
 let checks = 0;

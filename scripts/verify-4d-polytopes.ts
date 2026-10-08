@@ -1,5 +1,5 @@
 /**
- * Checks the 4D Polytopes family (app/lib/polyhedra/polytopes4d.ts), from
+ * Checks the 4D Polytopes family (krp-core/src/polyhedra/polytopes4d.js), from
  * the geometry RCP-C2B actually builds, against the known classification
  * of the six convex regular 4-polytopes:
  *
@@ -12,12 +12,12 @@
  *   - duality: each polytope's corners number its dual's cells;
  *   - the family lists all six, in order A4, B4, F4, H4.
  */
-import { POLYHEDRA } from '../app/lib/polyhedra';
-import { FOURD_CAPABLE_IDS } from '../app/lib/polyhedra/fourD';
-import { FOUR_D_SHAPE_PARAMS, buildRadialProjectionScene } from '../app/lib/polyhedra/radialProjection';
-import { buildRcpComplex, rcpTargetOptions } from '../app/lib/polyhedra/rcpBuild';
-import { POLYTOPES_4D, polytope4D, polytopeWireframe } from '../app/lib/polyhedra/polytopes4d';
-import { familyIds } from '../app/lib/polyhedra/families';
+import { POLYHEDRA } from '../krp-core/src/polyhedra/index.js';
+import { FOURD_CAPABLE_IDS } from '../krp-core/src/polyhedra/fourD.js';
+import { FOUR_D_SHAPE_PARAMS, buildRadialProjectionScene } from '../krp-core/src/polyhedra/radialProjection.js';
+import { buildRcpComplex, rcpTargetOptions } from '../krp-core/src/polyhedra/rcpBuild.js';
+import { POLYTOPES_4D, polytope4D, polytopeWireframe } from '../krp-core/src/polyhedra/polytopes4d.js';
+import { familyIds } from '../krp-core/src/polyhedra/families.js';
 
 let failures = 0;
 let checks = 0;

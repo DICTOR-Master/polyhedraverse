@@ -1,11 +1,11 @@
 'use client';
 
 import { useState } from 'react';
-import { getAnySpec, isStarPolyhedron } from '../../lib/polyhedra/lookup';
-import { FOURD_CAPABLE_IDS } from '../../lib/polyhedra/fourD';
-import { BRIDGES_3D_IDS } from '../../lib/polyhedra/bridges';
-import { STELLATION_IDS } from '../../lib/polyhedra/stellations';
-import { ZOME_PARALLELOHEDRA_ADDITION_IDS, BAIN_PARALLELOHEDRA_ADDITION_IDS, REGULAR_NINE_ADDITION_IDS, DICTO_SKEWED_ED_IDS } from '../../lib/polyhedra/miscellaneous';
+import { getAnySpec, isStarPolyhedron } from '../../../krp-core/src/polyhedra/lookup.js';
+import { FOURD_CAPABLE_IDS } from '../../../krp-core/src/polyhedra/fourD.js';
+import { BRIDGES_3D_IDS } from '../../../krp-core/src/polyhedra/bridges.js';
+import { STELLATION_IDS } from '../../../krp-core/src/polyhedra/stellations/index.js';
+import { ZOME_PARALLELOHEDRA_ADDITION_IDS, BAIN_PARALLELOHEDRA_ADDITION_IDS, REGULAR_NINE_ADDITION_IDS, DICTO_SKEWED_ED_IDS } from '../../../krp-core/src/polyhedra/miscellaneous/index.js';
 import { t, type LangCode } from '../../lib/i18n';
 import ShapePreview from './ShapePreview';
 import ShapeStatsBlock from './ShapeStatsBlock';
@@ -13,8 +13,8 @@ import StarShapeViewer from './StarShapeViewer';
 import DuoprismShapeViewer from './DuoprismShapeViewer';
 import RadialProjectionViewer from './RadialProjectionViewer';
 import NetViewer from './NetViewer';
-import NET_ELIGIBLE from '../../lib/nets/eligible.json';
-import { DOGSTAR_REQUEST } from '../../lib/polyhedra/sunstar';
+import NET_ELIGIBLE from '../../../krp-core/src/polyhedra-nets/eligible.json';
+import { DOGSTAR_REQUEST } from '../../../krp-core/src/polyhedra/sunstar.js';
 
 // The dodecahedron's three stellations are Kepler-Poinsot solids: the star
 // can't be attached itself, but a dodecahedron with Stellations piece n on

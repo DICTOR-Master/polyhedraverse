@@ -1,5 +1,5 @@
 /**
- * Writes app/lib/polyhedra/stellations/pieces.generated.ts: every Catalan
+ * Writes krp-core's src/polyhedra/stellations/pieces.generated.js: every Catalan
  * stellation piece, computed once here rather than on every page load
  * (the solver takes a few ms a piece; there are 60). verify-catalan-
  * stellations.ts re-runs this and fails if the file is stale.
@@ -14,7 +14,7 @@ import { generateStellationSource } from './stellationSource';
 const source = generateStellationSource();
 if (process.argv.includes('--print')) process.stdout.write(source);
 else {
-  const path = join(__dirname, '..', 'app', 'lib', 'polyhedra', 'stellations', 'pieces.generated.ts');
+  const path = join(__dirname, '..', 'krp-core', 'src', 'polyhedra', 'stellations', 'pieces.generated.js');
   writeFileSync(path, source);
   console.log(`wrote ${path}`);
 }

@@ -31,7 +31,7 @@ warning applies to a genuinely open-ended search; this one isn't.
 
 ## 2. What was computed
 
-`app/lib/polyhedra/composite-seed-rcp/reflectionGroup.ts`,
+`krp-core/src/polyhedra/composite-seed-rcp/reflectionGroup.js`,
 run by `scripts/verify-composite-seed-reflection-group.ts`:
 
 1. **Δ_RD's 12 directions collapse to exactly 6 distinct mirror

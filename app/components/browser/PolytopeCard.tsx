@@ -6,7 +6,7 @@
  * its cells. Opens the polytope's details, where Build starts it.
  */
 import { useMemo } from 'react';
-import { polytope4D, polytopeWireframe, type Polytope4D } from '../../lib/polyhedra/polytopes4d';
+import { polytope4D, polytopeWireframe, type Polytope4D } from '../../../krp-core/src/polyhedra/polytopes4d.js';
 import { t, type LangCode } from '../../lib/i18n';
 import ShapePreview from './ShapePreview';
 

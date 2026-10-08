@@ -3,7 +3,7 @@
 /**
  * Stage 7's user-facing operation: "Extend into 4D." Reference-only 3D
  * preview of a FOURD_CAPABLE seed's full radial cell projection (see
- * app/lib/polyhedra/radialProjection.ts) -- unlike duoprism's viewer
+ * krp-core/src/polyhedra/radialProjection.js) -- unlike duoprism's viewer
  * (available for all 137 shapes, always exact, only ever 2 cells + walls)
  * this is only ever offered for the 4 gold-badge FOURD_CAPABLE shapes,
  * since buildCellComplex only has a verified theta for those, and it
@@ -23,8 +23,8 @@ import { useEffect, useRef, useState } from 'react';
 import * as THREE from 'three';
 import { attachHeadLight } from '../../lib/headLight';
 import { OrbitControls } from 'three/examples/jsm/controls/OrbitControls.js';
-import { POLYHEDRA, triangulateFace, type PolyhedronSpec, type Vec3 } from '../../lib/polyhedra';
-import { buildRadialProjectionScene } from '../../lib/polyhedra/radialProjection';
+import { POLYHEDRA, triangulateFace, type PolyhedronSpec, type Vec3 } from '../../../krp-core/src/polyhedra/index.js';
+import { buildRadialProjectionScene } from '../../../krp-core/src/polyhedra/radialProjection.js';
 
 const CELL_COLOR = 0xffd54a; // matches the gold "4D-Capable" badge accent used elsewhere in this app
 const NEAREST_CELL_COLOR = 0x2ad6c9; // the cell closest to the viewpoint (least |w|) gets a distinct highlight so the "cell-first" structure reads clearly

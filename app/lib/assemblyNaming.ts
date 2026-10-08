@@ -17,8 +17,8 @@
  * build.
  */
 
-import { POLYHEDRA } from './polyhedra';
-import { STELLATION_IDS, stellationInfo, stellationBuilds, stellatedSolidName } from './polyhedra/stellations';
+import { POLYHEDRA } from '../../krp-core/src/polyhedra/index.js';
+import { STELLATION_IDS, stellationInfo, stellationBuilds, stellatedSolidName } from '../../krp-core/src/polyhedra/stellations/index.js';
 import type { AssemblyNode, AssemblyConnection } from './assembly';
 import { findParentConnection } from './graph';
 import { Quaternion, Vector3 } from 'three';

@@ -14,10 +14,10 @@
  *   - the family lists: home Miscellaneous, and in Parallelohedra's
  *     "Kaleidohedra verified" section.
  */
-import { POLYHEDRA } from '../app/lib/polyhedra';
-import { type Vec3, facesCongruent, validateShape } from '../app/lib/polyhedra/core';
-import { BAIN_DIRECTIONS } from '../app/lib/polyhedra/miscellaneous';
-import { familiesFor, familyIds, KALEIDOHEDRA_VERIFIED } from '../app/lib/polyhedra/families';
+import { POLYHEDRA } from '../krp-core/src/polyhedra/index.js';
+import { type Vec3, facesCongruent, validateShape } from '../krp-core/src/polyhedra/core.js';
+import { BAIN_DIRECTIONS } from '../krp-core/src/polyhedra/miscellaneous/index.js';
+import { familiesFor, familyIds, KALEIDOHEDRA_VERIFIED } from '../krp-core/src/polyhedra/families.js';
 import { faceAttachOptions } from '../app/lib/faceAttach';
 import * as THREE from 'three';
 

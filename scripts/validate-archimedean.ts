@@ -1,5 +1,5 @@
-import { ARCHIMEDEAN_ADDITIONS, ARCHIMEDEAN_ADDITION_IDS } from '../app/lib/polyhedra/archimedean';
-import { validateShape } from '../app/lib/polyhedra/core';
+import { ARCHIMEDEAN_ADDITIONS, ARCHIMEDEAN_ADDITION_IDS } from '../krp-core/src/polyhedra/archimedean.js';
+import { validateShape } from '../krp-core/src/polyhedra/core.js';
 
 let failed = false;
 for (const id of ARCHIMEDEAN_ADDITION_IDS) {

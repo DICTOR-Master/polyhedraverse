@@ -13,9 +13,9 @@
 // the flush test finds the right turns for any face. The kite prisms'
 // rectangle sides are checked directly at the end.
 import * as THREE from 'three';
-import { POLYHEDRA, POLYHEDRON_IDS, type PolyhedronSpec } from '../app/lib/polyhedra';
-import { buildFaceConnectors, facesCongruent, faceRotationalSymmetry } from '../app/lib/polyhedra/core';
-import { isFaceEligibleForAttach } from '../app/lib/polyhedra/attachEligibility';
+import { POLYHEDRA, POLYHEDRON_IDS, type PolyhedronSpec } from '../krp-core/src/polyhedra/index.js';
+import { buildFaceConnectors, facesCongruent, faceRotationalSymmetry } from '../krp-core/src/polyhedra/core.js';
+import { isFaceEligibleForAttach } from '../krp-core/src/polyhedra/attachEligibility.js';
 import { faceAttachOptions, type FaceAttachOption } from '../app/lib/faceAttach';
 
 let checks = 0;

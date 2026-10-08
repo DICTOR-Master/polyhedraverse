@@ -1,5 +1,5 @@
-import { DELTAHEDRA, DELTAHEDRON_IDS } from '../app/lib/polyhedra/deltahedra';
-import { validateShape } from '../app/lib/polyhedra/core';
+import { DELTAHEDRA, DELTAHEDRON_IDS } from '../krp-core/src/polyhedra/deltahedra.js';
+import { validateShape } from '../krp-core/src/polyhedra/core.js';
 
 let failed = false;
 for (const id of DELTAHEDRON_IDS) {

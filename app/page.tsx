@@ -5,7 +5,7 @@ import { usePrefs } from './lib/prefs';
 import { t } from './lib/i18n';
 import type { ProjectionMode } from './components/ShapeViewer';
 import dynamic from 'next/dynamic';
-import { POLYHEDRON_IDS } from './lib/polyhedra';
+import { POLYHEDRON_IDS } from '../krp-core/src/polyhedra/index.js';
 import type { NodeSelection, ShapeSelection, ShapeViewerHandle, ViewMode } from './components/ShapeViewer';
 import PolyhedralWheel from './components/PolyhedralWheel';
 import CornerHudWheel from './components/CornerHudWheel';
@@ -15,7 +15,7 @@ import GuideOverlay from './components/GuideOverlay';
 import ChangelogOverlay from './components/ChangelogOverlay';
 import AssemblyDescriptionPopover from './components/AssemblyDescriptionPopover';
 import GoldenHelperBar from './components/GoldenHelperBar';
-import { FAMILY_META, FAMILY_ORDER, pairPartners, type FamilyKey } from './lib/polyhedra/families';
+import { FAMILY_META, FAMILY_ORDER, pairPartners, type FamilyKey } from '../krp-core/src/polyhedra/families.js';
 import { GOLDEN_BUILDS, goldenZonohedron } from './lib/goldenBuilds';
 import { COLOR_MODES, COLOR_MODE_LABELS, DEFAULT_COLOR_PREFS, FAMILY_COLORS, PIECE_COLORS, PIECE_COLOR_LABELS, loadColorPrefs, saveColorPrefs, type ColorPrefs, type PieceColorKey } from './lib/pieceColors';
 

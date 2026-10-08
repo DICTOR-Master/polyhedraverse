@@ -15,10 +15,10 @@
  *   - the family lists: home Miscellaneous, and in Parallelohedra with
  *     the rhombohedron as Fedorov variants.
  */
-import { POLYHEDRA } from '../app/lib/polyhedra';
-import { type Vec3, facesCongruent, isRegularFace, validateShape } from '../app/lib/polyhedra/core';
-import { ZOME_DIRECTIONS, ZOME_X } from '../app/lib/polyhedra/miscellaneous';
-import { familiesFor, familyIds } from '../app/lib/polyhedra/families';
+import { POLYHEDRA } from '../krp-core/src/polyhedra/index.js';
+import { type Vec3, facesCongruent, isRegularFace, validateShape } from '../krp-core/src/polyhedra/core.js';
+import { ZOME_DIRECTIONS, ZOME_X } from '../krp-core/src/polyhedra/miscellaneous/index.js';
+import { familiesFor, familyIds } from '../krp-core/src/polyhedra/families.js';
 import { faceAttachOptions } from '../app/lib/faceAttach';
 import * as THREE from 'three';
 

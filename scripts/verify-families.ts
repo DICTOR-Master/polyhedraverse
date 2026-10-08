@@ -1,7 +1,7 @@
-import { FAMILY_ORDER, FAMILY_META, familyIds, familiesFor } from '../app/lib/polyhedra/families';
-import { POLYHEDRON_IDS } from '../app/lib/polyhedra';
-import { FOURD_CAPABLE_IDS } from '../app/lib/polyhedra/fourD';
-import { POLYTOPES_4D } from '../app/lib/polyhedra/polytopes4d';
+import { FAMILY_ORDER, FAMILY_META, familyIds, familiesFor } from '../krp-core/src/polyhedra/families.js';
+import { POLYHEDRON_IDS } from '../krp-core/src/polyhedra/index.js';
+import { FOURD_CAPABLE_IDS } from '../krp-core/src/polyhedra/fourD.js';
+import { POLYTOPES_4D } from '../krp-core/src/polyhedra/polytopes4d.js';
 
 let failures = 0;
 function assert(cond: boolean, msg: string) {

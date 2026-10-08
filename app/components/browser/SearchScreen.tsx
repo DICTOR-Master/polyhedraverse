@@ -1,7 +1,7 @@
 'use client';
 
 import { useMemo, useState, type CSSProperties, type ReactNode } from 'react';
-import { FAMILY_ORDER, FAMILY_META, type FamilyKey } from '../../lib/polyhedra/families';
+import { FAMILY_ORDER, FAMILY_META, type FamilyKey } from '../../../krp-core/src/polyhedra/families.js';
 import {
   EMPTY_FILTERS,
   FACE_COUNT_BANDS,
@@ -11,7 +11,7 @@ import {
   allFaceShapeSizes,
   type Filters,
   type FaceCountBand,
-} from '../../lib/polyhedra/search';
+} from '../../../krp-core/src/polyhedra/search.js';
 import { t, type LangCode } from '../../lib/i18n';
 import ShapePreviewCard from './ShapePreviewCard';
 

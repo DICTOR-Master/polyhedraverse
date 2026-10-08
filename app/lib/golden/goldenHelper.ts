@@ -13,7 +13,7 @@
  * most pieces is used.
  */
 import { Quaternion, Vector3 } from 'three';
-import { POLYHEDRA } from '../polyhedra';
+import { POLYHEDRA } from '../../../krp-core/src/polyhedra/index.js';
 import type { Assembly, AssemblyConnection, AssemblyNode } from '../assembly';
 import { rotationFor, faceCentres } from '../goldenBuilds';
 import { makeQuasicrystal, BASE_OFFSET, tileKey } from './quasicrystal.js';

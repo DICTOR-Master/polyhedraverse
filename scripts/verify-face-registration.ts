@@ -14,11 +14,11 @@
  *   - a piece that isn't convex is never hidden.
  */
 import * as THREE from 'three';
-import { POLYHEDRA } from '../app/lib/polyhedra';
-import { facesCongruent } from '../app/lib/polyhedra/core';
+import { POLYHEDRA } from '../krp-core/src/polyhedra/index.js';
+import { facesCongruent } from '../krp-core/src/polyhedra/core.js';
 import { faceAttachOptions } from '../app/lib/faceAttach';
 import { FaceIndex, convexOverlap, isConvex, rankFaceAttachOptions, type BuiltPiece } from '../app/lib/faceRegistration';
-import { familyIds } from '../app/lib/polyhedra/families';
+import { familyIds } from '../krp-core/src/polyhedra/families.js';
 
 let failures = 0;
 let checks = 0;

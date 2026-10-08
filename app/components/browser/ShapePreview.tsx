@@ -21,7 +21,7 @@
 
 import { useEffect, useRef, useState } from 'react';
 import { faceKind, faceKindCss, usesFaceKindColors } from '../../lib/faceKinds';
-import { getAnySpec } from '../../lib/polyhedra/lookup';
+import { getAnySpec } from '../../../krp-core/src/polyhedra/lookup.js';
 
 // Matches PolyhedralWheel's existing green identity (HUD_METAL_HEX /
 // SCRIPT_COLOR in PolyhedralWheel.tsx) so previews read as part of the same

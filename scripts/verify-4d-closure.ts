@@ -1,5 +1,5 @@
-import { POLYHEDRA } from '../app/lib/polyhedra/index';
-import { closureClass, dihedralAngleDeg, FOURD_CAPABLE_IDS } from '../app/lib/polyhedra/fourD';
+import { POLYHEDRA } from '../krp-core/src/polyhedra/index.js';
+import { closureClass, dihedralAngleDeg, FOURD_CAPABLE_IDS } from '../krp-core/src/polyhedra/fourD.js';
 
 let failures = 0;
 function assert(cond: boolean, msg: string) {

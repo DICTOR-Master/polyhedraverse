@@ -5,9 +5,9 @@
  * experiment (Stage 5) -- all measured, not assumed from
  * docs/composite-seed-rcp/hypothesis.md's own reported numbers.
  */
-import { sweepAngularResidual, THETA_CUBE_DEG, THETA_OCT_DEG } from '../app/lib/polyhedra/composite-seed-rcp/angularResidual';
-import { checkCoxeterCompatibility } from '../app/lib/polyhedra/composite-seed-rcp/coxeterCheck';
-import { sweepTetrahedralExperiment } from '../app/lib/polyhedra/composite-seed-rcp/tetrahedralExperiment';
+import { sweepAngularResidual, THETA_CUBE_DEG, THETA_OCT_DEG } from '../krp-core/src/polyhedra/composite-seed-rcp/angularResidual.js';
+import { checkCoxeterCompatibility } from '../krp-core/src/polyhedra/composite-seed-rcp/coxeterCheck.js';
+import { sweepTetrahedralExperiment } from '../krp-core/src/polyhedra/composite-seed-rcp/tetrahedralExperiment.js';
 
 let failures = 0;
 function check(label: string, cond: boolean) {

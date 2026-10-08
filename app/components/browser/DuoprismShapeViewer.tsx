@@ -2,7 +2,7 @@
 
 /**
  * Reference-only 3D preview of a shape's own 4D Prism (duoprism)
- * construction (see app/lib/polyhedra/duoprism.ts) -- available for ALL
+ * construction (see krp-core/src/polyhedra/duoprism.js) -- available for ALL
  * 137 registered shapes, unlike the star-polyhedra reference viewer's
  * fixed 4-shape family, since a duoprism is well-defined and always
  * exact for any polyhedron, not just the 4 FOURD_CAPABLE ones (those 4
@@ -24,8 +24,8 @@ import { useEffect, useRef, useState } from 'react';
 import * as THREE from 'three';
 import { attachHeadLight } from '../../lib/headLight';
 import { OrbitControls } from 'three/examples/jsm/controls/OrbitControls.js';
-import { POLYHEDRA, triangulateFace, type PolyhedronSpec } from '../../lib/polyhedra';
-import { buildDuoprismShadow, wallLateralFaces, type WallPrismRaw } from '../../lib/polyhedra/duoprism';
+import { POLYHEDRA, triangulateFace, type PolyhedronSpec } from '../../../krp-core/src/polyhedra/index.js';
+import { buildDuoprismShadow, wallLateralFaces, type WallPrismRaw } from '../../../krp-core/src/polyhedra/duoprism.js';
 
 const CAP_COLOR = 0x47cc24;
 const WALL_COLOR = 0x2ad6c9; // matches the "Attach via Duoprism…" button's own teal accent

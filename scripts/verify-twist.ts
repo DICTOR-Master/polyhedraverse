@@ -1,5 +1,5 @@
 import * as THREE from 'three';
-import { POLYHEDRA, POLYHEDRON_IDS, type PolyhedronSpec } from '../app/lib/polyhedra';
+import { POLYHEDRA, POLYHEDRON_IDS, type PolyhedronSpec } from '../krp-core/src/polyhedra/index.js';
 
 // Mirrors ShapeViewer.tsx's beginAttach() + the twist update in onPointerMove
 // (root parent, identity transform) to check that dragging the twist angle

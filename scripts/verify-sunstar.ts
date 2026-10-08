@@ -1,5 +1,5 @@
 /**
- * Verifies the Sunstar Lattice pair (app/lib/polyhedra/sunstar.ts): the seamed dodecahedron and
+ * Verifies the Sunstar Lattice pair (krp-core/src/polyhedra/sunstar.js): the seamed dodecahedron and
  * the Dogstar.
  *   - each is a closed surface, wound outward;
  *   - volumes: the regular dodecahedron's (15 + 7 sqrt 5)/4 at edge 1, and the Dogstar's
@@ -11,10 +11,10 @@
  *     each in exactly one piece (ray casting, both pieces being concave or seamed);
  *   - both are in Space-Filling Pairs as each other's partner.
  */
-import { POLYHEDRA } from '../app/lib/polyhedra';
-import { familyIds, pairPartners } from '../app/lib/polyhedra/families';
-import { facesCongruent, type Vec3 } from '../app/lib/polyhedra/core';
-import { DOGSTAR_REQUEST } from '../app/lib/polyhedra/sunstar';
+import { POLYHEDRA } from '../krp-core/src/polyhedra/index.js';
+import { familyIds, pairPartners } from '../krp-core/src/polyhedra/families.js';
+import { facesCongruent, type Vec3 } from '../krp-core/src/polyhedra/core.js';
+import { DOGSTAR_REQUEST } from '../krp-core/src/polyhedra/sunstar.js';
 import { fingerprintOf } from '../krp-core/src/vocabulary.js';
 
 let failures = 0;

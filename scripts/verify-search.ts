@@ -1,4 +1,4 @@
-import { filteredIds, EMPTY_FILTERS, allFaceShapeSizes } from '../app/lib/polyhedra/search';
+import { filteredIds, EMPTY_FILTERS, allFaceShapeSizes } from '../krp-core/src/polyhedra/search.js';
 
 let failures = 0;
 function assert(cond: boolean, msg: string) {

@@ -1,5 +1,5 @@
 /**
- * Verifies app/lib/polyhedra/radialProjection.ts's generic engine against
+ * Verifies krp-core/src/polyhedra/radialProjection.js's generic engine against
  * the counts/degrees/theta values independently derived and verified via
  * bespoke, well-known coordinate constructions this session (hypercube,
  * cross-polytope, rectified-16-cell, 600-cell duality). Running the
@@ -9,8 +9,8 @@
  * the engine is genuinely generic, not four different bespoke
  * embeddings hidden behind one shared function signature.
  */
-import { POLYHEDRA } from '../app/lib/polyhedra';
-import { FOURD_CAPABLE_IDS } from '../app/lib/polyhedra/fourD';
+import { POLYHEDRA } from '../krp-core/src/polyhedra/index.js';
+import { FOURD_CAPABLE_IDS } from '../krp-core/src/polyhedra/fourD.js';
 import {
   buildCellComplex,
   cellVertices,
@@ -23,7 +23,7 @@ import {
   FOUR_D_SHAPE_PARAMS,
   projectVec4ToVec3,
   type Vec4,
-} from '../app/lib/polyhedra/radialProjection';
+} from '../krp-core/src/polyhedra/radialProjection.js';
 
 let failures = 0;
 function assert(cond: boolean, msg: string) {

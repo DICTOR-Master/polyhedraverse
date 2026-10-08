@@ -1,5 +1,5 @@
 import * as THREE from 'three';
-import { POLYHEDRA, POLYHEDRON_IDS, type PolyhedronSpec } from '../app/lib/polyhedra';
+import { POLYHEDRA, POLYHEDRON_IDS, type PolyhedronSpec } from '../krp-core/src/polyhedra/index.js';
 
 // Mirrors ShapeViewer.tsx's attach() math (root parent, identity transform)
 // so the exact placement formula gets checked outside the browser. Runs

@@ -1,5 +1,5 @@
 /**
- * Checks the Stellations family (app/lib/polyhedra/stellations/):
+ * Checks the Stellations family (krp-core/src/polyhedra/stellations/):
  *
  *   - pieces.generated.ts matches a fresh run of the generator;
  *   - each solid has exactly the stellations it really has: the next size
@@ -24,11 +24,11 @@
  */
 import { readFileSync } from 'node:fs';
 import { join } from 'node:path';
-import { POLYHEDRA } from '../app/lib/polyhedra';
-import { type Vec3, centerVertices, facesCongruent, triangulateFace } from '../app/lib/polyhedra/core';
-import { STELLATION_ADDITIONS, stellationBuilds } from '../app/lib/polyhedra/stellations';
-import { stellationPieceOnFace, facePlanes, faceIncircle, pyramidHeight, type StellationSize } from '../app/lib/polyhedra/stellations/build';
-import { STELLATION_PIECES } from '../app/lib/polyhedra/stellations/pieces.generated';
+import { POLYHEDRA } from '../krp-core/src/polyhedra/index.js';
+import { type Vec3, centerVertices, facesCongruent, triangulateFace } from '../krp-core/src/polyhedra/core.js';
+import { STELLATION_ADDITIONS, stellationBuilds } from '../krp-core/src/polyhedra/stellations/index.js';
+import { stellationPieceOnFace, facePlanes, faceIncircle, pyramidHeight, type StellationSize } from '../krp-core/src/polyhedra/stellations/build.js';
+import { STELLATION_PIECES } from '../krp-core/src/polyhedra/stellations/pieces.generated.js';
 import { generateStellationSource, STELLATED_SOLIDS } from './stellationSource';
 import { describeAssembly } from '../app/lib/assemblyNaming';
 import type { AssemblyConnection, AssemblyNode } from '../app/lib/assembly';
@@ -86,8 +86,8 @@ function inside(p: Vec3, vertices: Vec3[], faces: number[][]): boolean {
 }
 
 // 1. The generated file is up to date.
-const onDisk = readFileSync(join(__dirname, '..', 'app', 'lib', 'polyhedra', 'stellations', 'pieces.generated.ts'), 'utf8');
-check(onDisk === generateStellationSource(), 'pieces.generated.ts is stale: run npx tsx scripts/generate-stellations.ts');
+const onDisk = readFileSync(join(__dirname, '..', 'krp-core', 'src', 'polyhedra', 'stellations', 'pieces.generated.js'), 'utf8');
+check(onDisk === generateStellationSource(), 'pieces.generated.js is stale: run npx tsx scripts/generate-stellations.ts');
 
 // How many sizes each Platonic solid really has (flat, then its stellations).
 const PLATONIC_SIZES: Record<string, number> = { D4: 1, CUBE: 1, D8: 2, DODECAHEDRON: 4, D20: 4 };

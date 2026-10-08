@@ -1,6 +1,6 @@
 /**
  * Verifies the actual, shipped quad-prism registry entries
- * (QUAD_PRISM_ADDITIONS, app/lib/polyhedra/miscellaneous/quad-prisms/)
+ * (QUAD_PRISM_ADDITIONS, krp-core/src/polyhedra/miscellaneous/quad-prisms/)
  * directly -- not a parallel re-derivation. Checks: Euler's formula,
  * every lateral face planar with 4 right angles, the two caps genuinely
  * congruent to the real Catalan-solid face each piece was extruded
@@ -8,11 +8,11 @@
  * "all-square" (rhombus bases) / "2 square + 2 rectangle" (kite bases)
  * claim measured directly rather than assumed from the construction.
  */
-import { QUAD_PRISM_ADDITIONS, QUAD_PRISM_ADDITION_IDS } from '../app/lib/polyhedra/miscellaneous/quad-prisms';
-import { CATALAN_ADDITIONS } from '../app/lib/polyhedra/catalan';
-import { dist, facesCongruent, isRegularFace, type Vec3 } from '../app/lib/polyhedra/core';
-import { measureRhombusFace } from '../app/lib/rvcmg/adapters/rhombusToUHex';
-import { measureKiteFace } from '../app/lib/rvcmg/adapters/kiteToUHex';
+import { QUAD_PRISM_ADDITIONS, QUAD_PRISM_ADDITION_IDS } from '../krp-core/src/polyhedra/miscellaneous/quad-prisms/index.js';
+import { CATALAN_ADDITIONS } from '../krp-core/src/polyhedra/catalan.js';
+import { dist, facesCongruent, isRegularFace, type Vec3 } from '../krp-core/src/polyhedra/core.js';
+import { measureRhombusFace } from '../krp-core/src/rvcmg/adapters/rhombusToUHex.js';
+import { measureKiteFace } from '../krp-core/src/rvcmg/adapters/kiteToUHex.js';
 
 let failures = 0;
 function check(label: string, condition: boolean) {

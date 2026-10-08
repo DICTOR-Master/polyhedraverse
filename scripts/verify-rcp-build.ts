@@ -1,6 +1,6 @@
 /**
  * Verifies the RCP-C2B (Radial Cell Projection, click-to-build) bridge
- * (app/lib/polyhedra/rcpBuild.ts) directly against real closures for a
+ * (krp-core/src/polyhedra/rcpBuild.js) directly against real closures for a
  * few seeds and a couple of shells each: every synthetic PolyhedronSpec
  * `buildSyntheticCellSpec` produces must be a genuinely valid closed
  * solid -- Euler's formula (V - E + F = 2) and every face's own
@@ -9,9 +9,9 @@
  * precedent for a new shape-construction path needing its own dedicated
  * verify script.
  */
-import { POLYHEDRA } from '../app/lib/polyhedra';
-import { triangulateFace, type Vec3 } from '../app/lib/polyhedra/core';
-import { buildRcpComplex, buildSyntheticCellSpec, cellsAtShell, maxShell, rootSpecForView, windingOutwardness } from '../app/lib/polyhedra/rcpBuild';
+import { POLYHEDRA } from '../krp-core/src/polyhedra/index.js';
+import { triangulateFace, type Vec3 } from '../krp-core/src/polyhedra/core.js';
+import { buildRcpComplex, buildSyntheticCellSpec, cellsAtShell, maxShell, rootSpecForView, windingOutwardness } from '../krp-core/src/polyhedra/rcpBuild.js';
 
 let failures = 0;
 function check(label: string, condition: boolean) {

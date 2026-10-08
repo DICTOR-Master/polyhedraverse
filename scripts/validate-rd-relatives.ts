@@ -1,6 +1,6 @@
-import { RD_RELATIVES_ADDITIONS, RD_RELATIVES_ADDITION_IDS } from '../app/lib/polyhedra/miscellaneous/rd-relatives';
-import { CATALAN_ADDITIONS } from '../app/lib/polyhedra/catalan';
-import { dist, facesCongruent, type Vec3 } from '../app/lib/polyhedra/core';
+import { RD_RELATIVES_ADDITIONS, RD_RELATIVES_ADDITION_IDS } from '../krp-core/src/polyhedra/miscellaneous/rd-relatives/index.js';
+import { CATALAN_ADDITIONS } from '../krp-core/src/polyhedra/catalan.js';
+import { dist, facesCongruent, type Vec3 } from '../krp-core/src/polyhedra/core.js';
 
 function cross(a: Vec3, b: Vec3): Vec3 {
   return [a[1] * b[2] - a[2] * b[1], a[2] * b[0] - a[0] * b[2], a[0] * b[1] - a[1] * b[0]];

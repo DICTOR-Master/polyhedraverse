@@ -4,9 +4,9 @@
  * table (TARGETS.md, rhombic dodecahedron rows), validateShape passes, and
  * all 24 are in the Parallelohedra family.
  */
-import { POLYHEDRA } from '../app/lib/polyhedra';
-import { validateShape } from '../app/lib/polyhedra/core';
-import { KALEIDOHEDRA_RD_TARGETS, familyIds } from '../app/lib/polyhedra/families';
+import { POLYHEDRA } from '../krp-core/src/polyhedra/index.js';
+import { validateShape } from '../krp-core/src/polyhedra/core.js';
+import { KALEIDOHEDRA_RD_TARGETS, familyIds } from '../krp-core/src/polyhedra/families.js';
 
 let failures = 0;
 let checks = 0;

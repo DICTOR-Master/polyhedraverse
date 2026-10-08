@@ -15,9 +15,9 @@
  *    geometry, projected into its own 2D plane -- not reusing the earlier
  *    idealized-pentagon check.
  */
-import { STAR_POLYHEDRA, STAR_POLYHEDRON_IDS } from '../app/lib/polyhedra/starPolyhedra';
-import { triangulateStarFace, type Triangle3 } from '../app/lib/polyhedra/starTriangulation';
-import { type Vec3 } from '../app/lib/polyhedra/core';
+import { STAR_POLYHEDRA, STAR_POLYHEDRON_IDS } from '../krp-core/src/polyhedra/starPolyhedra.js';
+import { triangulateStarFace, type Triangle3 } from '../krp-core/src/polyhedra/starTriangulation.js';
+import { type Vec3 } from '../krp-core/src/polyhedra/core.js';
 
 function sub3(a: Vec3, b: Vec3): Vec3 {
   return [a[0] - b[0], a[1] - b[1], a[2] - b[2]];

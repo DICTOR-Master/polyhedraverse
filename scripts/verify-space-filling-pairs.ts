@@ -13,8 +13,8 @@
  */
 import * as THREE from 'three';
 import { ConvexHull } from 'three/examples/jsm/math/ConvexHull.js';
-import { POLYHEDRA } from '../app/lib/polyhedra';
-import { SPACE_FILLING_PAIR_LIST, familyIds } from '../app/lib/polyhedra/families';
+import { POLYHEDRA } from '../krp-core/src/polyhedra/index.js';
+import { SPACE_FILLING_PAIR_LIST, familyIds } from '../krp-core/src/polyhedra/families.js';
 
 let failures = 0;
 function check(label: string, ok: boolean) {

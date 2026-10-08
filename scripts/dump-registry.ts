@@ -6,7 +6,7 @@ import {
   JOHNSON_ADDITION_IDS,
   CATALAN_ADDITION_IDS,
   PRISM_ANTIPRISM_ADDITION_IDS,
-} from '../app/lib/polyhedra';
+} from '../krp-core/src/polyhedra/index.js';
 
 const familyOf: Record<string, string> = {};
 DELTAHEDRON_IDS.forEach((id) => (familyOf[id] = 'DELTAHEDRA'));

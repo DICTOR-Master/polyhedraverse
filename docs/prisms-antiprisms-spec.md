@@ -13,7 +13,7 @@ to `POLYHEDRA` in its own right. This isn't a gap in Zalgaller's
 classification — it's a gap in this registry's coverage of it.
 
 Confirmed directly (not assumed) before writing this doc: grepping
-`app/lib/polyhedra/*.ts` for any top-level `PRISM`/`ANTIPRISM` export
+`krp-core/src/polyhedra/*.ts` for any top-level `PRISM`/`ANTIPRISM` export
 found none — every mention is inside a Johnson-solid doc comment
 describing a construction step, never a registered shape.
 

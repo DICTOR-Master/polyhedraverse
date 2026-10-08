@@ -5,17 +5,17 @@
  * unfolded flat and folded back up, with a slider and a play button, and a
  * printable A4 PDF with optional glue tabs. It lives in the shape's own
  * detail view, apart from the scene, so the build is never touched (direct
- * decision: "own overlay"). The geometry is app/lib/nets/unfold.ts; the
- * PDF is app/lib/nets/printable.ts.
+ * decision: "own overlay"). The geometry is krp-core/src/polyhedra-nets/unfold.js; the
+ * PDF is krp-core/src/polyhedra-nets/printable.ts.
  */
 
 import { useEffect, useRef, useState } from 'react';
 import * as THREE from 'three';
 import { OrbitControls } from 'three/examples/jsm/controls/OrbitControls.js';
 import { attachHeadLight } from '../../lib/headLight';
-import { getAnySpec } from '../../lib/polyhedra/lookup';
-import { netOf, triangulate, type Net } from '../../lib/nets/unfold';
-import { printableNetPdf } from '../../lib/nets/printable';
+import { getAnySpec } from '../../../krp-core/src/polyhedra/lookup.js';
+import { netOf, triangulate, type Net } from '../../../krp-core/src/polyhedra-nets/unfold.js';
+import { printableNetPdf } from '../../../krp-core/src/polyhedra-nets/printable.js';
 import { t, type LangCode } from '../../lib/i18n';
 
 const FACE_COLOR = 0x47cc24;

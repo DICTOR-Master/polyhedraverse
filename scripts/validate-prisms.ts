@@ -1,5 +1,5 @@
-import { PRISM_ANTIPRISM_ADDITIONS, PRISM_ANTIPRISM_ADDITION_IDS } from '../app/lib/polyhedra/prisms';
-import { validateShape } from '../app/lib/polyhedra/core';
+import { PRISM_ANTIPRISM_ADDITIONS, PRISM_ANTIPRISM_ADDITION_IDS } from '../krp-core/src/polyhedra/prisms.js';
+import { validateShape } from '../krp-core/src/polyhedra/core.js';
 
 let failed = false;
 for (const id of PRISM_ANTIPRISM_ADDITION_IDS) {

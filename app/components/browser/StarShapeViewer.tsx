@@ -26,8 +26,8 @@ import { useEffect, useRef, useState } from 'react';
 import * as THREE from 'three';
 import { attachHeadLight } from '../../lib/headLight';
 import { OrbitControls } from 'three/examples/jsm/controls/OrbitControls.js';
-import { STAR_POLYHEDRA } from '../../lib/polyhedra/starPolyhedra';
-import { triangulateStarFace } from '../../lib/polyhedra/starTriangulation';
+import { STAR_POLYHEDRA } from '../../../krp-core/src/polyhedra/starPolyhedra.js';
+import { triangulateStarFace } from '../../../krp-core/src/polyhedra/starTriangulation.js';
 
 const LINE_COLOR = 0x47cc24;
 const FACE_COLOR = 0x47cc24;

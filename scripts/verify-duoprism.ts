@@ -1,5 +1,5 @@
-import { POLYHEDRA, POLYHEDRON_IDS, STELLATION_IDS } from '../app/lib/polyhedra';
-import { FOURD_CAPABLE_IDS } from '../app/lib/polyhedra/fourD';
+import { POLYHEDRA, POLYHEDRON_IDS, STELLATION_IDS } from '../krp-core/src/polyhedra/index.js';
+import { FOURD_CAPABLE_IDS } from '../krp-core/src/polyhedra/fourD.js';
 import {
   buildWallPrism,
   duoprismCombinatorics,
@@ -8,8 +8,8 @@ import {
   duoprismViewDepth,
   buildDuoprismShadow,
   type WallPrismRaw,
-} from '../app/lib/polyhedra/duoprism';
-import { buildFaceConnectors, type PolyhedronSpec } from '../app/lib/polyhedra/core';
+} from '../krp-core/src/polyhedra/duoprism.js';
+import { buildFaceConnectors, type PolyhedronSpec } from '../krp-core/src/polyhedra/core.js';
 import { isValidAssembly, type Assembly } from '../app/lib/assembly';
 
 type Vec3 = [number, number, number];

@@ -8,7 +8,7 @@ reports them.
 
 ## 1. The general shape of the argument
 
-Every RD facet normal (`app/lib/polyhedra/composite-seed-rcp/lattice.ts`'s
+Every RD facet normal (`krp-core/src/polyhedra/composite-seed-rcp/lattice.js`'s
 `RD_FACET_NORMALS`) is a unit vector of the form `(±1,±1,0)/√2` — a
 ⟨110⟩-type direction (two equal-magnitude nonzero coordinates). This is
 not particular to any one facet; it's true of all 12 by construction

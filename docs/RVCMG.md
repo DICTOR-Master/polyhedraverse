@@ -488,7 +488,7 @@ For a definitive numerical implementation, the following must therefore be fixed
 
 These quantities should be taken from the actual hemi-RD construction, not approximated.
 
-**Resolved (2026-09-15):** the actual hemi-RD interface has been derived from Polyhedraverse's own verified rhombic-dodecahedron registry entry (`app/lib/rvcmg/hemiRdInterface.ts`) and confirmed computationally to be a genuinely non-regular hexagon (D2h symmetry — 4 edges of one length, 2 opposite edges of a longer length). All six requirements above are satisfied by the shipped implementation; see `docs/rvcmg-adapter-pieces-spec.md` for the full record.
+**Resolved (2026-09-15):** the actual hemi-RD interface has been derived from Polyhedraverse's own verified rhombic-dodecahedron registry entry (`krp-core/src/rvcmg/hemiRdInterface.js`) and confirmed computationally to be a genuinely non-regular hexagon (D2h symmetry — 4 edges of one length, 2 opposite edges of a longer length). All six requirements above are satisfied by the shipped implementation; see `docs/rvcmg-adapter-pieces-spec.md` for the full record.
 
 ---
 
@@ -531,7 +531,7 @@ The numerical endpoint geometries and transformation maps should be regarded as 
 
 This separation prevents the conceptual framework from being confused with any particular interpolation algorithm or physical mechanism.
 
-**Implemented and independently verified (2026-09-15)**: `coalesce()`, `separate()`, the state graph, `interpolate()`, and the full §25.1–§25.8 verification suite are built and passing (`app/lib/rvcmg/`, `npm run verify:rvcmg-*` + `test:rvcmg`). The framework's own reversibility principle (§9) is additionally proven as a true multiply/divide duality — `splitVertex()` implements the general "one vertex → two" inverse of `coalesce()` for any vertex, not only a vertex previously produced by coalescence — and demonstrated by constructing real 7- and 8-vertex regular interface states from the 6-vertex source (`app/lib/rvcmg/split-demos/`), not only the 3-, 4-, and 5-vertex reductions this document names as the principal states. See `docs/rvcmg-adapter-pieces-spec.md` for the full build record, including the six derived physical adapter states.
+**Implemented and independently verified (2026-09-15)**: `coalesce()`, `separate()`, the state graph, `interpolate()`, and the full §25.1–§25.8 verification suite are built and passing (`krp-core/src/rvcmg/`, `npm run verify:rvcmg-*` + `test:rvcmg`). The framework's own reversibility principle (§9) is additionally proven as a true multiply/divide duality — `splitVertex()` implements the general "one vertex → two" inverse of `coalesce()` for any vertex, not only a vertex previously produced by coalescence — and demonstrated by constructing real 7- and 8-vertex regular interface states from the 6-vertex source (`krp-core/src/rvcmg/split-demos/`), not only the 3-, 4-, and 5-vertex reductions this document names as the principal states. See `docs/rvcmg-adapter-pieces-spec.md` for the full build record, including the six derived physical adapter states.
 
 ---
 
@@ -586,4 +586,4 @@ And the resulting system is not a ladder of polygon counts but a reversible geom
 
 A staged, Claude-Code-ready implementation plan for this specification (module scaffolding, the `coalesce()`/`separate()` primitives, the state graph, interpolation, and the §25 verification suite) is maintained separately as **`docs/RVCMG-implementation-plan.md`** in the Polyhedraverse project docs. This document is the normative geometric specification; that plan (and its execution) is built against it.
 
-**Status (2026-09-15): built and verified**, `app/lib/rvcmg/` — every stage of the implementation plan, the general multiply/divide duality (`coalesce()`/`splitVertex()`, `separate()` as the narrower coalesce-undo convenience), and a family of physical adapter pieces derived from the hemi-RD interface for real hexagon-, triangle-, square-, pentagon-, rhombus-, and kite-faced polyhedra. Full build record, including real bugs found only by implementing this specification (not by reading it), in **`docs/rvcmg-adapter-pieces-spec.md`**.
+**Status (2026-09-15): built and verified**, `krp-core/src/rvcmg/` — every stage of the implementation plan, the general multiply/divide duality (`coalesce()`/`splitVertex()`, `separate()` as the narrower coalesce-undo convenience), and a family of physical adapter pieces derived from the hemi-RD interface for real hexagon-, triangle-, square-, pentagon-, rhombus-, and kite-faced polyhedra. Full build record, including real bugs found only by implementing this specification (not by reading it), in **`docs/rvcmg-adapter-pieces-spec.md`**.

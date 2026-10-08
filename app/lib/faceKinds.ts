@@ -5,8 +5,8 @@
  * hexagons read at a glance. One colour per polygon kind; every rhombus
  * angle shares the rhombus colour.
  */
-import type { PolyhedronSpec } from './polyhedra/core';
-import { KALEIDOHEDRA_VERIFIED, REGULAR_NINE_NEW } from './polyhedra/families';
+import type { PolyhedronSpec } from '../../krp-core/src/polyhedra/core.js';
+import { KALEIDOHEDRA_VERIFIED, REGULAR_NINE_NEW } from '../../krp-core/src/polyhedra/families.js';
 
 export type FaceKind = 'triangle' | 'square' | 'rhombus' | 'regularHexagon' | 'hexagon' | 'other';
 

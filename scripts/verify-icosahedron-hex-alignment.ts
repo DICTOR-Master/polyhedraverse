@@ -1,6 +1,6 @@
 /**
  * Independently re-derives `REGULAR_HEX_WALL_HEIGHT`
- * (app/lib/polyhedra/miscellaneous/rvcmg-connectors-v2/index.ts) from
+ * (krp-core/src/polyhedra/miscellaneous/rvcmg-connectors-v2/index.js) from
  * scratch, via the SAME real placement math the app itself uses
  * (`computeFaceAttach`, mirrored from scripts/verify-face-attach.ts),
  * rather than trusting the hardcoded literal there. If this ever drifts
@@ -21,13 +21,13 @@
  * not an approximation).
  */
 import * as THREE from 'three';
-import { POLYHEDRA } from '../app/lib/polyhedra';
-import { buildFaceConnectors, type Vec3, type PolyhedronSpec } from '../app/lib/polyhedra/core';
-import { deriveTriangleToUHex } from '../app/lib/rvcmg/adapters/triangleToUHex';
-import { deriveRegularHexToUHex } from '../app/lib/rvcmg/adapters/regularHexToUHex';
-import { buildAdapterSolid } from '../app/lib/rvcmg/solid';
-import { universalHexInterfaceFrame, HEX_CIRCUMRADIUS } from '../app/lib/rvcmg/universalHexInterface';
-import { RVCMG_V2_CONNECTOR_ADDITIONS } from '../app/lib/polyhedra/miscellaneous/rvcmg-connectors-v2';
+import { POLYHEDRA } from '../krp-core/src/polyhedra/index.js';
+import { buildFaceConnectors, type Vec3, type PolyhedronSpec } from '../krp-core/src/polyhedra/core.js';
+import { deriveTriangleToUHex } from '../krp-core/src/rvcmg/adapters/triangleToUHex.js';
+import { deriveRegularHexToUHex } from '../krp-core/src/rvcmg/adapters/regularHexToUHex.js';
+import { buildAdapterSolid } from '../krp-core/src/rvcmg/solid.js';
+import { universalHexInterfaceFrame, HEX_CIRCUMRADIUS } from '../krp-core/src/rvcmg/universalHexInterface.js';
+import { RVCMG_V2_CONNECTOR_ADDITIONS } from '../krp-core/src/polyhedra/miscellaneous/rvcmg-connectors-v2/index.js';
 
 let failures = 0;
 function check(label: string, condition: boolean) {

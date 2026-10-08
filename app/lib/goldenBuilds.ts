@@ -13,8 +13,8 @@
  * scripts/verify-aperiodic-sets.ts checks the result is named correctly.
  */
 import { Matrix3, Matrix4, Quaternion, Vector3 } from 'three';
-import { POLYHEDRA, type PolyhedronSpec } from './polyhedra';
-import { GOLDEN_AXES } from './polyhedra/goldenAxes';
+import { POLYHEDRA, type PolyhedronSpec } from '../../krp-core/src/polyhedra/index.js';
+import { GOLDEN_AXES } from '../../krp-core/src/polyhedra/goldenAxes.js';
 import type { Assembly, AssemblyConnection, AssemblyNode } from './assembly';
 
 const AXES = GOLDEN_AXES.map(([x, y, z]) => new Vector3(x, y, z));

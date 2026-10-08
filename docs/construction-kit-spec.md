@@ -43,7 +43,7 @@ connection to the user rather than silently guessing a placement.
 
 ## Adding new polyhedra (modularity)
 
-The registry now lives in `app/lib/polyhedra/` — `core.ts` (family-agnostic
+The registry now lives in `krp-core/src/polyhedra/` — `core.ts` (family-agnostic
 infrastructure: `PolyhedronSpec`, `makeSpec`, `buildConnectors`,
 `validateShape`, `triangulateFace`), one file per family
 (`deltahedra.ts`, `platonic.ts`, and eventually `archimedean.ts`,
@@ -96,7 +96,7 @@ hand-derive face lists for anything non-trivial.
 **Dual / face-snap mode — done** (user, 2026-09-08: shapes with matching
 face geometry should connect via shared faces, plus an inside/cutaway
 view toggle). Built exactly as sketched: `buildFaceConnectors()`
-(`app/lib/polyhedra/core.ts`) computes `{ faceIndex, size, pos:
+(`krp-core/src/polyhedra/core.js`) computes `{ faceIndex, size, pos:
 centroid(face), normal: outwardNormal(face) }` from `vertices` + `faces`,
 no change to `PolyhedronSpec` itself. Two things the original sketch
 didn't anticipate, both load-bearing:

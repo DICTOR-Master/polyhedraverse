@@ -9,7 +9,7 @@
  * names), with brand green standing in for its grey-blue "Default".
  */
 
-import { familiesFor, KALEIDOHEDRA_VERIFIED, REGULAR_NINE_NEW, type FamilyKey } from './polyhedra/families';
+import { familiesFor, KALEIDOHEDRA_VERIFIED, REGULAR_NINE_NEW, type FamilyKey } from '../../krp-core/src/polyhedra/families.js';
 
 export const NODE_BASE_COLOR = 0x47cc24;
 

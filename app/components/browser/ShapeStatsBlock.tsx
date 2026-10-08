@@ -1,8 +1,8 @@
 'use client';
 
-import { getAnySpec, isStarPolyhedron } from '../../lib/polyhedra/lookup';
-import { FAMILY_META, familiesFor, catalogByFamily } from '../../lib/polyhedra/families';
-import { STAR_POLYHEDRON_META } from '../../lib/polyhedra/starPolyhedra';
+import { getAnySpec, isStarPolyhedron } from '../../../krp-core/src/polyhedra/lookup.js';
+import { FAMILY_META, familiesFor, catalogByFamily } from '../../../krp-core/src/polyhedra/families.js';
+import { STAR_POLYHEDRON_META } from '../../../krp-core/src/polyhedra/starPolyhedra.js';
 import { t, type LangCode } from '../../lib/i18n';
 
 /** Stats + face-shape chips + full family-membership list, shared by the

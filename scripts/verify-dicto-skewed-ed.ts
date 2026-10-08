@@ -15,9 +15,9 @@
  *   - each direction set tiles space by translation (Venkov: centrally
  *     symmetric, every belt of 4 or 6 faces).
  */
-import { POLYHEDRA } from '../app/lib/polyhedra';
-import { type Vec3, validateShape } from '../app/lib/polyhedra/core';
-import { ZOME_DIRECTIONS, ZOME_X, DICTO_SKEWED_ED_16_DIRECTION, DICTO_SKEWED_ED_18_DIRECTION } from '../app/lib/polyhedra/miscellaneous';
+import { POLYHEDRA } from '../krp-core/src/polyhedra/index.js';
+import { type Vec3, validateShape } from '../krp-core/src/polyhedra/core.js';
+import { ZOME_DIRECTIONS, ZOME_X, DICTO_SKEWED_ED_16_DIRECTION, DICTO_SKEWED_ED_18_DIRECTION } from '../krp-core/src/polyhedra/miscellaneous/index.js';
 
 let failures = 0;
 const check = (ok: boolean, msg: string) => { console.log(`${ok ? 'OK  ' : 'FAIL'} ${msg}`); if (!ok) failures++; };

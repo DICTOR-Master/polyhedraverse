@@ -7,7 +7,7 @@ scoping.
 
 The 13 Catalan solids are the exact face/vertex duals of the 13
 Archimedean solids — every one of which is already in this registry,
-verified (`app/lib/polyhedra/archimedean.ts`). Scoped as the next family
+verified (`krp-core/src/polyhedra/archimedean.js`). Scoped as the next family
 after the Johnson solids finish, per direct user request (2026-09-08),
 prompted by a question worth recording the answer to: is
 Platonic+Archimedean+Johnson+deltahedra already the complete list of

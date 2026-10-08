@@ -1,5 +1,5 @@
 /**
- * Checks the Aperiodic Sets family (app/lib/polyhedra/aperiodic.ts):
+ * Checks the Aperiodic Sets family (krp-core/src/polyhedra/aperiodic.js):
  * - both golden rhombohedra: 8 corners, 12 edges all 1/phi (the rhombic
  *   triacontahedron's edge), 6 flat outward faces each starting at its
  *   acute corner, volumes in the golden ratio;
@@ -14,9 +14,9 @@
 import { Vector3 } from 'three';
 import { goldenZonohedron } from '../app/lib/goldenBuilds';
 import { isValidAssembly } from '../app/lib/assembly';
-import { POLYHEDRA, facesCongruent } from '../app/lib/polyhedra';
+import { POLYHEDRA, facesCongruent } from '../krp-core/src/polyhedra/index.js';
 import { describeAssembly } from '../app/lib/assemblyNaming';
-import { pairPartners } from '../app/lib/polyhedra/families';
+import { pairPartners } from '../krp-core/src/polyhedra/families.js';
 
 let failures = 0;
 function check(label: string, ok: boolean, extra = '') {

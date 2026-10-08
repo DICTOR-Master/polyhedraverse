@@ -17,7 +17,7 @@ hex was never going to fit inside the tightest target case, a full
 align cleanly with a triangle's 3-fold symmetry — confirmed
 computationally, not assumed.
 
-**The new hex** (`app/lib/rvcmg/universalHexInterface.ts`,
+**The new hex** (`krp-core/src/rvcmg/universalHexInterface.js`,
 `UNIVERSAL_HEX_INTERFACE`): a plain, freestanding REGULAR hexagon (full
 6-fold symmetry, not derived from any existing polyhedron), circumradius
 = edge = `sqrt(2)/2` — direct user decision, sized to sit between the
@@ -33,8 +33,8 @@ functional for triangle, square, and pentagon without dramatically
 waisting between them" — direct user framing), not merely "smaller than
 before."
 
-**8 new pieces** (`app/lib/rvcmg/adapters/*ToUHex.ts`,
-`app/lib/polyhedra/miscellaneous/rvcmg-connectors-v2/`), **no RD-Hemi**
+**8 new pieces** (`krp-core/src/rvcmg/adapters/*ToUHex.ts`,
+`krp-core/src/polyhedra/miscellaneous/rvcmg-connectors-v2/`), **no RD-Hemi**
 (direct user instruction — the hex is no longer tied to a real RD's own
 native scale, so there is no "bare dome" piece in v2):
 
@@ -78,11 +78,11 @@ bit-rot unnoticed.
 **Status (2026-09-15): DONE — the full family is real, placeable, and
 registered.** Stages 0-7 (the core math library, including the general
 "multiply" primitive `splitVertex()`) were done first. Stage 8
-(`app/lib/rvcmg/solid.ts`) then turned all 7 flat-hexed adapter pieces
+(`krp-core/src/rvcmg/solid.js`) then turned all 7 flat-hexed adapter pieces
 (Triangle, Square, Pentagon, Golden-rhombus, DI-kite, DH-kite,
 Regular-Hexagon) into real closed 3D solids, with a convex,
 correctly-triangulated wall and correct face-attach eligibility
-(`attachableFaceIndices`). `app/lib/rvcmg/rdHemi.ts` then added the
+(`attachableFaceIndices`). `krp-core/src/rvcmg/rdHemi.js` then added the
 8th, structurally different piece: the real bare RD-Hemi (an actual
 half-rhombic-dodecahedron dome, not a flat-hexed taper), whose own real
 rhombic faces attach both to itself (the "hourglass" — two RD-Hemis
@@ -180,7 +180,7 @@ mid-session — kept separate here on purpose:
   against — because these pieces have no real 3D solid geometry or
   face-attach integration yet (see "Outstanding" below).
 
-## The core library (Stages 0-7, `app/lib/rvcmg/`)
+## The core library (Stages 0-7, `krp-core/src/rvcmg/`)
 
 Built stage-by-stage per `docs/RVCMG-implementation-plan.md`, one commit per
 stage, each verified before the next started (matching this project's
@@ -263,7 +263,7 @@ interpolate from; an options bag for 25.5/25.7's "when one is
 supplied"/"if two paths are claimed equivalent") since neither check is
 expressible without something to compare against.
 
-## Adapter pieces (`app/lib/rvcmg/adapters/`)
+## Adapter pieces (`krp-core/src/rvcmg/adapters/`)
 
 ### Triangle-to-RD-H — done, verified (`triangleToRdH.ts`)
 
@@ -492,9 +492,9 @@ reversibility of the whole composite.
 ## Splitting the OTHER way: proving the multiply direction
 
 Separate from the 6 adapter pieces (all of which divide the hex
-interface down): `app/lib/rvcmg/splitVertex.ts` adds the general
+interface down): `krp-core/src/rvcmg/splitVertex.js` adds the general
 "multiply" primitive the library was missing (see this doc's own
-"reversibility" section above), and `app/lib/rvcmg/split-demos/` proves
+"reversibility" section above), and `krp-core/src/rvcmg/split-demos/` proves
 it works by building real regular 7- and 8-gons FROM the hex interface
 by splitting rather than merging (direct user request). Not adapter
 pieces — no physical target shape names a 7- or 8-vertex Catalan/
@@ -506,8 +506,8 @@ real and general, not a divide-only illusion.
 Every item below is now shipped. Kept as a historical record of what
 was planned, not a live TODO list.
 
-- **3D solid extrusion**: done — `app/lib/rvcmg/solid.ts`
-  (`buildAdapterSolid`) for the 7 flat-hexed pieces, `app/lib/rvcmg/
+- **3D solid extrusion**: done — `krp-core/src/rvcmg/solid.js`
+  (`buildAdapterSolid`) for the 7 flat-hexed pieces, `krp-core/src/rvcmg/
   rdHemi.ts` (`buildRdHemiSolid`) for the real bare RD-Hemi dome. The
   wall is a triangulated (never quad) taper, with the diagonal at each
   boundary chosen per-quad to stay locally convex
@@ -520,7 +520,7 @@ was planned, not a live TODO list.
   as anticipated — no separate morph-explorer UI was built; the real
   registry entries ARE the deliverable.
 - **UI integration model**: done exactly as specified — these 8 pieces
-  are real `PolyhedronSpec` entries (`app/lib/polyhedra/miscellaneous/
+  are real `PolyhedronSpec` entries (`krp-core/src/polyhedra/miscellaneous/
   rvcmg-connectors/`) that face-attach via the app's own ordinary
   `facesCongruent`/`computeFaceAttach` mechanic, no bespoke interaction
   built. A new `attachableFaceIndices` field on `PolyhedronSpec`
@@ -545,8 +545,8 @@ user's own framing — not a coincidence, a shared home for "attachable
 pieces that aren't one of the classical polyhedron families."
 
 **Done and registered for all three currently-supported bases**
-(triangular/square/pentagonal — `app/lib/polyhedra/gradedPyramids.ts`
-for the construction math, `app/lib/polyhedra/miscellaneous/pyramids.ts`
+(triangular/square/pentagonal — `krp-core/src/polyhedra/gradedPyramids.js`
+for the construction math, `krp-core/src/polyhedra/miscellaneous/pyramids.js`
 for the 12 real registry entries, `npm run validate:graded-pyramids`,
 46 checks, all passing): for a regular n-gon base of unit edge,
 `apexHeightForAngle(n, angle)` derives the exact height via
@@ -590,7 +590,7 @@ vertex for vertex — a strong correctness check on the apex-angle
 formula itself, not just an isolated new construction.
 
 **The "Miscellaneous" registry family is now real**
-(`app/lib/polyhedra/miscellaneous/` — a directory, not a single file,
+(`krp-core/src/polyhedra/miscellaneous/` — a directory, not a single file,
 since this family is expected to grow from more than one source; add a
 new sub-file per source and combine in `miscellaneous/index.ts`, the
 same pattern every other family file already follows one level up).
@@ -620,7 +620,7 @@ placeholder `FOURD` uses) — a real UI design decision, not done yet.
 
 **Done since the above was written (2026-09-15, same day, later
 session)**:
-- `app/lib/polyhedra/miscellaneous/` restructured from a flat
+- `krp-core/src/polyhedra/miscellaneous/` restructured from a flat
   `pyramids.ts` file into two independently-growable sub-directories:
   `pyramids/` (the existing graded pyramids, moved unchanged) and
   `rvcmg-connectors/` (a real but empty scaffold — `RVCMG_CONNECTOR_

@@ -18,14 +18,14 @@
  */
 
 import { useEffect } from 'react';
-import { FAMILY_ORDER, FAMILY_META, familyIds, SPACE_FILLING_PAIR_LIST, FEDOROV_FIVE, PARALLELOHEDRON_VARIANTS, KALEIDOHEDRA_VERIFIED, REGULAR_NINE, type FamilyKey } from '../../lib/polyhedra/families';
-import { STAR_POLYHEDRON_IDS } from '../../lib/polyhedra/starPolyhedra';
-import { BRIDGE_SECTIONS } from '../../lib/polyhedra/bridges';
-import { STELLATION_IDS, stellationInfo, stellatedSolidName } from '../../lib/polyhedra/stellations';
+import { FAMILY_ORDER, FAMILY_META, familyIds, SPACE_FILLING_PAIR_LIST, FEDOROV_FIVE, PARALLELOHEDRON_VARIANTS, KALEIDOHEDRA_VERIFIED, REGULAR_NINE, type FamilyKey } from '../../../krp-core/src/polyhedra/families.js';
+import { STAR_POLYHEDRON_IDS } from '../../../krp-core/src/polyhedra/starPolyhedra.js';
+import { BRIDGE_SECTIONS } from '../../../krp-core/src/polyhedra/bridges.js';
+import { STELLATION_IDS, stellationInfo, stellatedSolidName } from '../../../krp-core/src/polyhedra/stellations/index.js';
 import { t, type LangCode } from '../../lib/i18n';
 import ShapePreviewCard from './ShapePreviewCard';
 import PolytopeCard from './PolytopeCard';
-import { POLYTOPES_4D, SYMMETRIES_4D } from '../../lib/polyhedra/polytopes4d';
+import { POLYTOPES_4D, SYMMETRIES_4D } from '../../../krp-core/src/polyhedra/polytopes4d.js';
 
 /** DOM id for a given section's own heading, used by focusSection's
  *  scroll-into-view -- 'STAR' for the trailing star-polyhedra section,

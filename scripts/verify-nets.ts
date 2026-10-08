@@ -1,6 +1,6 @@
 /**
- * Verifies Nets (app/lib/nets/unfold.ts) across the whole registry, and
- * writes app/lib/nets/eligible.json, the shapes that get a Net button.
+ * Verifies Nets (krp-core/src/polyhedra-nets/unfold.js) across the whole registry, and
+ * writes krp-core/src/polyhedra-nets/eligible.json, the shapes that get a Net button.
  *
  * Every shape outside the star and 4D families (direct decision
  * 2026-09-30: star and other too-difficult shapes get no net) is unfolded.
@@ -11,9 +11,9 @@
  * Run with --write to refresh eligible.json; without it, the file must match.
  */
 import { writeFileSync, readFileSync } from 'fs';
-import { POLYHEDRA } from '../app/lib/polyhedra';
-import { FAMILY_ORDER, familyIds } from '../app/lib/polyhedra/families';
-import { netOf, apply, polygonsOverlap } from '../app/lib/nets/unfold';
+import { POLYHEDRA } from '../krp-core/src/polyhedra/index.js';
+import { FAMILY_ORDER, familyIds } from '../krp-core/src/polyhedra/families.js';
+import { netOf, apply, polygonsOverlap } from '../krp-core/src/polyhedra-nets/unfold.js';
 
 const NO_NET_FAMILIES = ['STELLATIONS', 'POLYTOPES_4D'];
 const excluded = new Set(NO_NET_FAMILIES.flatMap((k) => familyIds(k as (typeof FAMILY_ORDER)[number])));
@@ -42,7 +42,7 @@ for (const [id, spec] of Object.entries(POLYHEDRA)) {
   check(`${id}: ${net.hinges.length} hinges = faces - 1, + ${net.pairs.length} glued pairs = ${spec.edges.length} edges`, net.hinges.length === spec.faces.length - 1 && net.hinges.length + net.pairs.length === spec.edges.length);
 }
 console.log(`${eligible.length} shapes have a net; ${none.length} have none (${none.join(', ') || '-'}); ${excluded.size} star/4D shapes skipped. ${((Date.now() - t0) / 1000).toFixed(1)} s, slowest ${slowest.id} ${slowest.ms} ms.`);
-const file = 'app/lib/nets/eligible.json';
+const file = 'krp-core/src/polyhedra-nets/eligible.json';
 const json = JSON.stringify(eligible.sort(), null, 0) + '\n';
 if (process.argv.includes('--write')) writeFileSync(file, json);
 else check(`${file} matches (run with --write to refresh)`, readFileSync(file, 'utf8') === json);

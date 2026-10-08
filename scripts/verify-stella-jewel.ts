@@ -1,5 +1,5 @@
 /**
- * Verifies the Dragon Jewel and the stella octangula (app/lib/polyhedra/stellaJewel.ts), the
+ * Verifies the Dragon Jewel and the stella octangula (krp-core/src/polyhedra/stellaJewel.js), the
  * Stella–Jewel Lattice pair from Kaleidohedra:
  *   - each is a closed surface (every edge on exactly two faces), wound outward;
  *   - Dragon Jewel: 12 rhombi of edge 1 with angles 72/108 (Penrose's thick rhombus) and 48
@@ -9,9 +9,9 @@
  *     points in a patch lie in exactly one piece (point-in-polyhedron by ray casting, since both
  *     are concave).
  */
-import { POLYHEDRA } from '../app/lib/polyhedra';
-import { familyIds, pairPartners } from '../app/lib/polyhedra/families';
-import type { Vec3 } from '../app/lib/polyhedra/core';
+import { POLYHEDRA } from '../krp-core/src/polyhedra/index.js';
+import { familyIds, pairPartners } from '../krp-core/src/polyhedra/families.js';
+import type { Vec3 } from '../krp-core/src/polyhedra/core.js';
 
 let failures = 0;
 const check = (label: string, ok: boolean) => { console.log(`${ok ? 'OK  ' : 'FAIL'} ${label}`); if (!ok) failures++; };

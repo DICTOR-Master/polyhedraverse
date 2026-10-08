@@ -1,5 +1,5 @@
-import { DELTAHEDRA } from '../app/lib/polyhedra/deltahedra';
-import { matchRewriteVertices } from '../app/lib/polyhedra/rewrite';
+import { DELTAHEDRA } from '../krp-core/src/polyhedra/deltahedra.js';
+import { matchRewriteVertices } from '../krp-core/src/polyhedra/rewrite.js';
 
 function normalize(v: readonly [number, number, number]): [number, number, number] {
   const len = Math.hypot(v[0], v[1], v[2]);

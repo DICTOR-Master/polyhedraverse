@@ -6,7 +6,7 @@
  * RCP-C2B with this polytope already chosen. The 600-cell can also be
  * built from a vertex (its 20-tetrahedron icosahedral cluster first).
  */
-import { polytope4D } from '../../lib/polyhedra/polytopes4d';
+import { polytope4D } from '../../../krp-core/src/polyhedra/polytopes4d.js';
 import { t, type LangCode } from '../../lib/i18n';
 import RadialProjectionViewer from './RadialProjectionViewer';
 import { polytopeLabel } from './PolytopeCard';

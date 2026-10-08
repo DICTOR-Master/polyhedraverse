@@ -143,18 +143,18 @@ downstream needs special-casing for that alone.
 ## Registry/family integration — deliberately OUTSIDE families.ts
 
 Star polyhedra do **not** become an 8th `FamilyKey` in
-`app/lib/polyhedra/families.ts` — that file is the wheel's own single
+`krp-core/src/polyhedra/families.js` — that file is the wheel's own single
 source of truth (`FAMILY_ORDER` drives `PolyhedralWheel`'s real
 face-attach-capable family list directly), and these must never appear
 there or they'd silently become "buildable" the moment anything reads
 `FAMILY_ORDER`. Instead:
 
-- `app/lib/polyhedra/starPolyhedra.ts`: the 4 specs, built via `makeSpec`,
+- `krp-core/src/polyhedra/starPolyhedra.js`: the 4 specs, built via `makeSpec`,
   exported as their own small `STAR_POLYHEDRA: Record<string,
   PolyhedronSpec>` plus `STAR_POLYHEDRON_IDS` and `STAR_POLYHEDRON_META`
   (Schläfli/density) — parallel to, but never merged into, the main
   `POLYHEDRA` registry `PolyhedralWheel`/face-attach code reads from.
-- `app/lib/polyhedra/lookup.ts` (new): `getAnySpec(id)` (checks
+- `krp-core/src/polyhedra/lookup.js` (new): `getAnySpec(id)` (checks
   `POLYHEDRA` then `STAR_POLYHEDRA`) and `isStarPolyhedron(id)` — a
   rendering-path-only lookup used by every display component
   (`ShapePreview`, `ShapePreviewCard`, `ShapeStatsBlock`,
@@ -174,7 +174,7 @@ there or they'd silently become "buildable" the moment anything reads
   4 languages) for these 4 ids specifically, and the preview slot renders
   `StarShapeViewer` (Stage 2, renamed from `StarWireframeViewer` once
   Stage 4 gave it real fills too) instead of the static `ShapePreview`.
-- `app/lib/polyhedra/starTriangulation.ts` (new, Stage 4): a real,
+- `krp-core/src/polyhedra/starTriangulation.js` (new, Stage 4): a real,
   numerically-verified triangulator for these 4 solids' own faces --
   winding-number-correct for pentagram faces, plain fan for the 2 solids
   whose faces are simple. Used only by `StarShapeViewer.tsx`; `core.ts`'s

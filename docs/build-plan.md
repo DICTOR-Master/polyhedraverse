@@ -302,7 +302,7 @@ The user expanded the intended scope (2026-09-08): grow into a genuine
 sibling of Rhombiverse covering all polyhedral families, not just the 8
 deltahedra. First step, done:
 
-- **Restructured `app/lib/deltahedra.ts` into `app/lib/polyhedra/`** — a
+- **Restructured `app/lib/deltahedra.ts` into `krp-core/src/polyhedra/`** — a
   directory per the "all inclusive appropriate directories" instruction,
   organized to scale as more families get added:
   - `core.ts` — family-agnostic infrastructure (`PolyhedronSpec`,
@@ -368,7 +368,7 @@ The user's next ask (2026-09-08): shapes with matching face geometry
 should connect via shared faces, not just vertex-to-vertex, plus an
 inside/cutaway view toggle. Both done:
 
-- **`buildFaceConnectors()`** (`app/lib/polyhedra/core.ts`) — the
+- **`buildFaceConnectors()`** (`krp-core/src/polyhedra/core.js`) — the
   face-snap-mode primitive `construction-kit-spec.md` already sketched:
   `{faceIndex, size, pos: centroid(face), normal: outwardNormal(face)}`,
   derived from `vertices` + `faces` the same way vertex connectors derive
@@ -455,7 +455,7 @@ low-transcription-risk coordinates (cuboctahedron, truncated tetrahedron,
 truncated octahedron), deliberately deferring the harder 10 (several need
 golden-ratio coordinates or a numerically-solved root for the two chiral
 snub solids — the same category of problem `Q_D12` already handles for
-deltahedra) to a follow-up rather than rushing them. `app/lib/polyhedra/archimedean.ts`.
+deltahedra) to a follow-up rather than rushing them. `krp-core/src/polyhedra/archimedean.js`.
 
 **Two real transcription bugs caught here, both instructive:**
 
@@ -687,7 +687,7 @@ full deferred list.
 the user's own call ("may have less empty space"). Built directly from
 this registry's own `POLYHEDRA.DODECAHEDRON` spec (vertices + faces
 already unit-edge, already validated), not a second hand-declared shape —
-same "derive, don't duplicate" rule every file in `app/lib/polyhedra/`
+same "derive, don't duplicate" rule every file in `krp-core/src/polyhedra/`
 already follows.
 
 **Color identity**: after initially porting Rhombiverse's exact colors
@@ -1670,7 +1670,7 @@ doc, not duplicated here, matching how Catalan solids/prisms-
 antiprisms/star polyhedra/the 4D extension each got their own spec doc
 after this file's own Johnson-solids batches above).
 
-Core math library (`app/lib/rvcmg/`, Stages 0-7 of
+Core math library (`krp-core/src/rvcmg/`, Stages 0-7 of
 `docs/RVCMG-implementation-plan.md`): done, fully verified (`npm run
 verify:rvcmg-*` + `test:rvcmg`), including the general "multiply"
 primitive (`splitVertex()`) added mid-session once the original
@@ -1679,7 +1679,7 @@ divide-only design was recognized as incomplete — proven both ways via
 pieces derived and verified, plus a 7th added afterward**:
 Triangle-to-RD-H, Square-to-RD-H, Pentagon-to-RD-H,
 Golden-rhombus-to-RD-H, DI-kite-to-RD-H, DH-kite-to-RD-H, and
-Regular-Hexagon-to-RD-H (`app/lib/rvcmg/adapters/`) — the family's math
+Regular-Hexagon-to-RD-H (`krp-core/src/rvcmg/adapters/`) — the family's math
 is complete. The real 3D solid extrusion (turning two flat cross-sections into a printable
 tapered piece) and face-attach/UI integration are still unbuilt — see
 the spec doc's own "Outstanding" section.

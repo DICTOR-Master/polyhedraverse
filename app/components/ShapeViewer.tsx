@@ -12,21 +12,21 @@ import {
   buildFaceConnectors,
   facesCongruent,
   isFaceEligibleForAttach,
-} from '../lib/polyhedra';
-import { DELTAHEDRA } from '../lib/polyhedra/deltahedra';
+} from '../../krp-core/src/polyhedra/index.js';
+import { DELTAHEDRA } from '../../krp-core/src/polyhedra/deltahedra.js';
 import { faceKindColorsOf, usesFaceKindColors } from '../lib/faceKinds';
 import { DEFAULT_COLOR_PREFS, NODE_BASE_COLOR, newPieceColor, pieceColorHex, type ColorPrefs, type PieceColorKey } from '../lib/pieceColors';
 import { emptyAssembly, isValidAssembly, migrateLegacyAssembly, ASSEMBLY_STORAGE_KEY, type Assembly } from '../lib/assembly';
-import { matchRewriteVertices, REWRITE_TARGET } from '../lib/polyhedra/rewrite';
+import { matchRewriteVertices, REWRITE_TARGET } from '../../krp-core/src/polyhedra/rewrite.js';
 import { collectSubtree, findParentConnection, hasCycle } from '../lib/graph';
 import { describeAssembly } from '../lib/assemblyNaming';
 import { faceAttachOptions } from '../lib/faceAttach';
 import { FaceIndex, rankFaceAttachOptions } from '../lib/faceRegistration';
-import { familyIds } from '../lib/polyhedra/families';
-import { FOURD_CAPABLE_IDS } from '../lib/polyhedra/fourD';
-import { buildWallPrism, duoprismBuildDepth } from '../lib/polyhedra/duoprism';
-import { buildRcpComplex, buildSyntheticCellSpec, cellsAtShell, maxShell, parseRcpTarget, rcpTargetOptions, rootSpecForView, type RcpComplex } from '../lib/polyhedra/rcpBuild';
-import { resolveParamsKey, FOUR_D_SHAPE_PARAMS } from '../lib/polyhedra/radialProjection';
+import { familyIds } from '../../krp-core/src/polyhedra/families.js';
+import { FOURD_CAPABLE_IDS } from '../../krp-core/src/polyhedra/fourD.js';
+import { buildWallPrism, duoprismBuildDepth } from '../../krp-core/src/polyhedra/duoprism.js';
+import { buildRcpComplex, buildSyntheticCellSpec, cellsAtShell, maxShell, parseRcpTarget, rcpTargetOptions, rootSpecForView, type RcpComplex } from '../../krp-core/src/polyhedra/rcpBuild.js';
+import { resolveParamsKey, FOUR_D_SHAPE_PARAMS } from '../../krp-core/src/polyhedra/radialProjection.js';
 
 const VERTEX_RADIUS = 0.06; // relative to unit edge length
 const COLOR_FREE = 0xffcc33;

@@ -23,7 +23,7 @@
  * exactly what the app does.
  */
 import * as THREE from 'three';
-import type { PolyhedronSpec } from './polyhedra/core';
+import type { PolyhedronSpec } from '../../krp-core/src/polyhedra/core.js';
 import type { FaceAttachOption } from './faceAttach';
 
 /** A built piece, in world space. */

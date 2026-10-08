@@ -8,8 +8,8 @@ against the cited file's own exported values.
 
 ## 1. The RCP reference engine
 
-**Location:** `app/lib/polyhedra/radialProjection.ts` (549 lines), with a
-supporting classifier at `app/lib/polyhedra/fourD.ts` (115 lines).
+**Location:** `krp-core/src/polyhedra/radialProjection.js` (549 lines), with a
+supporting classifier at `krp-core/src/polyhedra/fourD.js` (115 lines).
 
 ### 1.1 Formula-level match against RCP.pdf §4–§7
 
@@ -96,7 +96,7 @@ Everything `radialProjection.ts` exports: `Vec4`, `Mat4x4`, `IDENTITY4`,
 
 ## 2. RD (rhombic dodecahedron) geometry — two independent sources, checked against each other
 
-### 2.1 Polyhedraverse: `app/lib/polyhedra/catalan.ts`
+### 2.1 Polyhedraverse: `krp-core/src/polyhedra/catalan.js`
 
 `VERTS_RHOMBIC_DODECAHEDRON` (lines 56–61): 8 order-3 ("cube-type")
 vertices at `(±0.5, ±0.5, ±0.5)` and 6 order-4 ("octahedron-type")

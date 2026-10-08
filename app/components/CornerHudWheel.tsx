@@ -50,7 +50,7 @@
 
 import { useEffect, useRef } from 'react';
 import * as THREE from 'three';
-import { POLYHEDRA, triangulateFace, buildFaceConnectors, type Vec3 } from '../lib/polyhedra';
+import { POLYHEDRA, triangulateFace, buildFaceConnectors, type Vec3 } from '../../krp-core/src/polyhedra/index.js';
 import type { ViewMode } from './ShapeViewer';
 import { usePrefs } from '../lib/prefs';
 import { LANG_META, LANG_ORDER } from '../lib/i18n';

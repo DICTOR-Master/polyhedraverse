@@ -16,8 +16,8 @@ import {
   pairwiseAngles,
   gramMatrix,
   symmetricEigenvalues,
-} from '../app/lib/polyhedra/composite-seed-rcp/reflectionGroup';
-import { DELTA_RD } from '../app/lib/polyhedra/composite-seed-rcp/lattice';
+} from '../krp-core/src/polyhedra/composite-seed-rcp/reflectionGroup.js';
+import { DELTA_RD } from '../krp-core/src/polyhedra/composite-seed-rcp/lattice.js';
 
 let failures = 0;
 function check(label: string, cond: boolean) {

@@ -9,8 +9,8 @@
  * Poinsot table, not just whatever the construction code happened to
  * produce.
  */
-import { STAR_POLYHEDRA, STAR_POLYHEDRON_IDS, STAR_POLYHEDRON_META } from '../app/lib/polyhedra/starPolyhedra';
-import { validateShape, dist, type Vec3 } from '../app/lib/polyhedra/core';
+import { STAR_POLYHEDRA, STAR_POLYHEDRON_IDS, STAR_POLYHEDRON_META } from '../krp-core/src/polyhedra/starPolyhedra.js';
+import { validateShape, dist, type Vec3 } from '../krp-core/src/polyhedra/core.js';
 
 function sub(a: Vec3, b: Vec3): Vec3 {
   return [a[0] - b[0], a[1] - b[1], a[2] - b[2]];

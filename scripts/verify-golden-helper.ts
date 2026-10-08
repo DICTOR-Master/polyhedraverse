@@ -8,7 +8,7 @@
  */
 import { Quaternion, Vector3 } from 'three';
 import { ConvexHull } from 'three/examples/jsm/math/ConvexHull.js';
-import { POLYHEDRA } from '../app/lib/polyhedra';
+import { POLYHEDRA } from '../krp-core/src/polyhedra/index.js';
 import { isValidAssembly, type Assembly, type AssemblyNode } from '../app/lib/assembly';
 import { goldenStatus, withNextSafePiece } from '../app/lib/golden/goldenHelper';
 import { goldenZonohedron, withNextRecipePiece, GOLDEN_BUILDS } from '../app/lib/goldenBuilds';

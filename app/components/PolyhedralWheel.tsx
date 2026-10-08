@@ -23,7 +23,7 @@
  * Scope note: this first pass is the wheel SHELL plus the SHAPE PICKER
  * only (family-grouped: Deltahedra/Platonic/Archimedean/Johnson/Catalan/
  * Prisms/Antiprisms -- 7 families since Prisms and Antiprisms split into
- * two independently browsable families, see app/lib/polyhedra/families.ts),
+ * two independently browsable families, see krp-core/src/polyhedra/families.js),
  * per explicit user direction to build that before folding in actions
  * (augment/diminish), view modes (Spherical/X-Ray), or the corner HUD
  * element above. 7 families fit comfortably within the dodecahedron's 12
@@ -37,7 +37,7 @@
  * Geometry: reuses this registry's own POLYHEDRA.DODECAHEDRON spec
  * directly (vertices + faces already unit-edge, already validated) —
  * never a second hand-declared dodecahedron, same "derive, don't
- * duplicate" rule every other file in app/lib/polyhedra/ already follows.
+ * duplicate" rule every other file in krp-core/src/polyhedra/ already follows.
  */
 
 import { useEffect, useRef, useState, useCallback } from 'react';
@@ -48,8 +48,8 @@ import {
   triangulateFace,
   buildFaceConnectors,
   type Vec3,
-} from '../lib/polyhedra';
-import { FAMILY_ORDER, FAMILY_META, familyIds, type FamilyKey } from '../lib/polyhedra/families';
+} from '../../krp-core/src/polyhedra/index.js';
+import { FAMILY_ORDER, FAMILY_META, familyIds, type FamilyKey } from '../../krp-core/src/polyhedra/families.js';
 import { usePrefs } from '../lib/prefs';
 import { t } from '../lib/i18n';
 
@@ -211,7 +211,7 @@ function glyphAdjust(symbol: string): GlyphAdjust {
 }
 
 // Family list, order, labels/symbols, and per-family shape ordering are
-// all owned by app/lib/polyhedra/families.ts now -- the single source of
+// all owned by krp-core/src/polyhedra/families.js now -- the single source of
 // truth shared with the ShapeBrowser, so the wheel and the browser can
 // never disagree about family membership. Note this means a shape with a
 // documented cross-family membership (e.g. the octahedron: Deltahedra AND
