@@ -17,6 +17,7 @@ export const CHANGELOG: ChangelogDay[] = [
   {
     date: '2026-10-09',
     entries: [
+      'Renamed: the Dragon Jewel is now the DICTO Jewel, DICTO\'s own name for the EKP windows solid (DJ for short).',
       'New: your projection (3D, ∥ or ISO) is remembered on this device; ISO is a view direction, so once you turn away from it the button shows ∥. On iPad the top bar and the tools column stand clear of the screen\'s edges (where the system\'s swipes are), and every top-bar button is a full-size touch target.',
     ],
   },

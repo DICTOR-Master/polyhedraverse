@@ -10,7 +10,7 @@ test.beforeEach(async ({ page }) => {
  * Space-Filling Pairs (2026-09-24, direct request): the family renders as
  * one row per pair -- the honeycomb's name, then both shapes -- not as a
  * flat shape grid like every other family. The 7 convex pairs are verified
- * geometrically by scripts/verify-space-filling-pairs.ts, the Dragon Jewel
+ * geometrically by scripts/verify-space-filling-pairs.ts, the DICTO Jewel
  * and stella octangula by scripts/verify-stella-jewel.ts, and the seamed
  * dodecahedron and Dogstar by scripts/verify-sunstar.ts;
  * this checks the user-facing rows.

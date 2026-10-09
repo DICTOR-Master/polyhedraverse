@@ -1,11 +1,11 @@
 /**
- * Verifies the Dragon Jewel and the stella octangula (krp-core/src/polyhedra/stellaJewel.js), the
+ * Verifies the DICTO Jewel and the stella octangula (krp-core/src/polyhedra/stellaJewel.js), the
  * Stella–Jewel Lattice pair from Kaleidohedra:
  *   - each is a closed surface (every edge on exactly two faces), wound outward;
- *   - Dragon Jewel: 12 rhombi of edge 1 with angles 72/108 (Penrose's thick rhombus) and 48
+ *   - DICTO Jewel: 12 rhombi of edge 1 with angles 72/108 (Penrose's thick rhombus) and 48
  *     triangles; volume 12 (phi/2)^3, the windows solid's 12 at cube edge 2;
  *   - stella octangula: 24 triangles, volume 4 (phi/2)^3;
- *   - together, Dragon Jewels on the even cells and stellas on the odd cells fill space: random
+ *   - together, DICTO Jewels on the even cells and stellas on the odd cells fill space: random
  *     points in a patch lie in exactly one piece (point-in-polyhedron by ray casting, since both
  *     are concave).
  */
@@ -33,17 +33,17 @@ function closedAndOutward(spec: typeof DJ) {
   return { ok, vol };
 }
 const dj = closedAndOutward(DJ), st = closedAndOutward(ST);
-check(`Dragon Jewel: closed and wound outward; volume ${dj.vol.toFixed(6)} = 12 (phi/2)^3 = ${(12 * K ** 3).toFixed(6)}`, dj.ok && Math.abs(dj.vol - 12 * K ** 3) < 1e-9);
+check(`DICTO Jewel: closed and wound outward; volume ${dj.vol.toFixed(6)} = 12 (phi/2)^3 = ${(12 * K ** 3).toFixed(6)}`, dj.ok && Math.abs(dj.vol - 12 * K ** 3) < 1e-9);
 check(`stella octangula: closed and wound outward; volume ${st.vol.toFixed(6)} = 4 (phi/2)^3`, st.ok && Math.abs(st.vol - 4 * K ** 3) < 1e-9);
 const quads = DJ.faces.filter((f) => f.length === 4), tris = DJ.faces.filter((f) => f.length === 3);
 const angle = (f: number[], k: number) => { const V = DJ.vertices; const a = sub(V[f[(k + 3) % 4]], V[f[k]]), b = sub(V[f[(k + 1) % 4]], V[f[k]]); return (Math.acos(dot(a, b) / (len(a) * len(b))) * 180) / Math.PI; };
 const thick = quads.every((f) => f.every((i, k) => Math.abs(len(sub(DJ.vertices[f[(k + 1) % 4]], DJ.vertices[i])) - 1) < 1e-12) && [0, 1, 2, 3].every((k) => [72, 108].some((x) => Math.abs(angle(f, k) - x) < 1e-9)));
-check(`Dragon Jewel: ${quads.length} Penrose thick rhombi (edge 1, 72/108 degrees) and ${tris.length} triangles`, quads.length === 12 && tris.length === 48 && thick);
-check(`stella octangula: ${ST.faces.length} triangles (its 24 split along the Dragon Jewel seams) on ${ST.vertices.length} corners`, ST.faces.length === 48 && ST.faces.every((f) => f.length === 3) && ST.vertices.length === 26); // 8 tips, 6 face centres, 12 seam points
-// Every stella face is congruent to some Dragon Jewel wall, so the two attach face to face.
+check(`DICTO Jewel: ${quads.length} Penrose thick rhombi (edge 1, 72/108 degrees) and ${tris.length} triangles`, quads.length === 12 && tris.length === 48 && thick);
+check(`stella octangula: ${ST.faces.length} triangles (its 24 split along the DICTO Jewel seams) on ${ST.vertices.length} corners`, ST.faces.length === 48 && ST.faces.every((f) => f.length === 3) && ST.vertices.length === 26); // 8 tips, 6 face centres, 12 seam points
+// Every stella face is congruent to some DICTO Jewel wall, so the two attach face to face.
 const sides = (spec: typeof DJ, f: number[]) => f.map((a, k) => len(sub(spec.vertices[f[(k + 1) % f.length]], spec.vertices[a]))).sort((x, y) => x - y);
 const wallKinds = tris.map((f) => sides(DJ, f));
-check('every stella face matches a Dragon Jewel wall (same side lengths), so the two attach', ST.faces.every((f) => { const s2 = sides(ST, f); return wallKinds.some((w) => w.every((x, i) => Math.abs(x - s2[i]) < 1e-9)); }));
+check('every stella face matches a DICTO Jewel wall (same side lengths), so the two attach', ST.faces.every((f) => { const s2 = sides(ST, f); return wallKinds.some((w) => w.every((x, i) => Math.abs(x - s2[i]) < 1e-9)); }));
 
 // Point in a closed polyhedron: ray casting along a fixed generic direction.
 function inside(spec: typeof DJ, p: Vec3, offset: Vec3): boolean {
@@ -73,7 +73,7 @@ for (let n = 0; n < N; n++) {
   }
   if (count !== 1) bad++;
 }
-check(`Dragon Jewels (even cells) and stellas (odd cells) fill space: ${N} random points, ${bad} in none or several`, bad === 0);
+check(`DICTO Jewels (even cells) and stellas (odd cells) fill space: ${N} random points, ${bad} in none or several`, bad === 0);
 
 console.log(failures === 0 ? '\nAll checks passed (0 failures).' : `\n${failures} check(s) FAILED.`);
 process.exit(failures === 0 ? 0 : 1);
