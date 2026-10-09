@@ -1,4 +1,4 @@
-import { POLYHEDRA, POLYHEDRON_IDS, STELLATION_IDS } from '../krp-core/src/polyhedra/index.js';
+import { POLYHEDRA, POLYHEDRON_IDS, STELLATION_IDS, HEXA_ADDITION_IDS } from '../krp-core/src/polyhedra/index.js';
 import { FOURD_CAPABLE_IDS } from '../krp-core/src/polyhedra/fourD.js';
 import {
   buildWallPrism,
@@ -36,7 +36,7 @@ const norm = (a: Vec3): Vec3 => { const l = Math.hypot(...a); return [a[0] / l, 
 // ones pinch at their centre and the faces are seamed where pieces meet, so
 // a prism over them is no 4D polytope (krp-core's cluster verifies check
 // their surfaces instead).
-const CLUSTER_IDS = ['DJ_TETRAHEDRAL_CLUSTER', 'DJ_OCTAHEDRAL_CLUSTER', 'DODECA_TETRAHEDRAL_CLUSTER', 'DODECA_OCTAHEDRAL_CLUSTER'];
+const CLUSTER_IDS = ['DJ_TETRAHEDRAL_CLUSTER', 'DJ_OCTAHEDRAL_CLUSTER', 'DODECA_TETRAHEDRAL_CLUSTER', 'DODECA_OCTAHEDRAL_CLUSTER', ...HEXA_ADDITION_IDS];
 for (const id of POLYHEDRON_IDS.filter((x) => !CLUSTER_IDS.includes(x))) {
   const spec = POLYHEDRA[id];
   const { V, E, F, C } = duoprismCombinatorics(spec);

@@ -1,12 +1,12 @@
 import * as THREE from 'three';
-import { POLYHEDRA, POLYHEDRON_IDS, isFaceEligibleForAttach } from '../krp-core/src/polyhedra/index.js';
+import { POLYHEDRA, POLYHEDRON_IDS, isFaceEligibleForAttach, HEXA_ADDITION_IDS } from '../krp-core/src/polyhedra/index.js';
 import { buildFaceConnectors, facesCongruent } from '../krp-core/src/polyhedra/core.js';
 import { faceAttachOptions } from '../krp-core/src/assembly/faceAttach.js';
 
 // DICTO's clusters aren't convex, so their centre can rightly lie on the near side of a face they
 // attach by; for them the attached face must instead face back against the root's face (its own
 // outward normal, Newell's over the whole polygon, opposite the root face's normal).
-const CLUSTER_IDS = ['DJ_TETRAHEDRAL_CLUSTER', 'DJ_OCTAHEDRAL_CLUSTER', 'DODECA_TETRAHEDRAL_CLUSTER', 'DODECA_OCTAHEDRAL_CLUSTER'];
+const CLUSTER_IDS = ['DJ_TETRAHEDRAL_CLUSTER', 'DJ_OCTAHEDRAL_CLUSTER', 'DODECA_TETRAHEDRAL_CLUSTER', 'DODECA_OCTAHEDRAL_CLUSTER', ...HEXA_ADDITION_IDS];
 function facesBack(face: THREE.Vector3[], n: THREE.Vector3): boolean {
   const m = new THREE.Vector3();
   face.forEach((p, j) => { const q = face[(j + 1) % face.length]; m.x += (p.y - q.y) * (p.z + q.z); m.y += (p.z - q.z) * (p.x + q.x); m.z += (p.x - q.x) * (p.y + q.y); });
@@ -31,10 +31,13 @@ const identity = new THREE.Matrix4();
 let checks = 0;
 let failures = 0;
 
-for (const rootId of POLYHEDRON_IDS) {
+// The two clusters of eight DICTO Hexas (about 1,700 faces each) are left out of this every-pair
+// sweep: their faces are the Hexa's own, which stays in, and krp-core's verify-hexa checks them.
+const SWEEP_IDS = POLYHEDRON_IDS.filter((id) => !['DICTO_HEXA_RHOMBO_CLUSTER', 'DICTO_HEXA_DIAMOND_CLUSTER'].includes(id));
+for (const rootId of SWEEP_IDS) {
   const rootSpec = POLYHEDRA[rootId];
   const rootConnectors = buildFaceConnectors(rootSpec);
-  for (const incomingId of POLYHEDRON_IDS) {
+  for (const incomingId of SWEEP_IDS) {
     const incomingSpec = POLYHEDRA[incomingId];
     for (let tf = 0; tf < rootSpec.faces.length; tf++) {
       if (!isFaceEligibleForAttach(rootSpec, tf)) continue;

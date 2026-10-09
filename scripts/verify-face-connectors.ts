@@ -1,7 +1,7 @@
-import { POLYHEDRA, POLYHEDRON_IDS } from '../krp-core/src/polyhedra/index.js';
+import { POLYHEDRA, POLYHEDRON_IDS, HEXA_ADDITION_IDS } from '../krp-core/src/polyhedra/index.js';
 import { buildFaceConnectors, dist } from '../krp-core/src/polyhedra/core.js';
 import { STELLATION_IDS } from '../krp-core/src/polyhedra/stellations/index.js';
-const CLUSTER_IDS = ['DJ_TETRAHEDRAL_CLUSTER', 'DJ_OCTAHEDRAL_CLUSTER', 'DODECA_TETRAHEDRAL_CLUSTER', 'DODECA_OCTAHEDRAL_CLUSTER'];
+const CLUSTER_IDS = ['DJ_TETRAHEDRAL_CLUSTER', 'DJ_OCTAHEDRAL_CLUSTER', 'DODECA_TETRAHEDRAL_CLUSTER', 'DODECA_OCTAHEDRAL_CLUSTER', ...HEXA_ADDITION_IDS];
 
 let checks = 0;
 let failures = 0;

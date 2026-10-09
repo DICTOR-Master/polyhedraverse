@@ -13,7 +13,7 @@
 // the flush test finds the right turns for any face. The kite prisms'
 // rectangle sides are checked directly at the end.
 import * as THREE from 'three';
-import { POLYHEDRA, POLYHEDRON_IDS, type PolyhedronSpec } from '../krp-core/src/polyhedra/index.js';
+import { POLYHEDRA, POLYHEDRON_IDS, HEXA_ADDITION_IDS, type PolyhedronSpec } from '../krp-core/src/polyhedra/index.js';
 import { buildFaceConnectors, facesCongruent, faceRotationalSymmetry } from '../krp-core/src/polyhedra/core.js';
 import { isFaceEligibleForAttach } from '../krp-core/src/polyhedra/attachEligibility.js';
 import { faceAttachOptions, type FaceAttachOption } from '../krp-core/src/assembly/faceAttach.js';
@@ -21,7 +21,7 @@ import { faceAttachOptions, type FaceAttachOption } from '../krp-core/src/assemb
 // DICTO's clusters aren't convex, so their centre can rightly lie on the near side of a face they
 // attach by; for them the attached face must instead face back against the root's face (its own
 // outward normal, Newell's over the whole polygon, opposite the root face's normal).
-const CLUSTER_IDS = ['DJ_TETRAHEDRAL_CLUSTER', 'DJ_OCTAHEDRAL_CLUSTER', 'DODECA_TETRAHEDRAL_CLUSTER', 'DODECA_OCTAHEDRAL_CLUSTER'];
+const CLUSTER_IDS = ['DJ_TETRAHEDRAL_CLUSTER', 'DJ_OCTAHEDRAL_CLUSTER', 'DODECA_TETRAHEDRAL_CLUSTER', 'DODECA_OCTAHEDRAL_CLUSTER', ...HEXA_ADDITION_IDS];
 function facesBack(face: THREE.Vector3[], n: THREE.Vector3): boolean {
   const m = new THREE.Vector3();
   face.forEach((p, j) => { const q = face[(j + 1) % face.length]; m.x += (p.y - q.y) * (p.z + q.z); m.y += (p.z - q.z) * (p.x + q.x); m.z += (p.x - q.x) * (p.y + q.y); });
