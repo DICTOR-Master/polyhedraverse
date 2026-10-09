@@ -1,5 +1,12 @@
 # Polyhedraverse
 
+> **This repository is history only (2026-10-10).** Polyhedraverse by DICTO now lives in
+> **[DICTOR-Master/kaleidohedra](https://github.com/DICTOR-Master/kaleidohedra)**, one app with
+> Kaleidohedra and Rhombiverse, rewritten in step D with every feature kept (and more: hints,
+> DICTO's pieces, the 4D build). [polyhedraverse.vercel.app](https://polyhedraverse.vercel.app)
+> is served from there now. Builds saved on the old site come over by themselves on your first visit.
+> The geometry is shared through [krp-core](https://github.com/DICTOR-Master/krp-core).
+
 <p align="center">
   <img src="public/brand/logo.png" alt="Polyhedraverse" width="280">
 </p>
