@@ -9,7 +9,11 @@ import path from 'node:path';
 import { transformSync } from 'esbuild';
 
 const root = path.resolve(path.dirname(new URL(import.meta.url).pathname), '..');
-const { terms, allowLiterals = [] } = JSON.parse(fs.readFileSync(path.join(root, 'scripts/stale-terms.json'), 'utf8'));
+const { suspended = false, terms, allowLiterals = [] } = JSON.parse(fs.readFileSync(path.join(root, 'scripts/stale-terms.json'), 'utf8'));
+if (suspended) {
+  console.log('Stale-term ban suspended (scripts/stale-terms.json "suspended": true); nothing checked.');
+  process.exit(0);
+}
 const re = new RegExp(`\\b(${terms.join('|')})\\b`, 'i');
 const allow = new Set(allowLiterals);
 
