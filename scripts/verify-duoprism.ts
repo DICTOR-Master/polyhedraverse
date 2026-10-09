@@ -31,8 +31,13 @@ const dot = (a: Vec3, b: Vec3): number => a[0] * b[0] + a[1] * b[1] + a[2] * b[2
 const cross = (a: Vec3, b: Vec3): Vec3 => [a[1] * b[2] - a[2] * b[1], a[2] * b[0] - a[0] * b[2], a[0] * b[1] - a[1] * b[0]];
 const norm = (a: Vec3): Vec3 => { const l = Math.hypot(...a); return [a[0] / l, a[1] / l, a[2] / l]; };
 
-// (1) Combinatorial 4D Euler-characteristic check -- every registered shape.
-for (const id of POLYHEDRON_IDS) {
+// (1) Combinatorial 4D Euler-characteristic check -- every registered shape
+// whose surface is a plain sphere. DICTO's clusters aren't: the tetrahedral
+// ones pinch at their centre and the faces are seamed where pieces meet, so
+// a prism over them is no 4D polytope (krp-core's cluster verifies check
+// their surfaces instead).
+const CLUSTER_IDS = ['DJ_TETRAHEDRAL_CLUSTER', 'DJ_OCTAHEDRAL_CLUSTER', 'DODECA_TETRAHEDRAL_CLUSTER', 'DODECA_OCTAHEDRAL_CLUSTER'];
+for (const id of POLYHEDRON_IDS.filter((x) => !CLUSTER_IDS.includes(x))) {
   const spec = POLYHEDRA[id];
   const { V, E, F, C } = duoprismCombinatorics(spec);
   const euler = V - E + F - C;
