@@ -1,6 +1,7 @@
 import { POLYHEDRA, POLYHEDRON_IDS } from '../krp-core/src/polyhedra/index.js';
 import { buildFaceConnectors, dist } from '../krp-core/src/polyhedra/core.js';
 import { STELLATION_IDS } from '../krp-core/src/polyhedra/stellations/index.js';
+const CLUSTER_IDS = ['DJ_TETRAHEDRAL_CLUSTER', 'DJ_OCTAHEDRAL_CLUSTER', 'DODECA_TETRAHEDRAL_CLUSTER', 'DODECA_OCTAHEDRAL_CLUSTER'];
 
 let checks = 0;
 let failures = 0;
@@ -33,9 +34,11 @@ for (const id of POLYHEDRON_IDS) {
     // here means the face is wound backwards (inward-pointing normal).
     // The Stellations pieces aren't convex, so a face can rightly face
     // back towards the centre; verify-stellations.ts proves their winding
-    // exactly (closed, consistently wound, positive volume) instead.
+    // exactly (closed, consistently wound, positive volume) instead. DICTO's
+    // clusters aren't convex either; krp-core's verify-dicto-jewel-cluster
+    // and verify-sunstar-cluster prove theirs the same way.
     const outwardness = fc.pos[0] * fc.normal[0] + fc.pos[1] * fc.normal[1] + fc.pos[2] * fc.normal[2];
-    if (!STELLATION_IDS.includes(id)) {
+    if (!STELLATION_IDS.includes(id) && !CLUSTER_IDS.includes(id)) {
       checks++;
       if (outwardness <= 0) fail(`${id} face ${fc.faceIndex}: normal points inward (dot(centroid, normal) = ${outwardness.toFixed(6)})`);
     }

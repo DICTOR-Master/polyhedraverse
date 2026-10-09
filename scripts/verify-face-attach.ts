@@ -3,6 +3,16 @@ import { POLYHEDRA, POLYHEDRON_IDS, isFaceEligibleForAttach } from '../krp-core/
 import { buildFaceConnectors, facesCongruent } from '../krp-core/src/polyhedra/core.js';
 import { faceAttachOptions } from '../krp-core/src/assembly/faceAttach.js';
 
+// DICTO's clusters aren't convex, so their centre can rightly lie on the near side of a face they
+// attach by; for them the attached face must instead face back against the root's face (its own
+// outward normal, Newell's over the whole polygon, opposite the root face's normal).
+const CLUSTER_IDS = ['DJ_TETRAHEDRAL_CLUSTER', 'DJ_OCTAHEDRAL_CLUSTER', 'DODECA_TETRAHEDRAL_CLUSTER', 'DODECA_OCTAHEDRAL_CLUSTER'];
+function facesBack(face: THREE.Vector3[], n: THREE.Vector3): boolean {
+  const m = new THREE.Vector3();
+  face.forEach((p, j) => { const q = face[(j + 1) % face.length]; m.x += (p.y - q.y) * (p.z + q.z); m.y += (p.z - q.z) * (p.x + q.x); m.z += (p.x - q.x) * (p.y + q.y); });
+  return m.normalize().dot(n) < -0.999;
+}
+
 // Every face pair the app can offer, placed by the app's own face-attach
 // code (app/lib/faceAttach.ts, shared with ShapeViewer), root parent at the
 // identity: each pair must have at least one placement, and every
@@ -50,7 +60,7 @@ for (const rootId of POLYHEDRON_IDS) {
             failures++;
             console.log(`${rootId}[f${tf}] + ${incomingId}[f${gf}]: a placement isn't flush`);
           }
-          if (o.position.dot(Nf) <= Cf.dot(Nf) - 1e-9) {
+          if (CLUSTER_IDS.includes(incomingId) ? !facesBack(face, Nf) : o.position.dot(Nf) <= Cf.dot(Nf) - 1e-9) {
             failures++;
             console.log(`${rootId}[f${tf}] + ${incomingId}[f${gf}]: incoming piece not beyond the shared face`);
           }

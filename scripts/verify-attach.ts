@@ -31,7 +31,8 @@ for (const rootId of POLYHEDRON_IDS) {
     const incomingSpec = POLYHEDRA[incomingId];
     // A corner at the shape's own centre (DICTO's tetrahedral clusters: the one point where their four
     // lobes touch, inside the shape) has no outward direction, so nothing is attached there.
-    const centre = rootSpec.vertices.reduce((t, p) => t.map((x, i) => x + p[i] / rootSpec.vertices.length), [0, 0, 0]);
+    const n = rootSpec.vertices.length;
+    const centre = [0, 1, 2].map((i) => rootSpec.vertices.reduce((t, p) => t + p[i] / n, 0));
     for (let v = 0; v < rootSpec.vertices.length; v++) {
       if (Math.hypot(...rootSpec.vertices[v].map((x, i) => x - centre[i])) < 1e-6) continue;
       checks++;

@@ -18,6 +18,16 @@ import { buildFaceConnectors, facesCongruent, faceRotationalSymmetry } from '../
 import { isFaceEligibleForAttach } from '../krp-core/src/polyhedra/attachEligibility.js';
 import { faceAttachOptions, type FaceAttachOption } from '../krp-core/src/assembly/faceAttach.js';
 
+// DICTO's clusters aren't convex, so their centre can rightly lie on the near side of a face they
+// attach by; for them the attached face must instead face back against the root's face (its own
+// outward normal, Newell's over the whole polygon, opposite the root face's normal).
+const CLUSTER_IDS = ['DJ_TETRAHEDRAL_CLUSTER', 'DJ_OCTAHEDRAL_CLUSTER', 'DODECA_TETRAHEDRAL_CLUSTER', 'DODECA_OCTAHEDRAL_CLUSTER'];
+function facesBack(face: THREE.Vector3[], n: THREE.Vector3): boolean {
+  const m = new THREE.Vector3();
+  face.forEach((p, j) => { const q = face[(j + 1) % face.length]; m.x += (p.y - q.y) * (p.z + q.z); m.y += (p.z - q.z) * (p.x + q.x); m.z += (p.x - q.x) * (p.y + q.y); });
+  return m.normalize().dot(n) < -0.999;
+}
+
 let checks = 0;
 let failures = 0;
 const fail = (msg: string) => {
@@ -39,7 +49,7 @@ function checkOptions(label: string, root: PolyhedronSpec, tf: number, incoming:
     checks++;
     const face = incoming.faces[o.incomingFaceIndex].map((v) => new THREE.Vector3(...incoming.vertices[v]).applyQuaternion(o.quaternion).add(o.position));
     const flush = face.every((p) => target.some((q) => p.distanceTo(q) < 1e-6));
-    const beyond = o.position.clone().sub(centre).dot(normal) > 0;
+    const beyond = CLUSTER_IDS.includes(incoming.id) ? facesBack(face, normal) : o.position.clone().sub(centre).dot(normal) > 0;
     if (!flush || !beyond) fail(`${label} option ${i + 1}: ${!flush ? 'not flush' : 'on the wrong side'}`);
   }
   checks++;
